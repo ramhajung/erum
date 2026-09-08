@@ -486,22 +486,33 @@
           <span>🪄</span> <span>AI 영수증 자동 인식 & 시트 실시간 반영</span>
         </div>
 
+        <!-- Hidden File Input for Real Photo Upload & Camera Capture -->
+        <input type="file" id="receiptFileInput" accept="image/*" capture="environment" style="display:none;">
+
         <!-- Receipt Scanning Trigger / Preview -->
-        <div class="receipt-scanner-zone" id="receiptZone" title="클릭하여 샘플 영수증을 교체하거나 사진 선택">
-          <div class="receipt-icon-box">
+        <div class="receipt-scanner-zone" id="receiptZone" title="클릭하여 영수증 사진을 직접 촬영하거나 첨부하세요">
+          <div id="receiptPreviewThumb" style="display:none; width:52px; height:52px; border-radius:10px; overflow:hidden; border:2px solid #10b981; margin-right:12px; flex-shrink:0; background:#fff;">
+            <img id="receiptPreviewImg" src="" style="width:100%; height:100%; object-fit:cover;" alt="영수증 미리보기">
+          </div>
+          <div class="receipt-icon-box" id="receiptDefaultIconBox">
             <span id="receiptIconVisual">🧾</span>
-            <span class="receipt-icon-sub">업로드됨 ✓</span>
+            <span class="receipt-icon-sub" id="receiptIconSubText">업로드됨 ✓</span>
           </div>
           <div class="ai-scan-status">
             <div class="ai-success-title">
-              <span>●</span> <span>AI 영수증 분석 성공!</span>
+              <span>●</span> <span id="receiptScanStatusTitle">AI 영수증 분석 완료!</span>
             </div>
             <p class="ai-scan-desc" id="aiScanDesc">
               영수증에서 결제금액(<b id="highlightAmount">45,000원</b>)과 상호명(<b id="highlightStore">다이소</b>)을 자동으로 읽어왔습니다.
             </p>
-            <span class="retake-link" id="changeReceiptSampleBtn">
-              <span>📷 다른 영수증 예시로 변경</span>
-            </span>
+            <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+              <button type="button" class="retake-link" id="triggerCameraBtn" style="background:#fff; border:1px solid #eadcd0; border-radius:6px; padding:3px 8px; font-weight:700; cursor:pointer;">
+                <span>📸 사진 촬영/첨부</span>
+              </button>
+              <button type="button" class="retake-link" id="changeReceiptSampleBtn" style="background:#fff; border:1px solid #eadcd0; border-radius:6px; padding:3px 8px; font-weight:700; cursor:pointer;">
+                <span>🔄 샘플 예시 변경</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -653,8 +664,9 @@
           </div>
 
           <!-- Open Accountant Sub-Navigation Tabs -->
-          <div class="sub-nav-tabs" style="margin-top: 14px; margin-bottom: 12px;">
+          <div class="sub-nav-tabs" style="margin-top: 14px; margin-bottom: 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: none;">
             <button class="sub-nav-btn active" id="accSubTabReceipts">영수증 내역</button>
+            <button class="sub-nav-btn" id="accSubTabMonthlyLedger">월별 장부 (시트)</button>
             <button class="sub-nav-btn" id="accSubTabProfitLoss">수입/지출 결산 (P&L)</button>
             <button class="sub-nav-btn" id="accSubTabMonthClose">월말 결산 체크리스트</button>
           </div>
@@ -668,22 +680,90 @@
             <div id="allReceiptList">
               <!-- Populated by JS -->
             </div>
-            <div style="display:flex; gap:8px; margin-top:14px;">
-              <button class="btn-orange" id="gotoAddReceiptAdminBtn" style="flex:1;">
+            <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+              <button class="btn-orange" id="gotoAddReceiptAdminBtn" style="flex:1; min-width:140px;">
                 <span>📷</span> <span>+ 영수증 사진 등록</span>
               </button>
-              <button class="btn-secondary" id="exportCsvBtn" style="flex:1; border-color:#fad5b6; color:#ad551b; font-size:12px; font-weight:800;">
+              <button class="btn-secondary" id="exportCsvBtn" style="flex:1; min-width:130px; border-color:#fad5b6; color:#ad551b; font-size:12px; font-weight:800;">
                 <span>📥</span> <span>장부 CSV 내보내기</span>
+              </button>
+              <button class="btn-secondary" id="openGsheetConfigBtn" style="width:100%; border-color:#d5e5db; color:#126f57; font-size:12px; font-weight:800; padding:10px;">
+                <span>⚙️</span> <span>구글 스프레드시트 실시간 연동 설정 (Apps Script)</span>
               </button>
             </div>
           </div>
 
-          <!-- Section 2: 수입/지출 손익 결산서 (Open Accountant P&L) -->
+          <!-- Section 2: 월별 회계장부 (Numbers 원본 양식 기반) -->
+          <div id="accSectionMonthlyLedger" style="display: none;">
+            <!-- Month filter bar (1월, 2월, 3월 ... 9월, 전체) -->
+            <div class="ledger-month-bar" id="ledgerMonthBar">
+              <button class="ledger-month-chip active" data-month="1">1월</button>
+              <button class="ledger-month-chip" data-month="2">2월</button>
+              <button class="ledger-month-chip" data-month="3">3월</button>
+              <button class="ledger-month-chip" data-month="4">4월</button>
+              <button class="ledger-month-chip" data-month="5">5월</button>
+              <button class="ledger-month-chip" data-month="6">6월</button>
+              <button class="ledger-month-chip" data-month="7">7월</button>
+              <button class="ledger-month-chip" data-month="8">8월</button>
+              <button class="ledger-month-chip" data-month="9">9월</button>
+              <button class="ledger-month-chip" data-month="all">전체보기</button>
+            </div>
+
+            <div class="section-label" style="margin-top:14px;">
+              <span id="currentMonthLedgerTitle">📑 2026년 1월 예랑 회계장부</span>
+              <span style="font-size:11px; font-weight:700; color:var(--accent-mint);" id="ledgerRowCountBadge">23건 기록</span>
+            </div>
+
+            <!-- Numbers Style Monthly Ledger Table Container -->
+            <div class="numbers-ledger-container">
+              <table class="numbers-table">
+                <thead>
+                  <tr>
+                    <th style="min-width:76px;">일자</th>
+                    <th style="min-width:140px;">적요 / 내역</th>
+                    <th class="col-inc" style="min-width:65px;">헌금</th>
+                    <th class="col-inc" style="min-width:80px;">회비/수련회</th>
+                    <th class="col-inc" style="min-width:75px;">찬조/후원</th>
+                    <th class="col-exp" style="min-width:80px;">지출</th>
+                    <th style="min-width:70px;">영수증</th>
+                  </tr>
+                </thead>
+                <tbody id="numbersLedgerTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+                <tfoot>
+                  <tr class="ledger-sum-row">
+                    <td colspan="2" style="font-weight:900; text-align:center;">합계</td>
+                    <td id="sumOffering" class="num-cell">-</td>
+                    <td id="sumFee" class="num-cell">-</td>
+                    <td id="sumDonation" class="num-cell">-</td>
+                    <td id="sumExpense" class="num-cell" style="color:#d94343;">-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr class="ledger-net-row">
+                    <td colspan="5" style="font-weight:900; text-align:right;">남은 금액 (순 잔액)</td>
+                    <td colspan="2" id="netRemainingAmount" style="font-weight:900; color:#10644e; font-size:13.5px; text-align:right; padding-right:12px;">-</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:14px;">
+              <button class="btn-orange" id="gotoAddReceiptFromLedgerBtn" style="flex:1;">
+                <span>📷</span> <span>+ 영수증 사진 등록</span>
+              </button>
+              <button class="btn-secondary" id="exportMonthlyCsvBtn" style="flex:1; border-color:#fad5b6; color:#ad551b; font-size:12px; font-weight:800;">
+                <span>📥</span> <span>월별 엑셀(CSV) 다운로드</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 3: 수입/지출 손익 결산서 (Open Accountant P&L) -->
           <div id="accSectionProfitLoss" style="display: none;">
             <!-- Populated by JS -->
           </div>
 
-          <!-- Section 3: 월말 결산 마감 & 대사 (Open Accountant Month-End Close) -->
+          <!-- Section 4: 월말 결산 마감 & 대사 (Open Accountant Month-End Close) -->
           <div id="accSectionMonthClose" style="display: none;">
             <!-- Populated by JS -->
           </div>
@@ -1242,6 +1322,80 @@
           </div>
           <button type="submit" class="btn-orange" style="background:#6c35c4; margin-top:16px;">사용자 계정 생성 및 권한 부여</button>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal 11: 영수증 원본 사진 팝업 모달 (Receipt Viewer Modal) -->
+    <div class="modal-backdrop" id="receiptViewerModal">
+      <div class="bottom-sheet" style="max-height: 90%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title" id="receiptModalTitle">📷 영수증 원본 증빙</h3>
+            <p style="font-size:11px; color:var(--text-muted);" id="receiptModalMeta">2026.01.25 | 최지원T</p>
+          </div>
+          <button class="sheet-close-btn" data-close="receiptViewerModal">✕</button>
+        </div>
+        <div class="receipt-modal-body" style="padding: 10px 0;">
+          <div id="receiptImageWrapper" style="width:100%; max-height:340px; overflow:hidden; border-radius:12px; background:#f4eee8; display:flex; align-items:center; justify-content:center; border:1px solid #ebdcd0; margin-bottom:14px;">
+            <img id="receiptModalImg" src="" style="width:100%; max-height:340px; object-fit:contain;" alt="영수증 사진">
+          </div>
+          <div class="receipt-detail-grid">
+            <div class="receipt-detail-row"><span>상호/가맹점</span><b id="receiptModalStore">-</b></div>
+            <div class="receipt-detail-row"><span>결제 금액</span><b id="receiptModalAmount" style="color:#d94343; font-size:15px;">-</b></div>
+            <div class="receipt-detail-row"><span>비목/카테고리</span><b id="receiptModalCategory">-</b></div>
+            <div class="receipt-detail-row"><span>제출자</span><b id="receiptModalAuthor">-</b></div>
+            <div class="receipt-detail-row"><span>지출 목적</span><b id="receiptModalPurpose">-</b></div>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:14px;">
+            <a id="receiptDriveLinkBtn" href="#" target="_blank" class="btn-secondary" style="display:none; flex:1; text-align:center; text-decoration:none; font-size:12px; font-weight:800; color:#126f57; align-items:center; justify-content:center;">
+              <span>구글 드라이브 원본 보기 ↗</span>
+            </a>
+            <button class="btn-primary" data-close="receiptViewerModal" style="flex:1;">확인 및 닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 12: 구글 스프레드시트 실시간 연동 설정 모달 (Apps Script) -->
+    <div class="modal-backdrop" id="gsheetConfigModal">
+      <div class="bottom-sheet" style="max-height: 92%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">📊 구글 시트 실시간 연동 설정</h3>
+            <p style="font-size:11px; color:var(--text-muted);">Google Apps Script Web App 연동</p>
+          </div>
+          <button class="sheet-close-btn" data-close="gsheetConfigModal">✕</button>
+        </div>
+        <div style="padding: 10px 0;">
+          <div style="background:#eaf8f3; border:1px solid #a8e5ce; padding:12px; border-radius:10px; font-size:12px; color:#116851; line-height:1.5; margin-bottom:14px;">
+            <b>💡 실시간 양방향 연동 안내</b><br>
+            구글 스프레드시트의 <b>[확장 프로그램] > [Apps Script]</b>에 제공된 코드를 배포한 후 발급된 <b>웹 앱 URL</b>을 등록하면, 앱에서 영수증을 등록할 때 구글 드라이브와 월별 시트에 즉시 자동 기록됩니다.
+          </div>
+
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:800; color:#2d261e;">구글 웹 앱 URL (Web App URL)</label>
+            <input type="text" id="gsheetWebhookUrlInput" class="field-input" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%; margin-top:4px;">
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="btn-orange" id="saveGsheetConfigBtn" style="flex:1;">
+              <span>💾</span> <span>연동 URL 저장하기</span>
+            </button>
+            <a href="https://docs.google.com/spreadsheets/d/1T3iJ9nrDwCZLPmNBgvLgb83NwjXMqIb88dnFKBgdGgU/edit?usp=sharing" target="_blank" class="btn-secondary" style="flex:1; text-align:center; text-decoration:none; font-size:12px; font-weight:800; color:#126f57; display:inline-flex; align-items:center; justify-content:center;">
+              <span>시트 바로 열기 ↗</span>
+            </a>
+          </div>
+
+          <div style="margin-top: 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-size:12px; font-weight:800; color:#2d261e;">📜 Google Apps Script 배포 코드</span>
+              <button class="sub-nav-btn" id="copyAppsScriptCodeBtn" style="font-size:11px; padding:3px 8px; border-radius:6px; background:#f5eee7;">코드 복사 📋</button>
+            </div>
+            <textarea id="appsScriptCodeBlock" readonly style="width:100%; height:130px; font-size:11px; font-family:monospace; background:#faf7f4; border:1px solid #e2d5c8; border-radius:8px; padding:8px; color:#444; resize:none;"></textarea>
+          </div>
+        </div>
       </div>
     </div>
 
