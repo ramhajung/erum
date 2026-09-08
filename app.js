@@ -2009,8 +2009,7 @@ const ROLES = {
     activeClass: "active-student",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "주일 섬김이 · D-Day · 공지사항" },
-      { target: "view-student-study", icon: "chair", label: "예랑스카", title: "예랑 스카 자습실 좌석", subtitle: "중간고사 D-12 좌석 현황 & 야식 투표" },
-      { target: "view-students", icon: "favorite", label: "기도나눔", title: "나의 기도제목 & 나눔", subtitle: "함께 기도하고 응원해요 🙏" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스케줄", subtitle: "행사 D-Day · 생일 · 공지사항" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
     ],
     defaultTab: "view-home",
