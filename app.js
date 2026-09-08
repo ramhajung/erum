@@ -2072,7 +2072,9 @@ function renderUserSwitchGrid() {
   if (!container) return;
   container.innerHTML = "";
 
-  appState.users.forEach(user => {
+  const activeUsers = appState.users.filter(u => !u.isPending);
+
+  activeUsers.forEach(user => {
     const isCurrent = user.id === appState.currentUserId;
     const card = document.createElement("div");
     card.className = `user-switch-card ${isCurrent ? "active-user" : ""}`;
@@ -2116,18 +2118,27 @@ function renderUserManagerSection() {
     const isCurrent = user.id === appState.currentUserId;
     const card = document.createElement("div");
     card.className = "user-mgmt-card";
+    const pendingBadge = user.isPending ? '<span style="font-size:10.5px; background:#fef3c7; color:#b45309; padding:2px 7px; border-radius:6px; font-weight:800; border:1px solid #fde68a;">승인 대기중 ⏳</span>' : '';
+
     card.innerHTML = `
       <div class="user-mgmt-info">
         <div class="user-mgmt-avatar">${user.avatar || "👤"}</div>
         <div class="user-mgmt-details">
-          <div class="user-mgmt-name">
-            ${user.name}
-            ${isCurrent ? '<span style="font-size:10px; background:#e8def8; color:#4a148c; padding:2px 6px; border-radius:4px; margin-left:4px;">현재 본인</span>' : ''}
+          <div class="user-mgmt-name" style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+            <span>${user.name}</span>
+            ${pendingBadge}
+            ${isCurrent ? '<span style="font-size:10px; background:#e8def8; color:#4a148c; padding:2px 6px; border-radius:4px; margin-left:2px;">현재 본인</span>' : ''}
           </div>
           <div class="user-mgmt-duty">${user.duty || "-"} · ${user.phone || ""}</div>
+          ${user.username ? `<div style="font-size:11px; color:#888;">ID: ${user.username}</div>` : ''}
         </div>
       </div>
-      <div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        ${user.isPending ? `
+          <button type="button" class="approve-user-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:12px; font-weight:800; background:#10b981; color:white; border-radius:8px; border:none; cursor:pointer;">
+            승인하기 ✓
+          </button>
+        ` : ''}
         <select class="role-select-dropdown" data-user-id="${user.id}">
           <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사 (관리자)</option>
           <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 회계선생님</option>
@@ -2136,6 +2147,14 @@ function renderUserManagerSection() {
         </select>
       </div>
     `;
+
+    // Approve button event
+    const approveBtn = card.querySelector(".approve-user-btn");
+    if (approveBtn) {
+      approveBtn.addEventListener("click", () => {
+        approveUser(user.id);
+      });
+    }
 
     const select = card.querySelector(".role-select-dropdown");
     if (select) {
@@ -2146,6 +2165,19 @@ function renderUserManagerSection() {
 
     container.appendChild(card);
   });
+}
+
+function approveUser(userId) {
+  const user = appState.users.find(u => u.id === userId);
+  if (!user) return;
+
+  user.isPending = false;
+  user.duty = `${ROLE_NAMES[user.role]}`;
+  saveState();
+
+  renderUserManagerSection();
+  renderUserSwitchGrid();
+  showToast(`🎉 '${user.name}'님의 가입 승인이 완료되었습니다! 이제 로그인 가능합니다.`, "success");
 }
 
 function changeUserRole(userId, newRole) {
@@ -2845,21 +2877,33 @@ function initAuthScreen() {
   const signupTabBtn = document.getElementById("authTabSignupBtn");
   const loginPanel = document.getElementById("authLoginPanel");
   const signupPanel = document.getElementById("authSignupPanel");
+  const pendingPanel = document.getElementById("authPendingPanel");
 
-  if (loginTabBtn && signupTabBtn && loginPanel && signupPanel) {
-    loginTabBtn.addEventListener("click", () => {
-      loginTabBtn.className = "py-2.5 text-[13px] font-extrabold rounded-xl transition-all duration-150 bg-white text-primary shadow-sm";
-      signupTabBtn.className = "py-2.5 text-[13px] font-bold rounded-xl transition-all duration-150 text-text-muted hover:text-text-primary";
-      loginPanel.classList.remove("hidden");
-      signupPanel.classList.add("hidden");
-    });
+  function showLoginTab() {
+    if (loginTabBtn) loginTabBtn.className = "py-2.5 text-[13px] font-extrabold rounded-xl transition-all duration-150 bg-white text-primary shadow-sm";
+    if (signupTabBtn) signupTabBtn.className = "py-2.5 text-[13px] font-bold rounded-xl transition-all duration-150 text-text-muted hover:text-text-primary";
+    if (loginPanel) loginPanel.classList.remove("hidden");
+    if (signupPanel) signupPanel.classList.add("hidden");
+    if (pendingPanel) pendingPanel.classList.add("hidden");
+  }
 
-    signupTabBtn.addEventListener("click", () => {
-      signupTabBtn.className = "py-2.5 text-[13px] font-extrabold rounded-xl transition-all duration-150 bg-white text-primary shadow-sm";
-      loginTabBtn.className = "py-2.5 text-[13px] font-bold rounded-xl transition-all duration-150 text-text-muted hover:text-text-primary";
-      loginPanel.classList.add("hidden");
-      signupPanel.classList.remove("hidden");
-    });
+  function showSignupTab() {
+    if (signupTabBtn) signupTabBtn.className = "py-2.5 text-[13px] font-extrabold rounded-xl transition-all duration-150 bg-white text-primary shadow-sm";
+    if (loginTabBtn) loginTabBtn.className = "py-2.5 text-[13px] font-bold rounded-xl transition-all duration-150 text-text-muted hover:text-text-primary";
+    if (loginPanel) loginPanel.classList.add("hidden");
+    if (signupPanel) signupPanel.classList.remove("hidden");
+    if (pendingPanel) pendingPanel.classList.add("hidden");
+  }
+
+  if (loginTabBtn && signupTabBtn) {
+    loginTabBtn.addEventListener("click", showLoginTab);
+    signupTabBtn.addEventListener("click", showSignupTab);
+  }
+
+  // Back to login button in pending panel
+  const pendingBackBtn = document.getElementById("pendingBackToLoginBtn");
+  if (pendingBackBtn) {
+    pendingBackBtn.addEventListener("click", showLoginTab);
   }
 
   // 1-Click Demo Quick Logins
@@ -2897,6 +2941,22 @@ function initAuthScreen() {
 
       if (!user) {
         showToast(`❌ 등록되지 않은 아이디입니다: '${username}'`, "warn");
+        return;
+      }
+
+      // Check if user is pending approval
+      if (user.isPending) {
+        // Show pending panel directly
+        if (loginPanel) loginPanel.classList.add("hidden");
+        if (signupPanel) signupPanel.classList.add("hidden");
+        if (pendingPanel) {
+          pendingPanel.classList.remove("hidden");
+          const nameEl = document.getElementById("pendingRegisteredName");
+          const idEl = document.getElementById("pendingRegisteredUsername");
+          if (nameEl) nameEl.textContent = user.name;
+          if (idEl) idEl.textContent = user.username || user.name;
+        }
+        showToast("⏳ 현재 관리자(전도사님) 승인 대기 중인 계정입니다.", "warn", 4500);
         return;
       }
 
@@ -2943,17 +3003,29 @@ function initAuthScreen() {
         username: username,
         password: password || "1234",
         role: defaultRole,
-        duty: `${ROLE_NAMES[defaultRole]}`,
+        duty: `${ROLE_NAMES[defaultRole]} (승인 대기)`,
         phone: phone || "010-0000-0000",
         avatar: DEFAULT_AVATARS[defaultRole] || "🧑🏻‍🏫",
-        isAdmin: false
+        isAdmin: false,
+        isPending: true // New user requires pastor approval
       };
 
       appState.users.push(newUser);
-      loginUser(newUser.id);
+      saveState();
       signupForm.reset();
 
-      showToast(`🎉 반갑습니다, '${name}'님! 계정이 등록되었습니다.`);
+      // Show 가입완료 / 승인대기 Panel
+      if (signupPanel) signupPanel.classList.add("hidden");
+      if (loginPanel) loginPanel.classList.add("hidden");
+      if (pendingPanel) {
+        pendingPanel.classList.remove("hidden");
+        const nameEl = document.getElementById("pendingRegisteredName");
+        const idEl = document.getElementById("pendingRegisteredUsername");
+        if (nameEl) nameEl.textContent = name;
+        if (idEl) idEl.textContent = username;
+      }
+
+      showToast(`📋 '${name}'님 가입완료! 현재 승인 대기 중입니다.`, "success", 4000);
     });
   }
 
