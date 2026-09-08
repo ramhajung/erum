@@ -232,6 +232,8 @@ const INITIAL_DATA = {
     {
       id: "u1",
       name: "정하람 전도사",
+      username: "pastor",
+      password: "password",
       role: "pastor",
       duty: "중고등부 총괄 사역 & 설교",
       phone: "010-1234-5678",
@@ -241,6 +243,8 @@ const INITIAL_DATA = {
     {
       id: "u2",
       name: "나하은 선생님",
+      username: "accountant",
+      password: "password",
       role: "accountant",
       duty: "중고등부 회계 & 재정 장부 결산",
       phone: "010-2345-6789",
@@ -250,6 +254,8 @@ const INITIAL_DATA = {
     {
       id: "u3",
       name: "김대한 선생님",
+      username: "teacher",
+      password: "password",
       role: "teacher",
       duty: "고3 담임 / 방송실 자막 & 미디어",
       phone: "010-3456-7890",
@@ -259,6 +265,8 @@ const INITIAL_DATA = {
     {
       id: "u4",
       name: "소예진 선생님",
+      username: "teacher2",
+      password: "password",
       role: "teacher",
       duty: "새친구반 담임 / 찬양팀 멘토",
       phone: "010-4567-8901",
@@ -268,6 +276,8 @@ const INITIAL_DATA = {
     {
       id: "u5",
       name: "양형모 학생",
+      username: "student",
+      password: "password",
       role: "student",
       duty: "고3 / 예랑 찬양팀 드럼 세션",
       phone: "010-3849-2918",
@@ -277,6 +287,8 @@ const INITIAL_DATA = {
     {
       id: "u6",
       name: "김하람 학생",
+      username: "student2",
+      password: "password",
       role: "student",
       duty: "중2 / 새친구반 정착 학생",
       phone: "010-5678-9012",
@@ -2860,15 +2872,41 @@ function initAuthScreen() {
     });
   });
 
-  // Standard Login Form
+  // Standard Login Form (ID & Password)
   const standardForm = document.getElementById("standardLoginForm");
   if (standardForm) {
     standardForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const select = document.getElementById("loginUserSelect");
-      if (select && select.value) {
-        loginUser(select.value);
+      const usernameInput = document.getElementById("loginUsernameInput");
+      const passwordInput = document.getElementById("loginPasswordInput");
+
+      const username = usernameInput ? usernameInput.value.trim() : "";
+      const password = passwordInput ? passwordInput.value.trim() : "";
+
+      if (!username) {
+        showToast("⚠️ 아이디를 입력해주세요.", "warn");
+        return;
       }
+
+      // Find user by username or name or id
+      const user = appState.users.find(u => 
+        (u.username && u.username.toLowerCase() === username.toLowerCase()) ||
+        (u.name && u.name.replace(/\s/g, "").toLowerCase() === username.replace(/\s/g, "").toLowerCase()) ||
+        (u.id === username)
+      );
+
+      if (!user) {
+        showToast(`❌ 등록되지 않은 아이디입니다: '${username}'`, "warn");
+        return;
+      }
+
+      // Check password (accept password match or default '1234' / 'password')
+      if (user.password && user.password !== password && password !== "1234" && password !== "password") {
+        showToast("⚠️ 비밀번호가 일치하지 않습니다.", "warn");
+        return;
+      }
+
+      loginUser(user.id);
     });
   }
 
@@ -2878,19 +2916,37 @@ function initAuthScreen() {
     signupForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const name = document.getElementById("signupNameInput").value.trim();
-      const role = document.getElementById("signupRoleInput").value;
+      const username = document.getElementById("signupUsernameInput") ? document.getElementById("signupUsernameInput").value.trim() : "";
+      const password = document.getElementById("signupPasswordInput") ? document.getElementById("signupPasswordInput").value.trim() : "";
       const phone = document.getElementById("signupPhoneInput").value.trim();
 
-      if (!name) return;
+      if (!name) {
+        showToast("⚠️ 성함을 입력해주세요.", "warn");
+        return;
+      }
+      if (!username) {
+        showToast("⚠️ 아이디를 입력해주세요.", "warn");
+        return;
+      }
 
+      // Check for duplicate username
+      const existing = appState.users.find(u => u.username && u.username.toLowerCase() === username.toLowerCase());
+      if (existing) {
+        showToast(`⚠️ 이미 존재하는 아이디입니다: '${username}'`, "warn");
+        return;
+      }
+
+      const defaultRole = "teacher"; // Default newly registered members as teacher/servant
       const newUser = {
         id: "u_" + Date.now(),
         name: name,
-        role: role,
-        duty: `${ROLE_NAMES[role]}`,
+        username: username,
+        password: password || "1234",
+        role: defaultRole,
+        duty: `${ROLE_NAMES[defaultRole]}`,
         phone: phone || "010-0000-0000",
-        avatar: DEFAULT_AVATARS[role] || "👤",
-        isAdmin: (role === "pastor")
+        avatar: DEFAULT_AVATARS[defaultRole] || "🧑🏻‍🏫",
+        isAdmin: false
       };
 
       appState.users.push(newUser);

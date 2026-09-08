@@ -222,16 +222,18 @@
           </div>
         </div>
 
-        <!-- Or Select from Registered Users Form -->
-        <div class="p-4 rounded-3xl bg-white border border-outline-variant/20 shadow-[0_8px_24px_rgba(60,50,40,0.05)]">
-          <form id="standardLoginForm">
-            <div class="mb-3.5">
-              <label for="loginUserSelect" class="block text-[12px] font-extrabold text-text-secondary mb-1.5">내 계정 선택하여 로그인</label>
-              <select id="loginUserSelect" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-bold text-text-primary focus:outline-none focus:border-primary">
-                <!-- Populated dynamically -->
-              </select>
+        <!-- Standard ID & Password Login Form -->
+        <div class="p-4.5 rounded-3xl bg-white border border-outline-variant/20 shadow-[0_8px_24px_rgba(60,50,40,0.05)]">
+          <form id="standardLoginForm" class="space-y-3">
+            <div>
+              <label for="loginUsernameInput" class="block text-[12px] font-extrabold text-text-secondary mb-1">아이디 (ID)</label>
+              <input type="text" id="loginUsernameInput" placeholder="아이디 입력 (예: pastor, teacher1)" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-bold text-text-primary focus:outline-none focus:border-primary" required>
             </div>
-            <button type="submit" class="btn-primary w-full py-3.5 rounded-xl font-extrabold text-[14px] flex items-center justify-center gap-1.5 shadow-md">
+            <div>
+              <label for="loginPasswordInput" class="block text-[12px] font-extrabold text-text-secondary mb-1">비밀번호</label>
+              <input type="password" id="loginPasswordInput" placeholder="비밀번호 입력 (기본: 1234)" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-medium text-text-primary focus:outline-none focus:border-primary" required>
+            </div>
+            <button type="submit" class="btn-primary w-full py-3.5 rounded-xl font-extrabold text-[14px] flex items-center justify-center gap-1.5 shadow-md mt-2">
               <span class="material-symbols-outlined text-[18px]">login</span>
               <span>로그인 및 사역 시작</span>
             </button>
@@ -242,23 +244,22 @@
       <!-- Content 2: 회원가입 패널 (Initial Hidden) -->
       <div id="authSignupPanel" class="mt-6 flex-1 hidden flex-col justify-center">
         <div class="p-4.5 rounded-3xl bg-white border border-outline-variant/20 shadow-[0_8px_24px_rgba(60,50,40,0.05)]">
-          <div class="mb-4">
-            <h3 class="text-[16px] font-extrabold text-text-primary">새 사역자 / 학생 등록</h3>
-            <p class="text-[11.5px] text-text-muted mt-0.5">역할에 따라 전용 대시보드 권한이 부여됩니다.</p>
+          <div class="mb-3.5">
+            <h3 class="text-[16px] font-extrabold text-text-primary">새 사역자 / 회원 가입</h3>
+            <p class="text-[11.5px] text-text-muted mt-0.5">아이디와 비밀번호를 설정하여 가입을 완료하세요.</p>
           </div>
           <form id="authSignupForm" class="space-y-3">
             <div>
               <label class="block text-[12px] font-extrabold text-text-secondary mb-1">성함 / 이름 *</label>
-              <input type="text" id="signupNameInput" placeholder="예: 박예은 선생님" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-medium text-text-primary focus:outline-none focus:border-primary" required>
+              <input type="text" id="signupNameInput" placeholder="예: 박예은" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-medium text-text-primary focus:outline-none focus:border-primary" required>
             </div>
             <div>
-              <label class="block text-[12px] font-extrabold text-text-secondary mb-1">소속 및 직분 (역할) *</label>
-              <select id="signupRoleInput" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-bold text-text-primary focus:outline-none focus:border-primary">
-                <option value="teacher" selected>🧑🏻‍🏫 교사 (공과/새친구반 목양)</option>
-                <option value="accountant">💼 회계 (재정/장부 관리 마스터)</option>
-                <option value="student">👦🏻 학생 (청소년부 포털 & 스카)</option>
-                <option value="pastor">✝️ 전도사 (사역 총괄 관리자)</option>
-              </select>
+              <label class="block text-[12px] font-extrabold text-text-secondary mb-1">아이디 (ID) *</label>
+              <input type="text" id="signupUsernameInput" placeholder="사용할 아이디 입력 (예: yerang01)" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-medium text-text-primary focus:outline-none focus:border-primary" required>
+            </div>
+            <div>
+              <label class="block text-[12px] font-extrabold text-text-secondary mb-1">비밀번호 *</label>
+              <input type="password" id="signupPasswordInput" placeholder="비밀번호 입력" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-medium text-text-primary focus:outline-none focus:border-primary" required>
             </div>
             <div>
               <label class="block text-[12px] font-extrabold text-text-secondary mb-1">연락처 (휴대폰)</label>
