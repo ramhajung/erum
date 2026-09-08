@@ -2198,7 +2198,6 @@ function openEditUserModal(userId) {
   document.getElementById("editUserNameInput").value = user.name || "";
   document.getElementById("editUserDutyInput").value = user.duty || "";
   document.getElementById("editUserPhoneInput").value = user.phone || "";
-  document.getElementById("editUserUsernameInput").value = user.username || "";
 
   openModal("editUserModal");
 }
@@ -2215,26 +2214,15 @@ function initEditUserEvents() {
       const name = document.getElementById("editUserNameInput").value.trim();
       const duty = document.getElementById("editUserDutyInput").value.trim();
       const phone = document.getElementById("editUserPhoneInput").value.trim();
-      const username = document.getElementById("editUserUsernameInput").value.trim();
 
       if (!name) {
         showToast("⚠️ 이름을 입력해주세요.", "warn");
         return;
       }
 
-      // Check username duplicate (exclude current user)
-      if (username && username !== user.username) {
-        const dup = appState.users.find(u => u.id !== userId && u.username === username);
-        if (dup) {
-          showToast("⚠️ 이미 사용 중인 아이디입니다.", "warn");
-          return;
-        }
-      }
-
       user.name = name;
       user.duty = duty;
       user.phone = phone;
-      if (username) user.username = username;
 
       saveState();
       closeModal("editUserModal");
