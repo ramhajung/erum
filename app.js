@@ -2701,18 +2701,34 @@ function initFrameSwitcher() {
   }
 }
 
-// Update clock (if element exists)
+// Update clock & live date
 function initClock() {
   const timeEl = document.getElementById("currentTime");
-  if (!timeEl) return;
-  function updateTime() {
+  const headerDateEl = document.getElementById("headerLiveDate");
+
+  const DAY_NAMES = ["주일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+
+  function updateClockAndDate() {
     const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const date = now.getDate();
+    const day = DAY_NAMES[now.getDay()];
+
     const h = String(now.getHours()).padStart(2, "0");
     const m = String(now.getMinutes()).padStart(2, "0");
-    if (timeEl) timeEl.textContent = `${h}:${m}`;
+
+    if (timeEl) {
+      timeEl.textContent = `${h}:${m}`;
+    }
+
+    if (headerDateEl) {
+      headerDateEl.textContent = `${year}년 ${month}월 ${date}일 (${day}) ${h}:${m}`;
+    }
   }
-  updateTime();
-  setInterval(updateTime, 30000);
+
+  updateClockAndDate();
+  setInterval(updateClockAndDate, 10000); // 10초마다 실시간 갱신
 }
 
 // =============================================================================
