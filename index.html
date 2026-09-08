@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>이룸교회 중고등부 예랑 - 스마트 사역 관리</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+</head>
+<body>
+
+  <!-- Top Controller (Desktop / Mobile Frame Switcher) -->
+  <div class="top-controls">
+    <button id="viewModeToggle" class="mode-btn" title="화면 크기 전환">
+      <span>📱</span> <span id="viewModeText">와이드 뷰</span>
+    </button>
+    <button id="resetDataBtn" class="mode-btn" title="데이터 초기화">
+      <span>🔄</span> <span>초기 데이터 복원</span>
+    </button>
+  </div>
+
+  <!-- Main Mobile Shell Application -->
+  <div class="app-wrapper" id="appWrapper">
+    
+    <!-- iPhone Island Notch -->
+    <div class="phone-island">
+      <div class="camera-lens"></div>
+    </div>
+
+    <!-- iOS Status Bar -->
+    <div class="ios-status-bar">
+      <span id="currentTime">10:09</span>
+      <div class="status-icons">
+        <span>📶</span>
+        <span>5G</span>
+        <span>🔋 98%</span>
+      </div>
+    </div>
+
+    <!-- Unified Apple-Grade Header Bar (Image 3 exact match) -->
+    <header class="app-unified-header">
+      <div class="header-main-row">
+        <div class="header-brand-wrap">
+          <div class="church-main-title">
+            <span>이룸교회 중고등부 예랑</span>
+            <span class="weather-icon">⛅</span>
+          </div>
+          <div class="header-date-sub">(2026년 10월 13일 주일)</div>
+        </div>
+        
+        <!-- Interactive User Capsule Pill (Click to switch user) -->
+        <button class="user-capsule-btn" id="openUserSwitchModalBtn" title="계정 전환 및 프로필">
+          <span class="user-capsule-avatar" id="userHeaderAvatar">👑</span>
+          <span class="user-capsule-name" id="userHeaderName">정하람 전도사</span>
+          <span class="user-capsule-chevron">▾</span>
+        </button>
+      </div>
+
+
+
+      <!-- Context Sub-Row (Kept hidden for DOM accessibility / JS handlers) -->
+      <div class="header-context-row" style="display: none;">
+        <div class="context-titles">
+          <div class="context-screen-title" id="screenTitle">사역 총괄 대시보드</div>
+          <div class="context-screen-sub" id="screenSubtitle">정하람 전도사 · 마스터 관리 권한</div>
+        </div>
+        <span id="currentRoleBadge" class="role-identity-tag tag-pastor">👑 전도사 모드</span>
+      </div>
+    </header>
+
+    <!-- Sonner Toasts Notification Host (ask-sonner & emil-design-eng) -->
+    <div class="sonner-toast-container" id="sonnerContainer"></div>
+
+    <!-- Screens / Views Container -->
+    <main class="screens-container" id="screensContainer">
+
+      <!-- ===================================================================
+           TAB 0: 홈 대시보드 (New Image 2: 섬김이, D-Day, 로테이션, 공지)
+           =================================================================== -->
+      <section class="screen-view active" id="view-home">
+        
+        <!-- Quick Action Widgets Strip (Admin Management & Staff Box) -->
+        <div class="home-quick-strip">
+          <div class="quick-widget-card admin-widget-card" id="adminUserMgmtBanner" title="교사 & 학생 권한 관리">
+            <div class="widget-icon-box" style="background:#f1e9fe; color:#6b2cdb;">🛡️</div>
+            <div class="widget-text-box">
+              <div class="widget-title" style="color:#5219bc;">권한 관리</div>
+              <div class="widget-sub">교사/학생 역할 부여</div>
+            </div>
+            <span class="widget-arrow">›</span>
+          </div>
+
+          <div class="quick-widget-card staff-widget-card" id="openStaffBoxBtn" title="사역자 소통함 열기">
+            <div class="widget-icon-box" style="background:#ffeedf; color:#d9611b;">📬</div>
+            <div class="widget-text-box">
+              <div class="widget-title" style="color:#ad4309;">사역자 소통함</div>
+              <div class="widget-sub">건의 · 안건 · 구매요청</div>
+            </div>
+            <span class="widget-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- 1) 이번 주 주일 섬김이 (Image 3 exact match) -->
+        <div class="home-service-outer-card">
+          <div class="home-service-header">
+            <div class="home-section-title">
+              <span class="home-num-badge">1</span>
+              <span>이번 주 주일 섬김이</span>
+            </div>
+            <span class="service-date-pill">10월 13일 (주)</span>
+          </div>
+
+          <div class="home-service-grid">
+            <div class="service-item">
+              <div class="service-icon-box">🎤</div>
+              <div>
+                <div class="service-label">대표기도</div>
+                <div class="service-person">김예원 (고2)</div>
+              </div>
+            </div>
+            <div class="service-item">
+              <div class="service-icon-box">🧺</div>
+              <div>
+                <div class="service-label">헌금위원</div>
+                <div class="service-person">이유리, 이지훈</div>
+              </div>
+            </div>
+            <div class="service-item">
+              <div class="service-icon-box">🎸</div>
+              <div>
+                <div class="service-label">찬양팀</div>
+                <div class="service-person">예랑 워십팀</div>
+              </div>
+            </div>
+            <div class="service-item">
+              <div class="service-icon-box">🎧</div>
+              <div>
+                <div class="service-label">방송실</div>
+                <div class="service-person">김대한T</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2) D-Day 마정즈 (Image 3 exact match) -->
+        <div class="home-section-header" style="margin-top:16px;">
+          <div class="home-section-title">
+            <span class="home-num-badge">2</span>
+            <span>D-Day 마정즈</span>
+          </div>
+          <span style="font-size:11px; font-weight:700; color:var(--text-sub);">주요 행사 D-Day</span>
+        </div>
+        <div class="dday-scroll-row">
+          <div class="dday-chip orange-gradient-chip" id="chipGotoChecklist" title="행사 체크리스트로 이동">
+            <span class="dday-chip-icon">🖥️</span>
+            <div>
+              <div class="dday-chip-title">예랑 스카</div>
+              <div class="dday-chip-count">D-12</div>
+            </div>
+          </div>
+          <div class="dday-chip pink-gradient-chip" id="chipGotoBirthdays" title="생일 캘린더로 이동">
+            <span class="dday-chip-icon">🎂</span>
+            <div>
+              <div class="dday-chip-title">10월 생일파티</div>
+              <div class="dday-chip-count">D-26</div>
+            </div>
+          </div>
+          <div class="dday-chip mint-gradient-chip">
+            <span class="dday-chip-icon">🎉</span>
+            <div>
+              <div class="dday-chip-title">친구초청예배</div>
+              <div class="dday-chip-count">D-12</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3) 섬김 로테이션 & 공지사항 (Image 3 exact match) -->
+        <div class="home-rotation-outer-card">
+          <div class="home-section-header" style="margin-bottom:10px;">
+            <div class="home-section-title">
+              <span class="home-num-badge">3</span>
+              <span>섬김 로테이션 & 공지사항</span>
+            </div>
+          </div>
+          <div class="rotation-row">
+            <div class="rotation-card">
+              <div class="rotation-avatar">🧑🏻‍🎓</div>
+              <div>
+                <div class="rotation-sub">주간 조력자</div>
+                <div class="rotation-name">최주안 고1</div>
+              </div>
+            </div>
+            <div class="rotation-card rotation-notice-card">
+              <div class="rotation-avatar" style="background:#fef1dc;">⭐</div>
+              <div>
+                <div class="rotation-sub" style="color:#c06e1b;">금주 공지</div>
+                <div class="rotation-name" style="font-size:12px;">전 학년 간식 타임! 12시</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================================
+           TAB 1: 학생 심방 & 기도제목 (Image 1)
+           =================================================================== -->
+      <section class="screen-view" id="view-students">
+        
+        <!-- Student Hero Card -->
+        <div class="student-hero-card">
+          <div class="student-info-box">
+            <div class="student-avatar">👦🏻</div>
+            <div>
+              <div class="student-name">
+                <span id="currentStudentName">양형모</span>
+              </div>
+              <div class="student-grade" id="currentStudentGrade">고3 · 예랑 찬양팀</div>
+            </div>
+          </div>
+          <div class="quick-contact-btns">
+            <button class="contact-btn" id="callBtn" title="전화걸기">📞</button>
+            <button class="contact-btn" id="msgBtn" title="문자/카톡 보내기">💬</button>
+          </div>
+        </div>
+
+        <!-- Section 1: 최근 심방 기록 -->
+        <div class="section-label">
+          <span>1) 최근 심방 기록</span>
+          <span style="font-size:11px; font-weight:600; color:var(--accent-mint);">실시간 업데이트됨</span>
+        </div>
+        <div class="timeline-list" id="visitationList">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Section 2: 나의 기도제목 -->
+        <div class="section-label" style="margin-top: 22px;">
+          <span>2) 나의 기도제목 💕</span>
+          <span style="font-size:11px; font-weight:600; color:var(--text-sub);">기도 시 터치</span>
+        </div>
+        <div id="prayerList">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Action Button -->
+        <button class="btn-primary" id="openAddVisitModalBtn">
+          <span>＋</span> <span>새 심방 기록 등록</span>
+        </button>
+      </section>
+
+
+      <!-- ===================================================================
+           TAB 2: 이번 주 교사 회의 안건 (Image 2)
+           =================================================================== -->
+      <section class="screen-view" id="view-agenda">
+        <div class="agenda-date-badge">
+          📅 2026.09.13 주일 교사 회의
+        </div>
+
+        <!-- Section: 확정된 회의 안건 -->
+        <div class="section-label">
+          <span>📌 확정된 회의 안건 (<span id="confirmedAgendaCount">3</span>건)</span>
+        </div>
+        <div id="confirmedAgendaList">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Section: 승인 대기 안건 -->
+        <div class="section-label" style="margin-top: 20px;">
+          <span>⏳ 승인 대기 안건 (교사 제안 <span id="pendingAgendaCount">1</span>건)</span>
+        </div>
+        <div id="pendingAgendaList">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Action Button -->
+        <button class="btn-orange" id="openAddAgendaModalBtn">
+          <span>＋</span> <span>안건 제안하기</span>
+        </button>
+      </section>
+
+
+      <!-- ===================================================================
+           TAB 3: 스마트 스케줄러 (3가지 서브 탭: 캘린더/생일, 행사체크리스트, 출결)
+           =================================================================== -->
+      <section class="screen-view" id="view-scheduler">
+        
+        <!-- Sub navigation tabs -->
+        <div class="sub-nav-tabs">
+          <button class="sub-nav-btn active" id="subTabCalendar">사역 캘린더 & 생일</button>
+          <button class="sub-nav-btn" id="subTabChecklist">행사 체크리스트</button>
+          <button class="sub-nav-btn" id="subTabAttendance">주일 사전 출결</button>
+        </div>
+
+        <!-- Sub-View 1: 사역 캘린더 & 생일 관리 (New Image 3) -->
+        <div id="subViewCalendar">
+          <div class="calendar-month-header">
+            <span>📅 10월 사역 & 생일 캘린더</span>
+            <span style="font-size:12px; color:var(--text-muted);">2026년 10월</span>
+          </div>
+
+          <!-- Calendar Grid -->
+          <div class="calendar-grid">
+            <div class="cal-day-name">일</div>
+            <div class="cal-day-name">월</div>
+            <div class="cal-day-name">화</div>
+            <div class="cal-day-name">수</div>
+            <div class="cal-day-name">목</div>
+            <div class="cal-day-name">금</div>
+            <div class="cal-day-name">토</div>
+
+            <!-- Week 1 -->
+            <div class="cal-cell"><span class="cal-num"></span></div>
+            <div class="cal-cell"><span class="cal-num"></span></div>
+            <div class="cal-cell"><span class="cal-num"></span></div>
+            <div class="cal-cell">
+              <span class="cal-num">1</span>
+              <span class="cal-event-pill pill-pink">🎂 소예진T</span>
+            </div>
+            <div class="cal-cell">
+              <span class="cal-num">2</span>
+            </div>
+            <div class="cal-cell">
+              <span class="cal-num">3</span>
+              <span class="cal-event-pill pill-mint">🎂 김예원</span>
+            </div>
+            <div class="cal-cell"><span class="cal-num">4</span></div>
+
+            <!-- Week 2 -->
+            <div class="cal-cell"><span class="cal-num">5</span></div>
+            <div class="cal-cell">
+              <span class="cal-num">6</span>
+              <span class="cal-event-pill pill-yellow">🎂 김재원</span>
+            </div>
+            <div class="cal-cell"><span class="cal-num">7</span></div>
+            <div class="cal-cell"><span class="cal-num">8</span></div>
+            <div class="cal-cell"><span class="cal-num">9</span></div>
+            <div class="cal-cell">
+              <span class="cal-num">10</span>
+            </div>
+            <div class="cal-cell">
+              <span class="cal-num">11</span>
+              <span class="cal-event-pill pill-yellow">🎂 김재원</span>
+            </div>
+
+            <!-- Week 3 -->
+            <div class="cal-cell"><span class="cal-num">12</span></div>
+            <div class="cal-cell">
+              <span class="cal-num">13</span>
+            </div>
+            <div class="cal-cell">
+              <span class="cal-num">14</span>
+            </div>
+            <div class="cal-cell">
+              <span class="cal-num">15</span>
+              <span class="cal-event-pill pill-pink">🎂 양형모</span>
+            </div>
+            <div class="cal-cell"><span class="cal-num">16</span></div>
+            <div class="cal-cell"><span class="cal-num">17</span></div>
+            <div class="cal-cell"><span class="cal-num">18</span></div>
+
+            <!-- Week 4 -->
+            <div class="cal-cell"><span class="cal-num">19</span></div>
+            <div class="cal-cell"><span class="cal-num">20</span></div>
+            <div class="cal-cell"><span class="cal-num">21</span></div>
+            <div class="cal-cell"><span class="cal-num">22</span></div>
+            <div class="cal-cell"><span class="cal-num">23</span></div>
+            <div class="cal-cell"><span class="cal-num">24</span></div>
+            <div class="cal-cell">
+              <span class="cal-num">25</span>
+              <span class="cal-event-pill pill-orange">🎉 친구초청</span>
+            </div>
+
+            <!-- Week 5 -->
+            <div class="cal-cell"><span class="cal-num">26</span></div>
+            <div class="cal-cell"><span class="cal-num">27</span></div>
+            <div class="cal-cell"><span class="cal-num">28</span></div>
+            <div class="cal-cell"><span class="cal-num">29</span></div>
+            <div class="cal-cell"><span class="cal-num">30</span></div>
+            <div class="cal-cell"><span class="cal-num">31</span></div>
+            <div class="cal-cell"><span class="cal-num"></span></div>
+          </div>
+
+          <!-- 10월 생일 주인공 카드 (5명) -->
+          <div class="birthday-showcase-card">
+            <div class="birthday-title">
+              <span>🎂</span> <span>10월 생일 주인공 (5명)</span>
+            </div>
+            <div class="birthday-grid">
+              <div class="birthday-person-item" data-bday-name="소예진 선생님">
+                <div class="birthday-avatar-wrap">
+                  👩🏻‍🏫 <span class="birthday-badge-mini">🎂</span>
+                </div>
+                <div>
+                  <div class="birthday-date">2026.10.1</div>
+                  <div class="birthday-name">소예진T</div>
+                </div>
+              </div>
+              <div class="birthday-person-item" data-bday-name="김예원 학생">
+                <div class="birthday-avatar-wrap">
+                  👧🏻 <span class="birthday-badge-mini">🎂</span>
+                </div>
+                <div>
+                  <div class="birthday-date">2026.10.13</div>
+                  <div class="birthday-name">김예원</div>
+                </div>
+              </div>
+              <div class="birthday-person-item" data-bday-name="김재원 학생">
+                <div class="birthday-avatar-wrap">
+                  👦🏻 <span class="birthday-badge-mini">🎂</span>
+                </div>
+                <div>
+                  <div class="birthday-date">2026.10.13</div>
+                  <div class="birthday-name">김재원</div>
+                </div>
+              </div>
+              <div class="birthday-person-item" data-bday-name="양형모 학생">
+                <div class="birthday-avatar-wrap">
+                  👦🏻 <span class="birthday-badge-mini">🎂</span>
+                </div>
+                <div>
+                  <div class="birthday-date">2026.10.15</div>
+                  <div class="birthday-name">양형모</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-View 2: 행사 담당 & 체크리스트 (New Image 4) -->
+        <div id="subViewChecklist" style="display:none;">
+          <div class="event-hero-card">
+            <div class="event-title-row">
+              <div>
+                <div class="event-main-title">예랑 스카</div>
+                <div class="event-sub-title">(Yerang Study Cafe)</div>
+              </div>
+              <span class="dday-badge-large">D-12</span>
+            </div>
+
+            <div class="manager-pill">
+              <span>👤</span> <span>담당: 김대한 선생님</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-track">
+              <div class="progress-fill" id="checklistProgressFill" style="width: 60%;"></div>
+            </div>
+            <div class="progress-label" id="checklistProgressText">
+              준비 진행상황 60% 완료 (5개 중 3개)
+            </div>
+
+            <!-- Checklist Items -->
+            <div class="checklist-container" id="checklistItemsContainer">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <button class="btn-orange" id="openAddChecklistBtn">
+            <span>＋</span> <span>새 체크리스트 추가</span>
+          </button>
+        </div>
+
+        <!-- Sub-View 3: 주일 사전 출결 & 대타 관리 (Image 3 from prompt 1) -->
+        <div id="subViewAttendance" style="display:none;">
+          <div style="font-size: 11px; font-weight:700; color:var(--text-muted); margin-bottom: 6px;">
+            이룸교회 중고등부 예랑 · 주일 사전 출결 & 공백 관리 (2026.09.20 주일)
+          </div>
+
+          <!-- Stats Summary Bar -->
+          <div class="attendance-stats-bar">
+            <div class="stat-item">출석 <span id="statPresentCount">7</span>명</div>
+            <div style="color: #ecd0be;">|</div>
+            <div class="stat-item">사전 결석 <span id="statAbsentCount">1</span>명</div>
+            <div style="color: #ecd0be;">|</div>
+            <div class="stat-item">지각 <span id="statLateCount">1</span>명</div>
+          </div>
+
+          <!-- Attendance Cards -->
+          <div id="attendanceList">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Action Button -->
+          <button class="btn-orange" id="openAbsentModalBtn" style="background: linear-gradient(135deg, #f98967 0%, #ee6444 100%);">
+            <span>＋</span> <span>나의 주일 불참/지각 사전 등록</span>
+          </button>
+        </div>
+
+      </section>
+
+
+
+      <!-- ===================================================================
+           TAB 4: 📸 영수증 등록 -> 구글 시트 자동 기입 (Image 4)
+           =================================================================== -->
+      <section class="screen-view" id="view-receipt">
+        <div class="ai-pill-header">
+          <span>🪄</span> <span>AI 영수증 자동 인식 & 시트 실시간 반영</span>
+        </div>
+
+        <!-- Receipt Scanning Trigger / Preview -->
+        <div class="receipt-scanner-zone" id="receiptZone" title="클릭하여 샘플 영수증을 교체하거나 사진 선택">
+          <div class="receipt-icon-box">
+            <span id="receiptIconVisual">🧾</span>
+            <span class="receipt-icon-sub">업로드됨 ✓</span>
+          </div>
+          <div class="ai-scan-status">
+            <div class="ai-success-title">
+              <span>●</span> <span>AI 영수증 분석 성공!</span>
+            </div>
+            <p class="ai-scan-desc" id="aiScanDesc">
+              영수증에서 결제금액(<b id="highlightAmount">45,000원</b>)과 상호명(<b id="highlightStore">다이소</b>)을 자동으로 읽어왔습니다.
+            </p>
+            <span class="retake-link" id="changeReceiptSampleBtn">
+              <span>📷 다른 영수증 예시로 변경</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Form fields to be written to Google Sheets -->
+        <div class="receipt-form-container">
+          <div class="form-header-row">
+            <span class="form-header-title">
+              <span>📑</span> <span>구글 스프레드시트에 기입될 내용</span>
+            </span>
+            <span class="auto-badge">자동 정리</span>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="field-box">
+              <div class="field-label">📅 결제일자 (자동인식)</div>
+              <input type="text" class="field-input" id="rcptDate" value="2026.09.06">
+            </div>
+            <div class="field-box">
+              <div class="field-label">🏪 상호/가게 (자동인식)</div>
+              <input type="text" class="field-input" id="rcptStore" value="다이소 이룸점">
+            </div>
+          </div>
+
+          <div class="price-field-box">
+            <div>
+              <div class="field-label">💰 지출 금액 (자동인식)</div>
+              <div class="price-large" id="rcptPriceDisplay">45,000 <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span></div>
+            </div>
+            <span class="accuracy-pill">인식정확도 100%</span>
+          </div>
+
+          <div class="form-row-grid">
+            <div class="field-box">
+              <div class="field-label">🏷️ 카테고리</div>
+              <select class="field-select" id="rcptCategory">
+                <option value="스카/시험기간 💻" selected>스카/시험기간 💻</option>
+                <option value="중등부 분반 간식비 🥪">중등부 분반 간식비 🥪</option>
+                <option value="고등부 분반 간식비 🍕">고등부 분반 간식비 🍕</option>
+                <option value="찬양팀/세션 지원 🎵">찬양팀/세션 지원 🎵</option>
+                <option value="생일 축하/행사비 🎂">생일 축하/행사비 🎂</option>
+                <option value="문구/공과 교재비 📚">문구/공과 교재비 📚</option>
+              </select>
+            </div>
+            <div class="field-box">
+              <div class="field-label">👤 지출 담당자</div>
+              <select class="field-select" id="rcptUser">
+                <option value="김대한 선생님" selected>김대한 선생님</option>
+                <option value="김희순 집사님">김희순 집사님</option>
+                <option value="소예진 선생님">소예진 선생님</option>
+                <option value="나하은 선생님">나하은 선생님</option>
+                <option value="정하람 전도사">정하람 전도사</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-box" style="margin-top: 10px;">
+            <div class="field-label">📝 지출 목적 / 세부 품목</div>
+            <input type="text" class="field-input" id="rcptPurpose" value="예랑 스카 야간 자습용 고속 멀티탭 10구 3개 구매">
+          </div>
+
+          <div class="info-callout">
+            <span>☁️</span>
+            <div>
+              저장 즉시 구글 시트에 <b>새 행(Row)으로 1초 만에 추가</b>되며, 영수증 사진 링크도 시트에 자동 보관됩니다!
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit to Google Sheet Button -->
+        <button class="btn-orange" id="submitReceiptBtn">
+          <span>📄</span> <span>구글 스프레드시트에 즉시 등록하기 🚀</span>
+        </button>
+      </section>
+
+
+      <!-- ===================================================================
+           TAB 5: 🔒 역할별 회계 보안 & 권한 분리 시스템 (Image 5)
+           =================================================================== -->
+      <section class="screen-view" id="view-accounting">
+        
+        <!-- Role Switcher Segmented Control -->
+        <div class="role-switcher-bar">
+          <button class="role-tab-btn active" id="roleBtnTeacher">
+            <span>👤</span> <span>일반 선생님 화면</span>
+          </button>
+          <button class="role-tab-btn" id="roleBtnAdmin">
+            <span>👑</span> <span>전도사 & 회계쌤</span>
+          </button>
+        </div>
+
+        <!-- Security Notice Banner -->
+        <div class="security-hero-banner">
+          <div class="security-hero-title">
+            <span>🔒</span> <span>역할별 회계 보안 & 권한 분리 시스템</span>
+          </div>
+          <div class="security-hero-sub">
+            영수증 등록은 누구나! 상세 금액과 총 잔액은 전도사님 & 회계선생님만 열람
+          </div>
+        </div>
+
+        <!-- 1) Teacher View Body -->
+        <div id="teacherAccountingView">
+          <div class="balance-card locked">
+            <div class="balance-header">
+              <span>💰 예랑 부서 총 잔액</span>
+              <span style="font-size:11px; color:#c96328; font-weight:700;">비공개 항목</span>
+            </div>
+            <div class="locked-box">
+              <span>🔒</span>
+              <span>보안 적용 중 (사역자/회계 전용)</span>
+            </div>
+          </div>
+
+          <div class="section-label">
+            <span>📑 내가 제출한 영수증 목록</span>
+            <span style="font-size:11px; color:var(--text-muted);">김대한 선생님 기준</span>
+          </div>
+          <div id="myReceiptList">
+            <!-- Populated by JS -->
+          </div>
+
+          <button class="btn-orange" id="gotoAddReceiptBtn">
+            <span>📷</span> <span>+ 나의 영수증 사진 등록하기</span>
+          </button>
+        </div>
+
+        <!-- 2) Admin View Body -->
+        <div id="adminAccountingView" style="display: none;">
+          <div class="balance-card card-mint-glow">
+            <div class="balance-header">
+              <span>💰 예랑 부서 전체 실잔액</span>
+              <div class="live-indicator">
+                <div class="live-dot"></div>
+                <span>구글시트 실시간 연동</span>
+              </div>
+            </div>
+            <div class="balance-amount" id="totalBalanceAmount">1,842,500 <span style="font-size:16px; font-weight:700;">원</span></div>
+            <div class="balance-sub-stats">
+              <span class="stat-inc">수입: +200,000원</span>
+              <span style="color:#d8cebe;">|</span>
+              <span class="stat-exp">지출: -107,000원</span>
+            </div>
+          </div>
+
+          <div class="section-label">
+            <span>📊 전체 교사 영수증 & 금액 상세 내역</span>
+            <span style="font-size:11px; font-weight:700; color:var(--accent-mint);">실시간 집계</span>
+          </div>
+          <div id="allReceiptList">
+            <!-- Populated by JS -->
+          </div>
+
+      <!-- ===================================================================
+           ROLE EXCLUSIVE VIEW 1: 선생님 전용 (공과공부 & 새친구반 적응 관리)
+           =================================================================== -->
+      <section class="screen-view" id="view-teacher-class">
+        <div class="agenda-date-badge" style="background:#fef5ea; border-color:#fad5b6; color:#ad551b;">
+          📖 5주차 공과: '믿음의 기초와 말씀 묵상'
+        </div>
+
+        <!-- Section 1: 담당 분반 학생 출결 & 목양 -->
+        <div class="section-label">
+          <span>👥 내 담당 분반 (고3반) 학생 관리</span>
+          <span style="font-size:11px; font-weight:700; color:var(--accent-mint);">3명 재적</span>
+        </div>
+        <div class="timeline-list">
+          <div class="timeline-item">
+            <div class="date-badge" style="background:#d6f4ea; color:#126f57;">고3</div>
+            <div class="timeline-content">
+              <div class="timeline-title">양형모 (예랑 찬양팀)</div>
+              <div class="timeline-desc">9/5 카톡 심방 완료 · 수시 진로 집중 기도 중</div>
+            </div>
+            <button class="timeline-icon-btn" onclick="showToast('양형모 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')">💬</button>
+          </div>
+          <div class="timeline-item">
+            <div class="date-badge" style="background:#d6f4ea; color:#126f57;">고3</div>
+            <div class="timeline-content">
+              <div class="timeline-title">이유리 (헌금위원)</div>
+              <div class="timeline-desc">금주 헌금위원 순서 배정 · 공과 참석률 100%</div>
+            </div>
+            <button class="timeline-icon-btn" onclick="showToast('이유리 학생에게 헌금위원 안내를 전송합니다 📋', 'info')">💬</button>
+          </div>
+        </div>
+
+        <!-- Section 2: 새친구반 4주 적응 체크리스트 -->
+        <div class="section-label" style="margin-top:22px;">
+          <span>🌱 새친구반 4주 정착 체크리스트</span>
+          <span style="font-size:11px; font-weight:800; color:#d95b18;">새친구: 한민준 (고1)</span>
+        </div>
+        <div class="journey-timeline">
+          <div class="journey-step-card step-done">
+            <div class="journey-step-badge">1주</div>
+            <div class="checklist-text-wrap">
+              <div class="journey-step-title">새친구 등록 & 환영 선물 증정</div>
+              <div class="journey-step-desc">예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓</div>
+            </div>
+          </div>
+          <div class="journey-step-card step-done">
+            <div class="journey-step-badge">2주</div>
+            <div class="checklist-text-wrap">
+              <div class="journey-step-title">담임교사 1:1 카톡 인사 & 기도제목 나눔</div>
+              <div class="journey-step-desc">학교 적응 및 첫 신앙생활 상담 완료 ✓</div>
+            </div>
+          </div>
+          <div class="journey-step-card" style="border-color:#fbd4ba; background:#fffcf9;">
+            <div class="journey-step-badge" style="background:#fce0cd; color:#ba5215;">3주</div>
+            <div class="checklist-text-wrap">
+              <div class="journey-step-title">분반 또래 친구 소개 & 간식 교제</div>
+              <div class="journey-step-desc">이번 주일 점심 시간 떡볶이 파티 예정 ⏳</div>
+            </div>
+          </div>
+          <div class="journey-step-card">
+            <div class="journey-step-badge" style="background:#ede6df; color:#888;">4주</div>
+            <div class="checklist-text-wrap">
+              <div class="journey-step-title">새친구반 수료 축하 & 정규 분반 배정</div>
+              <div class="journey-step-desc">수료패 증정 및 고1 남학생반 정규 편성 예정</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" style="background:#e67e22; margin-top:16px;" onclick="openModal('visitModal')">
+          <span>＋</span> <span>새 심방 일지 등록</span>
+        </button>
+      </section>
+
+
+      <!-- ===================================================================
+           ROLE EXCLUSIVE VIEW 2: 학생 전용 (예랑 스카 좌석 현황 & 신청)
+           =================================================================== -->
+      <section class="screen-view" id="view-student-study">
+        <div class="event-title-row">
+          <div>
+            <h2 style="font-size:18px; font-weight:900; color:#1f1915;">🖥️ 예랑 스카 (자습실)</h2>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">중간고사 대비 야간 자습실 좌석 예약</p>
+          </div>
+          <span class="dday-badge-large">D-12</span>
+        </div>
+
+        <div style="background:#eef7fd; border:1px solid #c9e4f8; padding:10px 14px; border-radius:12px; font-size:12px; color:#186299; font-weight:700; margin:14px 0 10px; display:flex; justify-content:space-between; align-items:center;">
+          <span>현재 이용 현황: <b>8석 이용 중 / 4석 남음</b></span>
+          <span style="background:white; padding:2px 8px; border-radius:10px;">총 12석</span>
+        </div>
+
+        <!-- Seat Map Grid -->
+        <div class="seat-map-grid" id="seatMapGrid">
+          <div class="seat-box occupied"><div class="seat-num">1번</div><div class="seat-status-txt">김예원</div></div>
+          <div class="seat-box occupied"><div class="seat-num">2번</div><div class="seat-status-txt">최주안</div></div>
+          <div class="seat-box occupied"><div class="seat-num">3번</div><div class="seat-status-txt">이지훈</div></div>
+          <div class="seat-box occupied"><div class="seat-num">4번</div><div class="seat-status-txt">이유리</div></div>
+          <div class="seat-box occupied"><div class="seat-num">5번</div><div class="seat-status-txt">김재원</div></div>
+          <div class="seat-box occupied"><div class="seat-num">6번</div><div class="seat-status-txt">박민서</div></div>
+          <div class="seat-box occupied"><div class="seat-num">7번</div><div class="seat-status-txt">소하린</div></div>
+          <div class="seat-box occupied"><div class="seat-num">8번</div><div class="seat-status-txt">한민준</div></div>
+          <div class="seat-box my-seat" id="seat9"><div class="seat-num">9번</div><div class="seat-status-txt">내 좌석 ✓</div></div>
+          <div class="seat-box" id="seat10"><div class="seat-num">10번</div><div class="seat-status-txt" style="color:#27ae60; font-weight:700;">신청가능</div></div>
+          <div class="seat-box" id="seat11"><div class="seat-num">11번</div><div class="seat-status-txt" style="color:#27ae60; font-weight:700;">신청가능</div></div>
+          <div class="seat-box" id="seat12"><div class="seat-num">12번</div><div class="seat-status-txt" style="color:#27ae60; font-weight:700;">신청가능</div></div>
+        </div>
+
+        <!-- Night Snack Vote Card -->
+        <div class="card" style="background:#fffcf7; border:1px solid #fedbc5;">
+          <div style="font-size:13.5px; font-weight:800; color:#ba581c; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <span>🥪</span> <span>오늘 밤 스카 야식 메뉴 투표</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-orange" style="flex:1; padding:10px; font-size:13px; margin:0;" onclick="showToast('이삭 햄스페셜 토스트에 투표했습니다! 🥪 (현재 68%)')">🥪 이삭토스트</button>
+            <button class="btn-secondary" style="flex:1; padding:10px; font-size:13px; margin:0;" onclick="showToast('피자스쿨 고구마피자에 투표했습니다! 🍕 (현재 32%)')">🍕 피자스쿨</button>
+          </div>
+        </div>
+
+        <button class="btn-orange" style="background:#3498db; box-shadow:0 4px 14px rgba(52,152,219,0.35);" onclick="showToast('9번 좌석 예약이 확인되었습니다! (이용시간: 18:00~22:30) 📚')">
+          <span>✓</span> <span>내 좌석(9번) 이용 확인</span>
+        </button>
+      </section>
+
+
+      <!-- ===================================================================
+           ROLE EXCLUSIVE VIEW 3: 학생 전용 (1:1 비밀 고민 상담 신청)
+           =================================================================== -->
+      <section class="screen-view" id="view-student-counsel">
+        <div class="agenda-date-badge" style="background:#eaf2fb; border-color:#bcdcf9; color:#1b65a4;">
+          🔒 전도사님 & 선생님 1:1 비밀 고민 상담
+        </div>
+
+        <div style="background:#fdfcfb; border:1px solid #ebdcd1; border-radius:var(--radius-md); padding:14px; margin-bottom:14px;">
+          <p style="font-size:12px; color:var(--text-muted); line-height:1.4;">
+            혼자 끙끙 앓지 말고 언제든 편하게 털어놓으세요. 나눈 모든 내용은 <b>비밀이 절대 보장</b>됩니다. 🕊️
+          </p>
+        </div>
+
+        <form id="studentCounselForm">
+          <div class="form-group">
+            <label>상담받고 싶은 사역자 / 선생님</label>
+            <select id="counselTargetInput">
+              <option value="정하람 전도사님" selected>정하람 전도사님</option>
+              <option value="김대한 선생님 (고3 담임)">김대한 선생님 (고3 담임)</option>
+              <option value="소예진 선생님 (찬양팀 담당)">소예진 선생님 (찬양팀 담당)</option>
+              <option value="나하은 선생님">나하은 선생님</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>고민 분야</label>
+            <select id="counselCategoryInput">
+              <option value="수시 / 진로 / 학업 스트레스" selected>수시 / 진로 / 학업 스트레스 📖</option>
+              <option value="친구 관계 및 학교 생활">친구 관계 및 학교 생활 👥</option>
+              <option value="신앙적 의문 및 기도 요청">신앙적 의문 및 기도 요청 🙏</option>
+              <option value="가정 및 개인 고민">가정 및 개인 고민 🏠</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>희망하는 상담 방식</label>
+            <select id="counselMethodInput">
+              <option value="카카오톡 1:1 비밀 상담">카카오톡 1:1 비밀 상담 💬</option>
+              <option value="주일 예배 후 교회 카페 대면 심방">주일 예배 후 교회 카페 대면 심방 ☕</option>
+              <option value="조용한 전화 통화">조용한 전화 통화 📞</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>나누고 싶은 이야기 (자유롭게)</label>
+            <textarea id="counselContentInput" rows="4" placeholder="수시 원서를 넣으면서 마음이 너무 불안하고 기도가 잘 안 돼요... 이야기 나누고 싶어요." required></textarea>
+          </div>
+          <button type="submit" class="btn-orange" style="background:#4a90e2; box-shadow:0 4px 14px rgba(74,144,226,0.35);">
+            <span>🕊️</span> <span>비밀 상담 신청서 보내기</span>
+          </button>
+        </form>
+      </section>
+
+    </main>
+
+    <!-- Bottom Tab Bar (iOS HIG Style) -->
+    <nav class="bottom-tab-bar" id="bottomTabBar">
+      <button class="tab-btn active" data-target="view-home" data-title="이룸교회 중고등부 예랑" data-subtitle="2024년 10월 13일 주일 🌤️">
+        <span class="tab-icon">🏠</span>
+        <span>홈</span>
+      </button>
+      <button class="tab-btn" data-target="view-scheduler" data-title="예랑 스마트 스케줄러" data-subtitle="사역 캘린더 · 생일 · 행사 D-Day · 사전 출결">
+        <span class="tab-icon">🗓️</span>
+        <span>스케줄</span>
+      </button>
+      <button class="tab-btn" data-target="view-students" data-title="학생 심방 & 기도제목" data-subtitle="청소년부 학생 돌봄 & 신앙 관리">
+        <span class="tab-icon">👦🏻</span>
+        <span>학생부</span>
+      </button>
+      <button class="tab-btn" data-target="view-agenda" data-title="이번 주 교사 회의 안건" data-subtitle="2026.09.13 주일 교사 회의 안건">
+        <span class="tab-icon">📋</span>
+        <span>회의</span>
+      </button>
+      <button class="tab-btn" data-target="view-accounting" data-title="역할별 회계 보안 시스템" data-subtitle="영수증 정산 및 권한별 잔액 열람">
+        <span class="tab-icon">🔒</span>
+        <span>회계</span>
+      </button>
+    </nav>
+
+
+    <!-- ===================================================================
+         MODALS & BOTTOM SHEETS
+         =================================================================== -->
+
+    <!-- Modal 1: 새 심방 기록 등록 바텀시트 -->
+    <div class="modal-backdrop" id="visitModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title">새 심방 기록 등록</h3>
+          <button class="sheet-close-btn" data-close="visitModal">✕</button>
+        </div>
+        <form id="visitForm">
+          <div class="form-group">
+            <label>대상 학생</label>
+            <input type="text" value="양형모 (고3)" readonly>
+          </div>
+          <div class="form-group">
+            <label>심방 일자</label>
+            <input type="text" id="visitDateInput" value="9/8">
+          </div>
+          <div class="form-group">
+            <label>심방 유형</label>
+            <select id="visitTypeInput">
+              <option value="대면 심방">대면 심방 ☕</option>
+              <option value="카톡 심방" selected>카톡 심방 💬</option>
+              <option value="전화 심방">전화 심방 📞</option>
+              <option value="시험 격려">시험/수시 격려 🍬</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>심방 내용 및 나눔</label>
+            <textarea id="visitContentInput" rows="3" placeholder="나눈 이야기, 격려 사항, 기도 요청 내용 등" required>모의고사 이후 심리적 안정 격려 및 수시 면접 기도 약속</textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="margin-top:16px;">심방 기록 저장하기</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 2: 새 안건 제안하기 모달 -->
+    <div class="modal-backdrop" id="agendaModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title">교사 회의 안건 제안</h3>
+          <button class="sheet-close-btn" data-close="agendaModal">✕</button>
+        </div>
+        <form id="agendaForm">
+          <div class="form-group">
+            <label>제안자 이름</label>
+            <select id="agendaAuthorInput">
+              <option value="소예진 선생님">소예진 선생님</option>
+              <option value="김대한 선생님">김대한 선생님</option>
+              <option value="김희순 집사">김희순 집사</option>
+              <option value="나하은 선생님">나하은 선생님</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>안건 제목</label>
+            <input type="text" id="agendaTitleInput" placeholder="예: 2학기 친구초청주일 특별 순서 편성의 건" required>
+          </div>
+          <div class="form-group">
+            <label>제안 사유 및 설명</label>
+            <textarea id="agendaDescInput" rows="2" placeholder="안건의 필요성 및 추진 방안을 적어주세요."></textarea>
+          </div>
+          <button type="submit" class="btn-orange" style="margin-top:16px;">안건 제안 제출 (승인 대기 등록)</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 3: 나의 주일 불참/지각 사전 등록 모달 -->
+    <div class="modal-backdrop" id="absentModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title">나의 주일 사전 출결 등록</h3>
+          <button class="sheet-close-btn" data-close="absentModal">✕</button>
+        </div>
+        <form id="absentForm">
+          <div class="form-group">
+            <label>선생님 성함</label>
+            <select id="absentTeacherInput">
+              <option value="김신원 선생님">김신원 선생님</option>
+              <option value="김희순 집사님">김희순 집사님</option>
+              <option value="소예진 선생님">소예진 선생님</option>
+              <option value="김대한 선생님">김대한 선생님</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>출결 상태</label>
+            <select id="absentStatusInput">
+              <option value="사전 결석">사전 결석 ❌</option>
+              <option value="지각">지각 ⏰</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>사유 카테고리</label>
+            <select id="absentReasonCategory">
+              <option value="직장 출장 💼">직장 출장 💼</option>
+              <option value="가족 행사 🚗">가족 행사 🚗</option>
+              <option value="학업 / 시험 📖">학업 / 시험 📖</option>
+              <option value="건강 / 병원 🏥">건강 / 병원 🏥</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>상세 메모</label>
+            <input type="text" id="absentMemoInput" placeholder="예: 회사 파견 업무로 인해 주일 불참합니다." required>
+          </div>
+          <div class="form-group">
+            <label>내 담당 부서</label>
+            <input type="text" id="absentRoleInput" value="찬양팀 싱어 인도" placeholder="예: 방송실 자막">
+          </div>
+          <div class="form-group">
+            <label>대타 교사 지정 (공백 방지)</label>
+            <select id="substituteTeacherInput">
+              <option value="소예진T 지정됨 ✅">소예진T (지원 가능)</option>
+              <option value="김신원T 지정됨 ✅">김신원T (지원 가능)</option>
+              <option value="나하은T 지정됨 ✅">나하은T (지원 가능)</option>
+              <option value="정하람 전도사 대행 ✅">정하람 전도사 대행</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-orange" style="margin-top:16px;">출결 변동사항 등록 및 대타 확정</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 4: 구글 스프레드시트 실시간 원본 장부 모달 -->
+    <div class="modal-backdrop" id="gsheetModal">
+      <div class="bottom-sheet" style="max-height: 90%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">📗 예랑 구글 스프레드시트 장부</h3>
+            <p style="font-size:11px; color:var(--text-muted);">실시간 동기화 상태: 정상 연동됨 🟢</p>
+          </div>
+          <button class="sheet-close-btn" data-close="gsheetModal">✕</button>
+        </div>
+        
+        <div style="background:#eaf8f3; padding:10px; border-radius:10px; font-size:12px; color:#116851; margin-bottom:12px;">
+          ✓ 앱에서 영수증을 등록하면 아래 구글 시트에 자동으로 신규 행(Row)이 생성됩니다.
+        </div>
+
+        <div class="sheet-preview-table-container">
+          <table class="gsheet-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>일자</th>
+                <th>구분</th>
+                <th>상호명</th>
+                <th>금액</th>
+                <th>카테고리</th>
+                <th>담당교사</th>
+                <th>비고 / 세부품목</th>
+              </tr>
+            </thead>
+            <tbody id="gsheetTableBody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+
+        <button class="btn-primary" data-close="gsheetModal" style="margin-top:18px;">닫기</button>
+      </div>
+    </div>
+
+    <!-- Modal 5: 사역자 & 교사 전용 소통함 (New Image 1) -->
+    <div class="modal-backdrop" id="staffBoxModal">
+      <div class="bottom-sheet" style="max-height: 90%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">🔒 사역자 전용 (전도사/교사 소통함)</h3>
+            <p style="font-size:11px; color:var(--text-muted);">예랑 스마트 스케줄러 사역 소통함</p>
+          </div>
+          <button class="sheet-close-btn" data-close="staffBoxModal">✕</button>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="filter-chips-row">
+          <button class="filter-chip-btn active" data-staff-filter="all">[전체]</button>
+          <button class="filter-chip-btn" data-staff-filter="사역건의">💡 사역 건의</button>
+          <button class="filter-chip-btn" data-staff-filter="회의안건">📝 회의 안건</button>
+          <button class="filter-chip-btn" data-staff-filter="구매요청">🛒 구매 요청</button>
+        </div>
+
+        <!-- Staff Cards List -->
+        <div id="staffBoxCardsContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <button class="btn-orange" id="openAddStaffRequestBtn" style="margin-top:14px;">
+          <span>＋</span> <span>새 요청/건의 등록</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal 6: 새 요청/건의 등록 모달 -->
+    <div class="modal-backdrop" id="addStaffRequestModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title">새 요청 / 사역 건의 등록</h3>
+          <button class="sheet-close-btn" data-close="addStaffRequestModal">✕</button>
+        </div>
+        <form id="staffRequestForm">
+          <div class="form-group">
+            <label>요청 유형</label>
+            <select id="staffReqTypeInput">
+              <option value="구매요청">🛒 구매 요청</option>
+              <option value="사역건의" selected>💡 사역 건의</option>
+              <option value="회의안건">📝 회의 안건</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>작성자</label>
+            <select id="staffReqAuthorInput">
+              <option value="소예진T">소예진T</option>
+              <option value="김대한T">김대한T</option>
+              <option value="정하람 전도사">정하람 전도사</option>
+              <option value="나하은T">나하은T</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>제목</label>
+            <input type="text" id="staffReqTitleInput" placeholder="예: [사역건의] 예랑 스카 야식 쉼터 공간 분리 제안" required>
+          </div>
+          <div class="form-group">
+            <label>예산 (선택사항, 구매 요청 시 기재)</label>
+            <input type="text" id="staffReqBudgetInput" placeholder="예: 45,000원">
+          </div>
+          <button type="submit" class="btn-orange" style="margin-top:16px;">소통함에 등록하기</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 7: 새 체크리스트 추가 모달 -->
+    <div class="modal-backdrop" id="addChecklistModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title">행사 체크리스트 추가</h3>
+          <button class="sheet-close-btn" data-close="addChecklistModal">✕</button>
+        </div>
+        <form id="checklistForm">
+          <div class="form-group">
+            <label>행사 대상</label>
+            <input type="text" value="예랑 스카 (D-12)" readonly>
+          </div>
+          <div class="form-group">
+            <label>할 일 제목</label>
+            <input type="text" id="chkTitleInput" placeholder="예: 10분 말씀 큐티지 인쇄" required>
+          </div>
+          <div class="form-group">
+            <label>담당 선생님</label>
+            <select id="chkManagerInput">
+              <option value="소예진T">소예진T</option>
+              <option value="김대한T">김대한T</option>
+              <option value="양선아T">양선아T</option>
+              <option value="정하람 전도사">정하람 전도사</option>
+              <option value="김희순 집사">김희순 집사</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-orange" style="margin-top:16px;">체크리스트에 추가하기</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 8: 사용자 계정 전환 모달 (User Switcher) -->
+    <div class="modal-backdrop" id="userSwitchModal">
+      <div class="bottom-sheet" style="max-height: 85%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">🔄 사용자 계정 전환</h3>
+            <p style="font-size:11px; color:var(--text-muted);">테스트할 교사 또는 학생 계정을 선택하세요</p>
+          </div>
+          <button class="sheet-close-btn" data-close="userSwitchModal">✕</button>
+        </div>
+
+        <div class="user-switch-grid" id="userSwitchGridContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <button class="btn-secondary" data-close="userSwitchModal" style="width:100%; margin-top:16px;">닫기</button>
+      </div>
+    </div>
+
+    <!-- Modal 9: [관리자 전용] 사용자 계정 & 권한 관리 센터 -->
+    <div class="modal-backdrop" id="userManagementModal">
+      <div class="bottom-sheet" style="max-height: 90%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">👥 계정 & 권한 관리 센터</h3>
+            <p style="font-size:11px; color:#6c35c4; font-weight:700;">관리자(전도사) 전용 권한 부여 도구</p>
+          </div>
+          <button class="sheet-close-btn" data-close="userManagementModal">✕</button>
+        </div>
+
+        <div style="background:#f5efff; border:1px solid #dfc7fc; border-radius:10px; padding:10px 12px; font-size:11.5px; color:#5c24b8; line-height:1.4; margin-bottom:12px;">
+          ✓ 각 사용자의 역할을 변경하면 해당 사용자가 로그인할 때 화면과 접근 권한이 즉시 바뀝니다.
+        </div>
+
+        <div class="user-mgmt-container" id="userMgmtListContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <button class="btn-orange" id="openAddNewUserBtn" style="background:#6c35c4; margin-top:14px;">
+          <span>＋</span> <span>새 교사 / 학생 계정 등록</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal 10: 새 사용자 등록 모달 -->
+    <div class="modal-backdrop" id="addNewUserModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title">새 사용자 계정 등록</h3>
+          <button class="sheet-close-btn" data-close="addNewUserModal">✕</button>
+        </div>
+        <form id="newUserForm">
+          <div class="form-group">
+            <label>이름</label>
+            <input type="text" id="newUserNameInput" placeholder="예: 박예은 선생님" required>
+          </div>
+          <div class="form-group">
+            <label>부여할 권한 (역할)</label>
+            <select id="newUserRoleInput">
+              <option value="teacher" selected>선생님 (공과/새친구반 목양)</option>
+              <option value="accountant">회계선생님 (재정/장부 관리)</option>
+              <option value="student">학생 (청소년부 포털)</option>
+              <option value="pastor">전도사 (총괄 관리자)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>담당 사역 / 직분</label>
+            <input type="text" id="newUserDutyInput" placeholder="예: 중1반 담임 / 찬양팀 건반" required>
+          </div>
+          <div class="form-group">
+            <label>연락처</label>
+            <input type="text" id="newUserPhoneInput" placeholder="예: 010-9999-8888">
+          </div>
+          <button type="submit" class="btn-orange" style="background:#6c35c4; margin-top:16px;">사용자 계정 생성 및 권한 부여</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

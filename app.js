@@ -1,0 +1,1690 @@
+/**
+ * 이룸교회 중고등부 예랑 - 스마트 사역 관리 애플리케이션
+ * Built with Emil Kowalski Design Engineering & Apple HIG Principles
+ */
+
+// =============================================================================
+// 1. Initial Mock Data (Matches User Uploaded Images 1-5 Exactly)
+// =============================================================================
+
+const INITIAL_DATA = {
+  student: {
+    name: "양형모",
+    grade: "고3 · 예랑 찬양팀",
+    phone: "010-3849-2918",
+    avatar: "👦🏻",
+    visits: [
+      {
+        id: 1,
+        date: "9/5",
+        title: "카톡 심방: 수시 원서 접수 스트레스 상담",
+        desc: "원서 접수를 앞두고 집중력 저하 및 진로 불안감 나눔. 격려와 합심 기도 진행.",
+        icon: "💬"
+      },
+      {
+        id: 2,
+        date: "8/28",
+        title: "심방: 찬양팀 세션 격려",
+        desc: "주일 오전 찬양 연습 후 간식 전달 및 악기 세션 격려.",
+        icon: "📢"
+      }
+    ],
+    prayers: [
+      { id: 1, text: "수시 대학 합격 및 믿음의 진로", count: 18, prayed: true },
+      { id: 2, text: "가족 영혼 구원", count: 24, prayed: false }
+    ]
+  },
+  agendas: {
+    confirmed: [
+      {
+        id: 1,
+        title: "[안건 1] 예랑 스카(자습실) 운영 및 간식 당번표 확정",
+        author: "작성: 정하람 전도사",
+        statusBadge: null,
+        type: "cyan"
+      },
+      {
+        id: 2,
+        title: "[안건 2] 5주차 신앙기초 공과 지도법 나눔",
+        author: "작성: 정하람 전도사",
+        statusBadge: null,
+        type: "yellow"
+      },
+      {
+        id: 3,
+        title: "[안건 3] 10월 생일자 선물 및 파티 기획",
+        author: "제안: 김희순 집사",
+        statusBadge: "전도사 승인완료 ✅",
+        type: "peach"
+      }
+    ],
+    pending: [
+      {
+        id: 101,
+        title: "[제안] 찬양팀 토요 연습시간 변경의 건",
+        author: "제안자: 소예진 선생님",
+        desc: "기존 토요 16시에서 17시로 1시간 늦춰 참석률을 높이고자 합니다."
+      }
+    ]
+  },
+  attendance: [
+    {
+      id: 1,
+      name: "김대한 선생님",
+      role: "직장 출장 💼",
+      status: "사전 결석",
+      memo: "주말 지방 출장으로 불참합니다",
+      duty: "방송실/자막",
+      substitute: "김신원T 지정됨 ✅",
+      avatar: "👨🏻‍💼"
+    },
+    {
+      id: 2,
+      name: "나하은 선생님",
+      role: "가족행사 🚗",
+      status: "지각",
+      memo: "친척 예식 후 11:20 도착 예정",
+      duty: "회계/간식",
+      substitute: "자체 소화 가능",
+      avatar: "👩🏻‍💼"
+    }
+  ],
+  receiptPresets: [
+    {
+      name: "다이소 (멀티탭)",
+      date: "2026.09.06",
+      store: "다이소 이룸점",
+      amount: 45000,
+      category: "스카/시험기간 💻",
+      user: "김대한 선생님",
+      purpose: "예랑 스카 야간 자습용 고속 멀티탭 10구 3개 구매",
+      icon: "🧾"
+    },
+    {
+      name: "파리바게트 (간식)",
+      date: "2026.09.13",
+      store: "파리바게트 역삼점",
+      amount: 22000,
+      category: "중등부 분반 간식비 🥪",
+      user: "김대한 선생님",
+      purpose: "중등부 2학기 분반 모임 샌드위치 & 주스 구매",
+      icon: "🥐"
+    },
+    {
+      name: "뚜레쥬르 (생일케이크)",
+      date: "2026.08.30",
+      store: "뚜레쥬르 이룸점",
+      amount: 62000,
+      category: "생일 축하/행사비 🎂",
+      user: "김희순 집사님",
+      purpose: "8월 생일자 축하 케이크 2개 및 파티 용품",
+      icon: "🎂"
+    }
+  ],
+  accounting: {
+    initialBalance: 1842500,
+    income: 200000,
+    receipts: [
+      {
+        id: 1,
+        date: "9/6",
+        title: "스카 멀티탭 10구 구매",
+        author: "김대한 선생님",
+        amount: 45000,
+        status: "정산완료",
+        category: "스카/시험기간",
+        isMine: true
+      },
+      {
+        id: 2,
+        date: "9/13",
+        title: "중등부 분반 간식비",
+        author: "김대한 선생님",
+        amount: 22000,
+        status: "승인대기",
+        category: "간식비",
+        isMine: true
+      },
+      {
+        id: 3,
+        date: "8/30",
+        title: "생일 케이크 및 축하선물",
+        author: "김희순 집사",
+        amount: 62000,
+        status: "정산완료",
+        category: "행사비",
+        isMine: false
+      },
+      {
+        id: 4,
+        date: "9/1",
+        title: "9월 교사 공과 지도서 10부",
+        author: "정하람 전도사",
+        amount: 24000,
+        status: "정산완료",
+        category: "교재비",
+        isMine: false
+      }
+    ]
+  },
+  checklist: {
+    eventName: "예랑 스카",
+    dday: "D-12",
+    manager: "김대한 선생님",
+    items: [
+      { id: 1, title: "멀티탭 및 고속 충전기 10구 구매 (김대한T)", manager: "김대한T", checked: true, color: "green" },
+      { id: 2, title: "야간 집중 간식(토스트/음료) 주문 (양선아T)", manager: "양선아T", checked: false, color: "default" },
+      { id: 3, title: "스카 홍보 포스터 인쇄 및 게시 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "yellow" },
+      { id: 4, title: "10분 말씀 큐티지 인쇄 (소예진T)", manager: "소예진T", checked: false, color: "default" },
+      { id: 5, title: "자습실 좌석 배치 및 청소 당번표 확정 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" }
+    ]
+  },
+  staffBox: {
+    items: [
+      { id: 1, type: "구매요청", title: "방송실 고속 HDMI 케이블 & 멀티탭 10구", author: "김대한T", budget: "45,000원", status: "승인완료", badgeType: "approved" },
+      { id: 2, type: "사역건의", title: "예랑 스카 야식 쉼터 공간 분리 제안", author: "소예진T", budget: null, status: "검토중", badgeType: "review" },
+      { id: 3, type: "회의안건", title: "9월 교사 월례회 중간고사 심방 안건", author: "정하람 전도사", budget: null, status: "공유됨", badgeType: "normal" }
+    ]
+  },
+  users: [
+    {
+      id: "u1",
+      name: "정하람 전도사",
+      role: "pastor",
+      duty: "중고등부 총괄 사역 & 설교",
+      phone: "010-1234-5678",
+      avatar: "👑",
+      isAdmin: true
+    },
+    {
+      id: "u2",
+      name: "나하은 선생님",
+      role: "accountant",
+      duty: "중고등부 회계 & 재정 장부 결산",
+      phone: "010-2345-6789",
+      avatar: "💼",
+      isAdmin: false
+    },
+    {
+      id: "u3",
+      name: "김대한 선생님",
+      role: "teacher",
+      duty: "고3 담임 / 방송실 자막 & 미디어",
+      phone: "010-3456-7890",
+      avatar: "🧑🏻‍🏫",
+      isAdmin: false
+    },
+    {
+      id: "u4",
+      name: "소예진 선생님",
+      role: "teacher",
+      duty: "새친구반 담임 / 찬양팀 멘토",
+      phone: "010-4567-8901",
+      avatar: "👩🏻‍🏫",
+      isAdmin: false
+    },
+    {
+      id: "u5",
+      name: "양형모 학생",
+      role: "student",
+      duty: "고3 / 예랑 찬양팀 드럼 세션",
+      phone: "010-3849-2918",
+      avatar: "👦🏻",
+      isAdmin: false
+    },
+    {
+      id: "u6",
+      name: "김하람 학생",
+      role: "student",
+      duty: "중2 / 새친구반 정착 학생",
+      phone: "010-5678-9012",
+      avatar: "👧🏻",
+      isAdmin: false
+    }
+  ],
+  currentUserId: "u1"
+};
+
+// State storage
+let appState = loadState();
+
+function loadState() {
+  const saved = localStorage.getItem("yerang_app_state_v1");
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (!parsed.users || parsed.users.length === 0) {
+        parsed.users = JSON.parse(JSON.stringify(INITIAL_DATA.users));
+      }
+      if (!parsed.currentUserId) {
+        parsed.currentUserId = "u1";
+      }
+      return parsed;
+    } catch (e) {
+      console.error("Failed to parse saved state", e);
+    }
+  }
+  return JSON.parse(JSON.stringify(INITIAL_DATA));
+}
+
+function saveState() {
+  localStorage.setItem("yerang_app_state_v1", JSON.stringify(appState));
+}
+
+// =============================================================================
+// 2. Sonner-Style Toast Engine (ask-sonner & emil-design-eng)
+// =============================================================================
+
+function showToast(message, type = "success", duration = 3000) {
+  const container = document.getElementById("sonnerContainer");
+  if (!container) return;
+
+  const icons = {
+    success: '<span class="sonner-icon-success">✓</span>',
+    info: '<span class="sonner-icon-info">ℹ</span>',
+    warn: '<span class="sonner-icon-warn">⚠</span>'
+  };
+
+  const toast = document.createElement("div");
+  toast.className = "sonner-toast";
+  toast.innerHTML = `${icons[type] || icons.success} <span>${message}</span>`;
+  container.appendChild(toast);
+
+  // Trigger enter animation (emil-design: scale from 0.95 to 1)
+  requestAnimationFrame(() => {
+    toast.classList.add("show");
+  });
+
+  // Sound / Tactile Vibration feedback simulation
+  if (window.navigator && window.navigator.vibrate) {
+    try { window.navigator.vibrate(15); } catch(e){}
+  }
+
+  // Dismiss timer
+  setTimeout(() => {
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 240);
+  }, duration);
+}
+
+// =============================================================================
+// 3. View Management & Navigation
+// =============================================================================
+
+function initNavigation() {
+  const tabButtons = document.querySelectorAll(".bottom-tab-bar .tab-btn");
+  const views = document.querySelectorAll(".screen-view");
+  const screenTitle = document.getElementById("screenTitle");
+  const screenSubtitle = document.getElementById("screenSubtitle");
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.target;
+      const title = btn.dataset.title;
+      const subtitle = btn.dataset.subtitle;
+
+      // Update active tab button
+      tabButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      // Switch view with Emil Kowalski progressive transition
+      views.forEach(v => {
+        if (v.id === targetId) {
+          v.classList.add("active");
+        } else {
+          v.classList.remove("active");
+        }
+      });
+
+      // Update Header Text
+      if (screenTitle && title) screenTitle.textContent = title;
+      if (screenSubtitle && subtitle) screenSubtitle.textContent = subtitle;
+
+      // Scroll top
+      const container = document.getElementById("screensContainer");
+      if (container) container.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+}
+
+// Switch to specific tab programmatically
+function switchToTab(viewId) {
+  const btn = document.querySelector(`.bottom-tab-bar .tab-btn[data-target="${viewId}"]`);
+  if (btn) btn.click();
+}
+
+// =============================================================================
+// 4. Screen 1: 학생 심방 & 기도제목 Rendering & Events
+// =============================================================================
+
+function renderStudentSection() {
+  const student = appState.student;
+
+  // Student info
+  document.getElementById("currentStudentName").textContent = student.name;
+  document.getElementById("currentStudentGrade").textContent = student.grade;
+
+  // Render Visits
+  const visitListEl = document.getElementById("visitationList");
+  visitListEl.innerHTML = "";
+
+  student.visits.forEach(item => {
+    const el = document.createElement("div");
+    el.className = "timeline-item";
+    el.innerHTML = `
+      <div class="date-badge">${item.date}</div>
+      <div class="timeline-content">
+        <div class="timeline-title">${item.title}</div>
+        <div class="timeline-desc">${item.desc}</div>
+      </div>
+      <div class="timeline-icon-btn">${item.icon}</div>
+    `;
+    visitListEl.appendChild(el);
+  });
+
+  // Render Prayers
+  const prayerListEl = document.getElementById("prayerList");
+  prayerListEl.innerHTML = "";
+
+  student.prayers.forEach((prayer, idx) => {
+    const el = document.createElement("div");
+    el.className = "prayer-card";
+    el.innerHTML = `
+      <div class="prayer-left">
+        <div class="prayer-heart-icon">♥</div>
+        <span>${prayer.text}</span>
+      </div>
+      <div class="prayer-hands" title="기도 동참하기" data-prayer-id="${prayer.id}">
+        🙏 <span style="font-size:12px; font-weight:800; color:#5c4e44;">${prayer.count}</span>
+      </div>
+    `;
+
+    // Click on prayer hands
+    const handsBtn = el.querySelector(".prayer-hands");
+    handsBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      prayer.count += 1;
+      saveState();
+      renderStudentSection();
+      showToast(`'${prayer.text}' 기도에 함께 동참했습니다! 🙏`);
+    });
+
+    prayerListEl.appendChild(el);
+  });
+}
+
+function initStudentEvents() {
+  // Call / Message quick contact buttons
+  document.getElementById("callBtn").addEventListener("click", () => {
+    showToast(`양형모 학생(${appState.student.phone})에게 전화를 연결합니다 📞`, "info");
+  });
+
+  document.getElementById("msgBtn").addEventListener("click", () => {
+    showToast("카카오톡 학생 심방 대화방을 엽니다 💬", "info");
+  });
+
+  // Add Visit Form
+  document.getElementById("openAddVisitModalBtn").addEventListener("click", () => {
+    openModal("visitModal");
+  });
+
+  document.getElementById("visitForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const date = document.getElementById("visitDateInput").value;
+    const type = document.getElementById("visitTypeInput").value;
+    const content = document.getElementById("visitContentInput").value;
+
+    const newVisit = {
+      id: Date.now(),
+      date: date || "오늘",
+      title: `${type}: ${content.slice(0, 20)}...`,
+      desc: content,
+      icon: type.includes("카톡") ? "💬" : type.includes("전화") ? "📞" : "☕"
+    };
+
+    appState.student.visits.unshift(newVisit);
+    saveState();
+    renderStudentSection();
+    closeModal("visitModal");
+    showToast("새 심방 기록이 정상 등록되었습니다! ✨");
+  });
+}
+
+// =============================================================================
+// 5. Screen 2: 이번 주 교사 회의 안건 Rendering & Events
+// =============================================================================
+
+function renderAgendaSection() {
+  const confirmedList = document.getElementById("confirmedAgendaList");
+  const pendingList = document.getElementById("pendingAgendaList");
+  const confirmedCountEl = document.getElementById("confirmedAgendaCount");
+  const pendingCountEl = document.getElementById("pendingAgendaCount");
+
+  confirmedList.innerHTML = "";
+  pendingList.innerHTML = "";
+
+  // Render Confirmed
+  appState.agendas.confirmed.forEach(agenda => {
+    const card = document.createElement("div");
+    card.className = "agenda-card";
+    if (agenda.type === "cyan") card.classList.add("cyan-border");
+    if (agenda.type === "yellow") card.classList.add("yellow-border");
+
+    const badgeHtml = agenda.statusBadge 
+      ? `<span class="approval-badge">${agenda.statusBadge}</span>` 
+      : "";
+
+    card.innerHTML = `
+      <div class="agenda-title">${agenda.title}</div>
+      <div class="agenda-author">
+        <span>(${agenda.author})</span>
+        ${badgeHtml}
+      </div>
+    `;
+    confirmedList.appendChild(card);
+  });
+
+  // Render Pending
+  appState.agendas.pending.forEach(agenda => {
+    const card = document.createElement("div");
+    card.className = "agenda-card waiting-border";
+    card.innerHTML = `
+      <div class="agenda-title">${agenda.title}</div>
+      <div class="agenda-author">
+        <span>(${agenda.author})</span>
+        <span style="color:#d96a24; font-weight:700; font-size:11px;">승인 대기</span>
+      </div>
+      ${agenda.desc ? `<p style="font-size:12px; color:var(--text-muted); margin-top:6px;">${agenda.desc}</p>` : ""}
+      <div class="waiting-actions">
+        <button class="btn-approve" data-approve-id="${agenda.id}">
+          <span>✓</span> <span>승인</span>
+        </button>
+        <button class="btn-reject" data-reject-id="${agenda.id}">
+          <span>✕</span> <span>반려</span>
+        </button>
+      </div>
+    `;
+
+    // Approve Button Event
+    card.querySelector(".btn-approve").addEventListener("click", () => {
+      approveAgenda(agenda.id);
+    });
+
+    // Reject Button Event
+    card.querySelector(".btn-reject").addEventListener("click", () => {
+      rejectAgenda(agenda.id);
+    });
+
+    pendingList.appendChild(card);
+  });
+
+  if (appState.agendas.pending.length === 0) {
+    pendingList.innerHTML = `
+      <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:13px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+        현재 승인 대기 중인 교사 제안 안건이 없습니다. 👍
+      </div>
+    `;
+  }
+
+  confirmedCountEl.textContent = appState.agendas.confirmed.length;
+  pendingCountEl.textContent = appState.agendas.pending.length;
+}
+
+function approveAgenda(id) {
+  const index = appState.agendas.pending.findIndex(a => a.id === id);
+  if (index === -1) return;
+
+  const item = appState.agendas.pending.splice(index, 1)[0];
+  appState.agendas.confirmed.push({
+    id: item.id,
+    title: item.title.replace("[제안]", `[안건 ${appState.agendas.confirmed.length + 1}]`),
+    author: item.author.replace("제안자:", "제안:"),
+    statusBadge: "전도사 승인완료 ✅",
+    type: "peach"
+  });
+
+  saveState();
+  renderAgendaSection();
+  showToast("안건이 전도사님 승인되어 확정 안건 목록에 등록되었습니다! 📌");
+}
+
+function rejectAgenda(id) {
+  const index = appState.agendas.pending.findIndex(a => a.id === id);
+  if (index === -1) return;
+
+  const item = appState.agendas.pending.splice(index, 1)[0];
+  saveState();
+  renderAgendaSection();
+  showToast(`'${item.title}' 안건이 반려 처리되었습니다.`, "warn");
+}
+
+function initAgendaEvents() {
+  document.getElementById("openAddAgendaModalBtn").addEventListener("click", () => {
+    openModal("agendaModal");
+  });
+
+  document.getElementById("agendaForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const author = document.getElementById("agendaAuthorInput").value;
+    const title = document.getElementById("agendaTitleInput").value;
+    const desc = document.getElementById("agendaDescInput").value;
+
+    const newAgenda = {
+      id: Date.now(),
+      title: `[제안] ${title}`,
+      author: `제안자: ${author}`,
+      desc: desc
+    };
+
+    appState.agendas.pending.push(newAgenda);
+    saveState();
+    renderAgendaSection();
+    closeModal("agendaModal");
+    showToast("신규 안건 제안이 등록되었습니다 (승인 대기 중) ⏳");
+  });
+}
+
+// =============================================================================
+// 6. Screen 3: 예랑 스마트 스케줄러 (사전 출결 & 대타) Rendering & Events
+// =============================================================================
+
+function renderAttendanceSection() {
+  const listEl = document.getElementById("attendanceList");
+  listEl.innerHTML = "";
+
+  let absentCount = 0;
+  let lateCount = 0;
+
+  appState.attendance.forEach(att => {
+    if (att.status === "사전 결석") absentCount++;
+    if (att.status === "지각") lateCount++;
+
+    const isLate = att.status === "지각";
+    const card = document.createElement("div");
+    card.className = `teacher-att-card ${isLate ? "late-card" : ""}`;
+
+    card.innerHTML = `
+      <div class="teacher-card-top">
+        <div class="teacher-profile">
+          <div class="teacher-avatar-sm">${att.avatar || "👤"}</div>
+          <div>
+            <div class="teacher-name-txt">${att.name}</div>
+            <div class="teacher-reason-pill">${att.role}</div>
+          </div>
+        </div>
+        <div class="${isLate ? "badge-late" : "badge-absent"}">
+          ${att.status} ${isLate ? "⏰" : "✕"}
+        </div>
+      </div>
+
+      <div class="teacher-memo-box">
+        ${att.memo}
+      </div>
+
+      <div class="substitute-row">
+        <div>담당: <b>${att.duty}</b></div>
+        <div>대타: <span class="substitute-badge">${att.substitute}</span></div>
+      </div>
+    `;
+    listEl.appendChild(card);
+  });
+
+  // Calculate stats
+  document.getElementById("statAbsentCount").textContent = absentCount;
+  document.getElementById("statLateCount").textContent = lateCount;
+  document.getElementById("statPresentCount").textContent = Math.max(9 - absentCount - lateCount, 0);
+}
+
+function initAttendanceEvents() {
+  document.getElementById("openAbsentModalBtn").addEventListener("click", () => {
+    openModal("absentModal");
+  });
+
+  document.getElementById("absentForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("absentTeacherInput").value;
+    const status = document.getElementById("absentStatusInput").value;
+    const reason = document.getElementById("absentReasonCategory").value;
+    const memo = document.getElementById("absentMemoInput").value;
+    const duty = document.getElementById("absentRoleInput").value;
+    const substitute = document.getElementById("substituteTeacherInput").value;
+
+    const newAtt = {
+      id: Date.now(),
+      name: name,
+      role: reason,
+      status: status,
+      memo: memo,
+      duty: duty || "분반 공과",
+      substitute: substitute,
+      avatar: "🧑🏻‍🏫"
+    };
+
+    appState.attendance.unshift(newAtt);
+    saveState();
+    renderAttendanceSection();
+    closeModal("absentModal");
+    showToast(`주일 ${status} 등록 완료! 대타(${substitute})가 배정되었습니다. ✅`);
+  });
+}
+
+// =============================================================================
+// 7. Screen 4: AI 영수증 등록 및 시트 실시간 기입
+// =============================================================================
+
+let currentPresetIndex = 0;
+
+function initReceiptSection() {
+  const changeBtn = document.getElementById("changeReceiptSampleBtn");
+  const submitBtn = document.getElementById("submitReceiptBtn");
+  const priceDisplay = document.getElementById("rcptPriceDisplay");
+
+  // Format currency on input change
+  const priceInput = document.getElementById("rcptPriceDisplay");
+
+  changeBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    currentPresetIndex = (currentPresetIndex + 1) % appState.receiptPresets.length;
+    const preset = appState.receiptPresets[currentPresetIndex];
+
+    // Trigger scanning animation
+    const zone = document.getElementById("receiptZone");
+    zone.style.opacity = "0.5";
+    document.getElementById("receiptIconVisual").textContent = "⚡";
+
+    setTimeout(() => {
+      zone.style.opacity = "1";
+      document.getElementById("receiptIconVisual").textContent = preset.icon;
+      document.getElementById("highlightAmount").textContent = preset.amount.toLocaleString() + "원";
+      document.getElementById("highlightStore").textContent = preset.store;
+
+      document.getElementById("rcptDate").value = preset.date;
+      document.getElementById("rcptStore").value = preset.store;
+      document.getElementById("rcptPriceDisplay").innerHTML = `${preset.amount.toLocaleString()} <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>`;
+      document.getElementById("rcptCategory").value = preset.category;
+      document.getElementById("rcptUser").value = preset.user;
+      document.getElementById("rcptPurpose").value = preset.purpose;
+
+      showToast(`AI 영수증 분석: '${preset.store}' (${preset.amount.toLocaleString()}원) 인식 완료! 🪄`);
+    }, 200);
+  });
+
+  // Submit Receipt to Google Sheets
+  submitBtn.addEventListener("click", () => {
+    const preset = appState.receiptPresets[currentPresetIndex];
+    const date = document.getElementById("rcptDate").value;
+    const store = document.getElementById("rcptStore").value;
+    const category = document.getElementById("rcptCategory").value;
+    const user = document.getElementById("rcptUser").value;
+    const purpose = document.getElementById("rcptPurpose").value;
+    const amount = preset ? preset.amount : 45000;
+
+    // Add to accounting receipts list
+    const newReceipt = {
+      id: Date.now(),
+      date: date.slice(5) || "9/8",
+      title: purpose.slice(0, 18) + (purpose.length > 18 ? "..." : ""),
+      author: user,
+      amount: amount,
+      status: "정산완료",
+      category: category,
+      store: store,
+      isMine: true
+    };
+
+    appState.accounting.receipts.unshift(newReceipt);
+    saveState();
+    renderAccountingSection();
+
+    showToast("구글 스프레드시트에 즉시 등록되었습니다! (새 행 추가 완료 🚀)");
+
+    // Offer to jump to accounting view
+    setTimeout(() => {
+      switchToTab("view-accounting");
+    }, 600);
+  });
+}
+
+// =============================================================================
+// 8. Screen 5: 역할별 회계 보안 & 권한 분리 시스템
+// =============================================================================
+
+let currentRole = "teacher"; // 'teacher' | 'admin'
+
+function renderAccountingSection() {
+  const teacherView = document.getElementById("teacherAccountingView");
+  const adminView = document.getElementById("adminAccountingView");
+  const myReceiptList = document.getElementById("myReceiptList");
+  const allReceiptList = document.getElementById("allReceiptList");
+  const totalBalanceEl = document.getElementById("totalBalanceAmount");
+  const gsheetTableBody = document.getElementById("gsheetTableBody");
+
+  // Calculate live balance
+  let totalExpense = 0;
+  appState.accounting.receipts.forEach(r => totalExpense += r.amount);
+  const liveBalance = appState.accounting.initialBalance + appState.accounting.income - totalExpense;
+  if (totalBalanceEl) {
+    totalBalanceEl.innerHTML = `${liveBalance.toLocaleString()} <span style="font-size:16px; font-weight:700;">원</span>`;
+  }
+
+  // 1. My Receipts (Teacher View)
+  myReceiptList.innerHTML = "";
+  const myReceipts = appState.accounting.receipts.filter(r => r.isMine);
+  
+  myReceipts.forEach(r => {
+    const isDone = r.status === "정산완료";
+    const el = document.createElement("div");
+    el.className = "expense-row-item";
+    el.innerHTML = `
+      <div class="expense-info">
+        <div class="expense-title">${r.title}</div>
+        <div class="expense-meta">${r.date} 제출 | ${r.amount.toLocaleString()}원</div>
+      </div>
+      <div class="expense-status-badge ${isDone ? "status-done" : "status-wait"}">
+        ${r.status} ${isDone ? "✓" : "⏳"}
+      </div>
+    `;
+    myReceiptList.appendChild(el);
+  });
+
+  // 2. All Receipts (Admin View)
+  allReceiptList.innerHTML = "";
+  appState.accounting.receipts.forEach(r => {
+    const el = document.createElement("div");
+    el.className = "expense-row-item";
+    el.innerHTML = `
+      <div class="expense-info">
+        <div class="expense-title">${r.title} (${r.author.replace("선생님", "T")})</div>
+        <div class="expense-meta">${r.date} 지출 | 영수증 확인 📑</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="expense-amount-red">-${r.amount.toLocaleString()}원</div>
+        <div style="font-size:10.5px; color:#178263; font-weight:700; margin-top:2px;">시트기입완료 ✓</div>
+      </div>
+    `;
+    allReceiptList.appendChild(el);
+  });
+
+  // 3. Google Sheet table rows
+  if (gsheetTableBody) {
+    gsheetTableBody.innerHTML = "";
+    appState.accounting.receipts.forEach((r, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>2026.${r.date}</td>
+        <td><span style="color:#d94343; font-weight:700;">지출</span></td>
+        <td>${r.store || "예랑 지정처"}</td>
+        <td style="font-weight:700;">${r.amount.toLocaleString()}원</td>
+        <td>${r.category}</td>
+        <td>${r.author}</td>
+        <td>${r.title}</td>
+      `;
+      gsheetTableBody.appendChild(tr);
+    });
+  }
+}
+
+// =============================================================================
+// 8. Role-Based Multi-Persona Management Engine (4대 역할 전용)
+// =============================================================================
+
+const ROLES = {
+  pastor: {
+    id: "pastor",
+    name: "정하람 전도사",
+    title: "사역 총괄 대시보드",
+    subtitle: "정하람 전도사 · 마스터 관리 권한",
+    badge: "👑 전도사 모드",
+    tagClass: "tag-pastor",
+    activeClass: "active-pastor",
+    tabs: [
+      { target: "view-home", icon: "🏠", label: "홈", title: "사역 총괄 대시보드", subtitle: "2024년 10월 13일 주일 🌤️" },
+      { target: "view-scheduler", icon: "🗓️", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
+      { target: "view-students", icon: "👦🏻", label: "학생부", title: "학생 심방 & 기도제목", subtitle: "청소년부 학생 돌봄 & 신앙 관리" },
+      { target: "view-agenda", icon: "📋", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
+      { target: "view-accounting", icon: "💰", label: "재정감독", title: "부서 재정 및 회계 장부", subtitle: "실시간 실잔액 및 전체 교사 영수증 감독" }
+    ],
+    defaultTab: "view-home",
+    showAccountingAdmin: true
+  },
+  accountant: {
+    id: "accountant",
+    name: "나하은 선생님",
+    title: "부서 재정 & 회계 마스터",
+    subtitle: "나하은 선생님 · 재정 및 정산 권한",
+    badge: "💼 회계쌤 모드",
+    tagClass: "tag-accountant",
+    activeClass: "active-accountant",
+    tabs: [
+      { target: "view-home", icon: "🏠", label: "홈", title: "회계 & 행정 대시보드", subtitle: "2024년 10월 13일 주일 🌤️" },
+      { target: "view-accounting", icon: "💰", label: "회계장부", title: "부서 전체 실잔액 & 장부", subtitle: "영수증 정산 승인 및 구글 시트 연동" },
+      { target: "view-receipt", icon: "📸", label: "영수증", title: "AI 영수증 자동 등록", subtitle: "영수증 OCR 분석 및 구글 시트 연동" },
+      { target: "view-scheduler", icon: "🗓️", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
+      { target: "view-agenda", icon: "📋", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" }
+    ],
+    defaultTab: "view-accounting",
+    showAccountingAdmin: true
+  },
+  teacher: {
+    id: "teacher",
+    name: "김대한 선생님",
+    title: "고3반 & 새친구반 목양",
+    subtitle: "김대한 선생님 · 분반 지도 권한",
+    badge: "🧑🏻‍🏫 선생님 모드",
+    tagClass: "tag-teacher",
+    activeClass: "active-teacher",
+    tabs: [
+      { target: "view-home", icon: "🏠", label: "홈", title: "교사 목양 대시보드", subtitle: "2024년 10월 13일 주일 🌤️" },
+      { target: "view-teacher-class", icon: "📚", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
+      { target: "view-scheduler", icon: "🗓️", label: "스케줄", title: "주일 사전 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-agenda", icon: "📋", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
+      { target: "view-accounting", icon: "📑", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
+    ],
+    defaultTab: "view-teacher-class",
+    showAccountingAdmin: false
+  },
+  student: {
+    id: "student",
+    name: "양형모 (고3)",
+    title: "예랑 청소년부 피드",
+    subtitle: "양형모 (고3) · 찬양팀 세션",
+    badge: "👦🏻 학생 모드",
+    tagClass: "tag-student",
+    activeClass: "active-student",
+    tabs: [
+      { target: "view-home", icon: "🏠", label: "홈", title: "예랑 청소년부 피드", subtitle: "주일 섬김이 · D-Day · 공지사항" },
+      { target: "view-student-study", icon: "🖥️", label: "예랑스카", title: "예랑 스카 자습실 좌석", subtitle: "중간고사 D-12 좌석 현황 & 야식 투표" },
+      { target: "view-students", icon: "💕", label: "기도나눔", title: "나의 기도제목 & 나눔", subtitle: "함께 기도하고 응원해요 🙏" },
+      { target: "view-student-counsel", icon: "💌", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
+    ],
+    defaultTab: "view-home",
+    showAccountingAdmin: false
+  }
+};
+
+// Role definitions and labels
+const ROLE_NAMES = {
+  pastor: "전도사 (총괄 관리자)",
+  accountant: "회계선생님 (재정/장부)",
+  teacher: "선생님 (공과/새친구반)",
+  student: "학생 (청소년부 포털)"
+};
+
+const ROLE_BADGES = {
+  pastor: '<span class="role-identity-tag tag-pastor" style="font-size:10px; padding:2px 6px;">👑 전도사</span>',
+  accountant: '<span class="role-identity-tag tag-accountant" style="font-size:10px; padding:2px 6px;">💼 회계쌤</span>',
+  teacher: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님</span>',
+  student: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>'
+};
+
+const DEFAULT_AVATARS = {
+  pastor: "👑",
+  accountant: "💼",
+  teacher: "🧑🏻‍🏫",
+  student: "👦🏻"
+};
+
+let currentRole = "pastor";
+
+function getCurrentUser() {
+  if (!appState.users || appState.users.length === 0) {
+    appState.users = JSON.parse(JSON.stringify(INITIAL_DATA.users));
+  }
+  const user = appState.users.find(u => u.id === appState.currentUserId);
+  return user || appState.users[0];
+}
+
+function renderUserHeaderBar() {
+  const user = getCurrentUser();
+  const avatarEl = document.getElementById("userHeaderAvatar");
+  const nameEl = document.getElementById("userHeaderName");
+  const adminBanner = document.getElementById("adminUserMgmtBanner");
+
+  if (avatarEl) avatarEl.textContent = user.avatar || "👤";
+  if (nameEl) {
+    nameEl.textContent = user.name;
+  }
+
+  // Admin banner visibility: only visible if current active role is 'pastor'
+  if (adminBanner) {
+    adminBanner.style.display = (currentRole === "pastor") ? "flex" : "none";
+  }
+}
+
+function renderUserSwitchGrid() {
+  const container = document.getElementById("userSwitchGridContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  appState.users.forEach(user => {
+    const isCurrent = user.id === appState.currentUserId;
+    const card = document.createElement("div");
+    card.className = `user-switch-card ${isCurrent ? "active-user" : ""}`;
+    card.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="user-mgmt-avatar">${user.avatar || "👤"}</div>
+        <div>
+          <div style="font-size:13.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+            <span>${user.name}</span>
+            ${ROLE_BADGES[user.role] || ""}
+          </div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${user.duty || ""}</div>
+          <div style="font-size:11px; color:#888;">📞 ${user.phone || "-"}</div>
+        </div>
+      </div>
+      <div>
+        ${isCurrent 
+          ? '<span style="font-size:12px; font-weight:700; color:var(--primary); padding:6px 10px; background:#f0e8fc; border-radius:8px;">접속중 ✓</span>' 
+          : `<button class="btn-secondary switch-to-user-btn" style="padding:6px 12px; font-size:12px;" data-user-id="${user.id}">전환하기</button>`
+        }
+      </div>
+    `;
+
+    const btn = card.querySelector(".switch-to-user-btn");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        switchCurrentUser(user.id);
+      });
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function renderUserManagerSection() {
+  const container = document.getElementById("userMgmtListContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  appState.users.forEach(user => {
+    const isCurrent = user.id === appState.currentUserId;
+    const card = document.createElement("div");
+    card.className = "user-mgmt-card";
+    card.innerHTML = `
+      <div class="user-mgmt-info">
+        <div class="user-mgmt-avatar">${user.avatar || "👤"}</div>
+        <div class="user-mgmt-details">
+          <div class="user-mgmt-name">
+            ${user.name}
+            ${isCurrent ? '<span style="font-size:10px; background:#e8def8; color:#4a148c; padding:2px 6px; border-radius:4px; margin-left:4px;">현재 본인</span>' : ''}
+          </div>
+          <div class="user-mgmt-duty">${user.duty || "-"} · ${user.phone || ""}</div>
+        </div>
+      </div>
+      <div>
+        <select class="role-select-dropdown" data-user-id="${user.id}">
+          <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>👑 전도사 (관리자)</option>
+          <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 회계선생님</option>
+          <option value="teacher" ${user.role === "teacher" ? "selected" : ""}>🧑🏻‍🏫 선생님 (공과/새친구)</option>
+          <option value="student" ${user.role === "student" ? "selected" : ""}>👦🏻 학생</option>
+        </select>
+      </div>
+    `;
+
+    const select = card.querySelector(".role-select-dropdown");
+    if (select) {
+      select.addEventListener("change", (e) => {
+        changeUserRole(user.id, e.target.value);
+      });
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function changeUserRole(userId, newRole) {
+  const user = appState.users.find(u => u.id === userId);
+  if (!user) return;
+
+  user.role = newRole;
+  user.isAdmin = (newRole === "pastor");
+  saveState();
+
+  // If the user being modified is currently logged in, switch the master role view immediately
+  if (userId === appState.currentUserId) {
+    switchMasterRole(newRole, false);
+  }
+
+  renderUserHeaderBar();
+  renderUserSwitchGrid();
+  renderUserManagerSection();
+
+  showToast(`✅ [권한 변경] '${user.name}'의 권한이 '${ROLE_NAMES[newRole]}'(으)로 변경되었습니다!`);
+}
+
+function switchCurrentUser(userId) {
+  const user = appState.users.find(u => u.id === userId);
+  if (!user) return;
+
+  appState.currentUserId = userId;
+  saveState();
+
+  switchMasterRole(user.role, false);
+  renderUserHeaderBar();
+  renderUserSwitchGrid();
+  closeModal("userSwitchModal");
+
+  showToast(`👤 '${user.name}' 계정으로 전환되었습니다! (${ROLE_NAMES[user.role]})`, "info");
+}
+
+function switchMasterRole(roleKey, notify = true) {
+  const roleConfig = ROLES[roleKey];
+  if (!roleConfig) return;
+
+  currentRole = roleKey;
+  appState.currentRole = roleKey;
+  
+  // Sync current active user's role to reflect the switcher
+  const currentUser = getCurrentUser();
+  if (currentUser && currentUser.role !== roleKey) {
+    currentUser.role = roleKey;
+  }
+  saveState();
+
+  // 1. Update Master Role Switcher buttons
+  document.querySelectorAll(".role-pill-btn").forEach(btn => {
+    btn.className = "role-pill-btn";
+    if (btn.dataset.roleId === roleKey) {
+      btn.classList.add(roleConfig.activeClass);
+    }
+  });
+
+  // 2. Update Header Badge and Titles
+  const roleBadgeEl = document.getElementById("currentRoleBadge");
+  const screenTitleEl = document.getElementById("screenTitle");
+  const screenSubtitleEl = document.getElementById("screenSubtitle");
+
+  if (roleBadgeEl) {
+    roleBadgeEl.textContent = roleConfig.badge;
+    roleBadgeEl.className = `role-identity-tag ${roleConfig.tagClass}`;
+  }
+
+  if (screenTitleEl) screenTitleEl.textContent = roleConfig.title;
+  if (screenSubtitleEl) screenSubtitleEl.textContent = roleConfig.subtitle;
+
+  // 3. Render Role-Specific Bottom Tab Bar
+  renderRoleTabBar(roleConfig);
+
+  // 4. Update Accounting view permissions
+  const teacherView = document.getElementById("teacherAccountingView");
+  const adminView = document.getElementById("adminAccountingView");
+  const roleTeacherBtn = document.getElementById("roleBtnTeacher");
+  const roleAdminBtn = document.getElementById("roleBtnAdmin");
+
+  if (roleConfig.showAccountingAdmin) {
+    if (teacherView) teacherView.style.display = "none";
+    if (adminView) adminView.style.display = "block";
+    if (roleAdminBtn) roleAdminBtn.classList.add("active");
+    if (roleTeacherBtn) roleTeacherBtn.classList.remove("active");
+  } else {
+    if (teacherView) teacherView.style.display = "block";
+    if (adminView) adminView.style.display = "none";
+    if (roleTeacherBtn) roleTeacherBtn.classList.add("active");
+    if (roleAdminBtn) roleAdminBtn.classList.remove("active");
+  }
+
+  // 5. Navigate to role default tab
+  switchToTab(roleConfig.defaultTab);
+
+  // 6. Update user header bar and admin banner visibility
+  renderUserHeaderBar();
+
+  // 7. Sonner Toast Feedback
+  if (notify) {
+    const toastMsgMap = {
+      pastor: "👑 정하람 전도사 모드로 전환되었습니다. (사역 총괄 권한)",
+      accountant: "💼 나하은 회계선생님 모드로 전환되었습니다. (재정 마스터 권한)",
+      teacher: "🧑🏻‍🏫 김대한 선생님 모드로 전환되었습니다. (공과 & 새친구반 권한)",
+      student: "👦🏻 양형모 학생 모드로 전환되었습니다. (예랑 청소년부 포털)"
+    };
+    showToast(toastMsgMap[roleKey] || "역할이 변경되었습니다.");
+  }
+}
+
+function renderRoleTabBar(roleConfig) {
+  const tabBar = document.getElementById("bottomTabBar");
+  if (!tabBar) return;
+
+  tabBar.innerHTML = "";
+  roleConfig.tabs.forEach((tab, idx) => {
+    const btn = document.createElement("button");
+    btn.className = `tab-btn ${tab.target === roleConfig.defaultTab ? "active" : ""}`;
+    btn.dataset.target = tab.target;
+    btn.dataset.title = tab.title;
+    btn.dataset.subtitle = tab.subtitle;
+
+    btn.innerHTML = `
+      <span class="tab-icon">${tab.icon}</span>
+      <span>${tab.label}</span>
+    `;
+
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".bottom-tab-bar .tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      document.querySelectorAll(".screen-view").forEach(v => {
+        if (v.id === tab.target) {
+          v.classList.add("active");
+        } else {
+          v.classList.remove("active");
+        }
+      });
+
+      const titleEl = document.getElementById("screenTitle");
+      const subtitleEl = document.getElementById("screenSubtitle");
+      if (titleEl && tab.title) titleEl.textContent = tab.title;
+      if (subtitleEl && tab.subtitle) subtitleEl.textContent = tab.subtitle;
+
+      const container = document.getElementById("screensContainer");
+      if (container) container.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    tabBar.appendChild(btn);
+  });
+}
+
+function initUserManagementEvents() {
+  // Open User Switch Modal
+  const openSwitchBtn = document.getElementById("openUserSwitchModalBtn");
+  if (openSwitchBtn) {
+    openSwitchBtn.addEventListener("click", () => {
+      renderUserSwitchGrid();
+      openModal("userSwitchModal");
+    });
+  }
+
+  // Open Admin User Management Modal
+  const adminBanner = document.getElementById("adminUserMgmtBanner");
+  if (adminBanner) {
+    adminBanner.addEventListener("click", () => {
+      const user = getCurrentUser();
+      if (currentRole !== "pastor") {
+        showToast("⚠️ 관리자(전도사)만 계정 권한 관리에 접근할 수 있습니다.", "warn");
+        return;
+      }
+      renderUserManagerSection();
+      openModal("userManagementModal");
+    });
+  }
+
+  // Open Add New User Modal from Admin Management Modal
+  const openAddUserBtn = document.getElementById("openAddNewUserBtn");
+  if (openAddUserBtn) {
+    openAddUserBtn.addEventListener("click", () => {
+      openModal("addNewUserModal");
+    });
+  }
+
+  // Submit New User Form
+  const newUserForm = document.getElementById("newUserForm");
+  if (newUserForm) {
+    newUserForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("newUserNameInput").value.trim();
+      const role = document.getElementById("newUserRoleInput").value;
+      const duty = document.getElementById("newUserDutyInput").value.trim();
+      const phone = document.getElementById("newUserPhoneInput").value.trim();
+
+      if (!name) return;
+
+      const newUser = {
+        id: "u_" + Date.now(),
+        name: name,
+        role: role,
+        duty: duty || "중고등부 교사",
+        phone: phone || "010-0000-0000",
+        avatar: DEFAULT_AVATARS[role] || "👤",
+        isAdmin: (role === "pastor")
+      };
+
+      appState.users.push(newUser);
+      saveState();
+
+      renderUserManagerSection();
+      renderUserSwitchGrid();
+      closeModal("addNewUserModal");
+      newUserForm.reset();
+
+      showToast(`🎉 새 사용자 '${name}'이(가) 등록되었으며 '${ROLE_NAMES[role]}' 권한이 부여되었습니다!`);
+    });
+  }
+}
+
+function initRoleEvents() {
+  document.querySelectorAll(".role-pill-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const roleId = btn.dataset.roleId;
+      switchMasterRole(roleId);
+    });
+  });
+
+  // Student 1:1 Counseling Form Handler
+  const counselForm = document.getElementById("studentCounselForm");
+  if (counselForm) {
+    counselForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const target = document.getElementById("counselTargetInput").value;
+      const category = document.getElementById("counselCategoryInput").value;
+      const method = document.getElementById("counselMethodInput").value;
+
+      showToast(`🕊️ ${target}께 비밀 고민 상담 신청서(${category}, ${method})가 전송되었습니다!`, "success", 4000);
+      counselForm.reset();
+    });
+  }
+
+  // Jump to Receipt submission
+  const gotoAddBtn = document.getElementById("gotoAddReceiptBtn");
+  if (gotoAddBtn) {
+    gotoAddBtn.addEventListener("click", () => {
+      switchToTab("view-receipt");
+    });
+  }
+
+  // Google Sheet Modal Trigger
+  const gsheetBtn = document.getElementById("openGoogleSheetModalBtn");
+  if (gsheetBtn) {
+    gsheetBtn.addEventListener("click", () => {
+      openModal("gsheetModal");
+    });
+  }
+}
+
+
+// =============================================================================
+// 9. Modal Helpers & System Utilities
+// =============================================================================
+
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.add("open");
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.remove("open");
+}
+
+function initModalClosers() {
+  // Close buttons with data-close attribute
+  document.querySelectorAll("[data-close]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const modalId = btn.dataset.close;
+      closeModal(modalId);
+    });
+  });
+
+  // Click backdrop to close
+  document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) {
+        backdrop.classList.remove("open");
+      }
+    });
+  });
+}
+
+// Frame Switcher (Mobile Mockup vs Wide Desktop View)
+function initFrameSwitcher() {
+  const toggleBtn = document.getElementById("viewModeToggle");
+  const toggleText = document.getElementById("viewModeText");
+  const wrapper = document.getElementById("appWrapper");
+
+  toggleBtn.addEventListener("click", () => {
+    const isExpanded = wrapper.classList.toggle("expanded-view");
+    if (isExpanded) {
+      toggleText.textContent = "모바일 뷰";
+      showToast("💻 와이드 데스크톱 뷰 모드로 전환되었습니다.", "info");
+    } else {
+      toggleText.textContent = "와이드 뷰";
+      showToast("📱 아이폰 모바일 프레임 모드로 전환되었습니다.", "info");
+    }
+  });
+
+  // Reset Data button
+  document.getElementById("resetDataBtn").addEventListener("click", () => {
+    if (confirm("모든 데이터를 이미지 초기 상태로 복원하시겠습니까?")) {
+      localStorage.removeItem("yerang_app_state_v1");
+      appState = JSON.parse(JSON.stringify(INITIAL_DATA));
+      renderAll();
+      showToast("모든 데이터가 초기 이미지 시안 상태로 복원되었습니다! 🔄");
+    }
+  });
+}
+
+// Update clock in status bar
+function initClock() {
+  const timeEl = document.getElementById("currentTime");
+  function updateTime() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, "0");
+    const m = String(now.getMinutes()).padStart(2, "0");
+    if (timeEl) timeEl.textContent = `${h}:${m}`;
+  }
+  updateTime();
+  setInterval(updateTime, 30000);
+}
+
+// =============================================================================
+// 10. NEW FEATURES: Home Dashboard, Staff Box, Checklist & Calendar
+// =============================================================================
+
+// --- Home Dashboard Interactivity ---
+function initHomeDashboardEvents() {
+  const staffBoxBtn = document.getElementById("openStaffBoxBtn");
+  if (staffBoxBtn) {
+    staffBoxBtn.addEventListener("click", () => {
+      openModal("staffBoxModal");
+    });
+  }
+
+  // D-Day chip click actions
+  const chipChecklist = document.getElementById("chipGotoChecklist");
+  if (chipChecklist) {
+    chipChecklist.addEventListener("click", () => {
+      switchToTab("view-scheduler");
+      switchSchedulerSubTab("subTabChecklist");
+      showToast("예랑 스카 행사 체크리스트 화면으로 이동했습니다. 📋", "info");
+    });
+  }
+
+  const chipBirthdays = document.getElementById("chipGotoBirthdays");
+  if (chipBirthdays) {
+    chipBirthdays.addEventListener("click", () => {
+      switchToTab("view-scheduler");
+      switchSchedulerSubTab("subTabCalendar");
+      showToast("10월 사역 & 생일 캘린더 화면으로 이동했습니다. 🎂", "info");
+    });
+  }
+}
+
+// --- Scheduler Sub-Tabs Management ---
+function switchSchedulerSubTab(activeSubTabId) {
+  const subTabs = ["subTabCalendar", "subTabChecklist", "subTabAttendance"];
+  const subViews = {
+    subTabCalendar: "subViewCalendar",
+    subTabChecklist: "subViewChecklist",
+    subTabAttendance: "subViewAttendance"
+  };
+
+  subTabs.forEach(id => {
+    const btn = document.getElementById(id);
+    const view = document.getElementById(subViews[id]);
+    if (!btn || !view) return;
+
+    if (id === activeSubTabId) {
+      btn.classList.add("active");
+      view.style.display = "block";
+    } else {
+      btn.classList.remove("active");
+      view.style.display = "none";
+    }
+  });
+}
+
+function initSchedulerSubTabs() {
+  ["subTabCalendar", "subTabChecklist", "subTabAttendance"].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.addEventListener("click", () => switchSchedulerSubTab(id));
+    }
+  });
+}
+
+// --- Event Checklist (New Image 4: 예랑 스카 D-12) ---
+function renderChecklistSection() {
+  const container = document.getElementById("checklistItemsContainer");
+  const progressFill = document.getElementById("checklistProgressFill");
+  const progressText = document.getElementById("checklistProgressText");
+  if (!container || !appState.checklist) return;
+
+  const items = appState.checklist.items;
+  const total = items.length;
+  const checkedCount = items.filter(i => i.checked).length;
+  const percentage = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+
+  if (progressFill) progressFill.style.width = `${percentage}%`;
+  if (progressText) {
+    progressText.textContent = `준비 진행상황 ${percentage}% 완료 (${total}개 중 ${checkedCount}개)`;
+  }
+
+  container.innerHTML = "";
+  items.forEach(item => {
+    const el = document.createElement("div");
+    let colorClass = "";
+    if (item.checked) {
+      colorClass = item.color === "yellow" ? "checked-yellow" : "checked-green";
+    }
+    el.className = `checklist-item ${colorClass}`;
+
+    el.innerHTML = `
+      <div class="custom-checkbox">${item.checked ? "✓" : ""}</div>
+      <div class="checklist-text-wrap">
+        <div class="checklist-title">${item.title}</div>
+      </div>
+    `;
+
+    // Toggle checklist item
+    el.addEventListener("click", () => {
+      item.checked = !item.checked;
+      saveState();
+      renderChecklistSection();
+      const statusWord = item.checked ? "완료 처리됨 ✓" : "진행중으로 변경됨";
+      showToast(`'${item.title.split("(")[0].trim()}' ${statusWord}`);
+    });
+
+    container.appendChild(el);
+  });
+}
+
+function initChecklistEvents() {
+  const openBtn = document.getElementById("openAddChecklistBtn");
+  if (openBtn) {
+    openBtn.addEventListener("click", () => openModal("addChecklistModal"));
+  }
+
+  const form = document.getElementById("checklistForm");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const title = document.getElementById("chkTitleInput").value;
+      const manager = document.getElementById("chkManagerInput").value;
+
+      const newItem = {
+        id: Date.now(),
+        title: `${title} (${manager})`,
+        manager: manager,
+        checked: false,
+        color: "green"
+      };
+
+      appState.checklist.items.push(newItem);
+      saveState();
+      renderChecklistSection();
+      closeModal("addChecklistModal");
+      form.reset();
+      showToast("새 행사 체크리스트 항목이 추가되었습니다! 📋");
+    });
+  }
+}
+
+// --- Staff Communication Box (New Image 1: 사역자 소통함) ---
+let currentStaffFilter = "all";
+
+function renderStaffBoxSection(filter = currentStaffFilter) {
+  const container = document.getElementById("staffBoxCardsContainer");
+  if (!container || !appState.staffBox) return;
+
+  container.innerHTML = "";
+  const filtered = appState.staffBox.items.filter(item => {
+    if (filter === "all") return true;
+    return item.type === filter;
+  });
+
+  filtered.forEach(item => {
+    const card = document.createElement("div");
+    let borderClass = "";
+    if (item.type === "사역건의") borderClass = "mint-border";
+    if (item.type === "회의안건") borderClass = "purple-border";
+    card.className = `staff-box-card ${borderClass}`;
+
+    const iconMap = { "구매요청": "🛒", "사역건의": "💡", "회의안건": "📝" };
+    const icon = iconMap[item.type] || "📌";
+
+    let badgeHtml = "";
+    if (item.status === "승인완료") {
+      badgeHtml = `<span class="badge-approved">승인완료 ✓</span>`;
+    } else if (item.status === "검토중") {
+      badgeHtml = `<span class="badge-review">검토중 ⏳</span>`;
+    } else {
+      badgeHtml = `<span style="font-size:11px; font-weight:700; color:#888;">${item.status}</span>`;
+    }
+
+    const budgetText = item.budget ? ` | 예산: ${item.budget}` : "";
+
+    card.innerHTML = `
+      <div class="staff-box-title">${icon} [${item.type}] ${item.title}</div>
+      <div class="staff-box-meta-row">
+        <div>작성자: <b>${item.author}</b>${budgetText}</div>
+        ${badgeHtml}
+      </div>
+    `;
+
+    // Click to review if in review
+    if (item.status === "검토중") {
+      card.style.cursor = "pointer";
+      card.addEventListener("click", () => {
+        item.status = "승인완료";
+        saveState();
+        renderStaffBoxSection();
+        showToast(`'${item.title}' 건의가 사역자 회의에서 승인되었습니다! 🎉`);
+      });
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function initStaffBoxEvents() {
+  // Filter buttons
+  document.querySelectorAll("[data-staff-filter]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-staff-filter]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentStaffFilter = btn.dataset.staffFilter;
+      renderStaffBoxSection(currentStaffFilter);
+    });
+  });
+
+  // Open Add Staff Request Modal
+  const openAddBtn = document.getElementById("openAddStaffRequestBtn");
+  if (openAddBtn) {
+    openAddBtn.addEventListener("click", () => openModal("addStaffRequestModal"));
+  }
+
+  // Submit Staff Request Form
+  const form = document.getElementById("staffRequestForm");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const type = document.getElementById("staffReqTypeInput").value;
+      const author = document.getElementById("staffReqAuthorInput").value;
+      const title = document.getElementById("staffReqTitleInput").value;
+      const budget = document.getElementById("staffReqBudgetInput").value;
+
+      const newReq = {
+        id: Date.now(),
+        type: type,
+        title: title.replace(/^\[.*?\]\s*/, ""),
+        author: author,
+        budget: budget || null,
+        status: type === "구매요청" ? "승인완료" : "검토중",
+        badgeType: type === "구매요청" ? "approved" : "review"
+      };
+
+      appState.staffBox.items.unshift(newReq);
+      saveState();
+      renderStaffBoxSection();
+      closeModal("addStaffRequestModal");
+      form.reset();
+      showToast("소통함에 신규 요청/건의가 등록되었습니다! 📬");
+    });
+  }
+}
+
+// --- Calendar & Birthdays Interactivity (New Image 3) ---
+function initCalendarEvents() {
+  // Birthday card click
+  document.querySelectorAll(".birthday-person-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const name = item.dataset.bdayName || "선생님/학생";
+      showToast(`🎂 ${name}의 생일 축하 메시지를 보냈습니다! 🎉`);
+    });
+  });
+
+  // Calendar cell click
+  document.querySelectorAll(".cal-cell").forEach(cell => {
+    cell.addEventListener("click", () => {
+      const num = cell.querySelector(".cal-num");
+      const eventPill = cell.querySelector(".cal-event-pill");
+      if (num && num.textContent.trim()) {
+        const day = num.textContent.trim();
+        const eventText = eventPill ? eventPill.textContent.trim() : "일반 사역 일정";
+        showToast(`📅 10월 ${day}일: ${eventText}`, "info");
+      }
+    });
+  });
+}
+
+// =============================================================================
+// 11. Bootstrap & Master Render
+// =============================================================================
+
+function renderAll() {
+  renderUserHeaderBar();
+  renderStudentSection();
+  renderAgendaSection();
+  renderAttendanceSection();
+  renderAccountingSection();
+  renderChecklistSection();
+  renderStaffBoxSection();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initNavigation();
+  initHomeDashboardEvents();
+  initSchedulerSubTabs();
+  initStudentEvents();
+  initAgendaEvents();
+  initAttendanceEvents();
+  initReceiptSection();
+  initRoleEvents();
+  initUserManagementEvents();
+  initChecklistEvents();
+  initStaffBoxEvents();
+  initCalendarEvents();
+  initModalClosers();
+  initFrameSwitcher();
+  initClock();
+
+  renderAll();
+
+  // Initialize current user and active role
+  const currentUser = getCurrentUser();
+  const initialRole = currentUser ? currentUser.role : (appState.currentRole || "pastor");
+  switchMasterRole(initialRole, false);
+  renderUserHeaderBar();
+
+  // Welcome toast
+  setTimeout(() => {
+    showToast("이룸교회 중고등부 예랑 앱에 오신 것을 환영합니다! 🌤️");
+  }, 400);
+});
+

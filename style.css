@@ -1,0 +1,2627 @@
+/* ==========================================================================
+   이룸교회 중고등부 예랑 - 스마트 사역 관리 앱 스타일시트
+   Emil Kowalski Design Engineering & Apple HIG Principles Applied
+   ========================================================================== */
+
+:root {
+  /* Color Palette - Warm Church Peach & Mint */
+  --bg-primary: #fdfaf6;
+  --bg-secondary: #f6f0ea;
+  --bg-card: #ffffff;
+  --bg-cream: #fbf5ee;
+  
+  --primary: #f59e6c;
+  --primary-hover: #e88950;
+  --primary-light: #fff2ea;
+  --primary-dark: #d97034;
+  
+  --accent-mint: #38b293;
+  --accent-mint-light: #e6f7f3;
+  --accent-purple: #8e7bd9;
+  --accent-purple-light: #f1edff;
+  --accent-coral: #ee6b6b;
+  --accent-coral-light: #fef0f0;
+  --accent-yellow: #f4aa3b;
+  --accent-yellow-light: #fef8eb;
+  --accent-blue: #4a90e2;
+  --accent-blue-light: #edf5fd;
+
+  --text-main: #2d2621;
+  --text-muted: #7d736a;
+  --text-sub: #a89f96;
+  --border-light: #eee5dc;
+  --border-subtle: #f0e9e2;
+  
+  /* Emil Design Guidelines Easing & Timing */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.15);
+  
+  --duration-press: 160ms;
+  --duration-enter: 220ms;
+  --duration-drawer: 280ms;
+
+  --shadow-sm: 0 2px 8px rgba(160, 130, 110, 0.06);
+  --shadow-md: 0 4px 16px rgba(160, 130, 110, 0.1);
+  --shadow-lg: 0 12px 32px rgba(140, 110, 90, 0.14);
+  --shadow-sheet: 0 -8px 30px rgba(70, 50, 40, 0.12);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  
+  --font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  font-family: var(--font-family);
+  background: radial-gradient(circle at 50% 0%, #fffdf9 0%, #f7f0e7 50%, #eae0d4 100%);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ==========================================================================
+   Apple Titanium / Ceramic Device Frame
+   ========================================================================== */
+
+.app-wrapper {
+  width: 100%;
+  max-width: 420px;
+  height: 890px;
+  background-color: var(--bg-primary);
+  border-radius: 50px;
+  border: 10px solid #ffffff;
+  outline: 1px solid rgba(215, 195, 180, 0.45);
+  box-shadow: 
+    0 30px 80px -15px rgba(160, 110, 80, 0.22),
+    0 10px 25px -6px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: max-width 320ms var(--ease-out), height 320ms var(--ease-out), border-radius 320ms var(--ease-out);
+}
+
+/* Mode toggler for Desktop / Mobile View */
+.top-controls {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  display: flex;
+  gap: 8px;
+  z-index: 999;
+}
+
+.mode-btn {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(215, 195, 180, 0.4);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(160, 120, 90, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform var(--duration-press) var(--ease-out), background 180ms ease;
+}
+
+.mode-btn:active {
+  transform: scale(0.96);
+}
+
+.app-wrapper.expanded-view {
+  max-width: 960px;
+  height: 94vh;
+  border-radius: 34px;
+  border: 8px solid #ffffff;
+  box-shadow: 0 35px 90px -20px rgba(120, 80, 60, 0.2), 0 0 0 1px rgba(210, 185, 170, 0.4);
+}
+
+/* iPhone Notch / Dynamic Island */
+.phone-island {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 104px;
+  height: 27px;
+  background: #0d0d0f;
+  border-radius: 20px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 9px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: width 200ms var(--ease-out);
+}
+
+.camera-lens {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #091c2b;
+  border: 1px solid #1a3048;
+}
+
+/* iOS Status Bar */
+.ios-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 26px 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #1c1917;
+  z-index: 90;
+}
+
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   Unified Apple-Grade Header Bar (Reference Image 3 Exact Match)
+   ========================================================================== */
+
+.app-unified-header {
+  background: linear-gradient(180deg, #fed8c3 0%, #fef3ec 70%, var(--bg-primary) 100%);
+  padding: 10px 18px 14px;
+  border-bottom: 1px solid rgba(235, 205, 190, 0.5);
+  position: relative;
+  z-index: 80;
+}
+
+.header-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.header-brand-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.church-main-title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  color: #211915;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.weather-icon {
+  font-size: 17px;
+  display: inline-block;
+  animation: floatCloud 3s ease-in-out infinite alternate;
+}
+
+@keyframes floatCloud {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
+.header-date-sub {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #837267;
+  margin-top: 1px;
+}
+
+/* User Capsule Pill (Account Switcher Trigger) */
+.user-capsule-btn {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(245, 158, 108, 0.35);
+  border-radius: var(--radius-full);
+  padding: 4px 10px 4px 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(245, 158, 108, 0.16);
+  transition: transform var(--duration-press) var(--ease-out), background 150ms ease;
+  flex-shrink: 0;
+}
+
+.user-capsule-btn:active {
+  transform: scale(0.95);
+}
+
+.user-capsule-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffecde;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.user-capsule-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: #251d18;
+  max-width: 90px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-capsule-chevron {
+  font-size: 10px;
+  color: #938378;
+}
+
+/* Apple-Style Fluid Segmented Control for 4 Roles */
+.role-segmented-control {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 3px;
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  margin-top: 12px;
+}
+
+.role-pill-btn {
+  background: transparent;
+  border: none;
+  border-radius: 11px;
+  padding: 7px 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6d5f55;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 180ms var(--ease-out);
+}
+
+.role-pill-btn:active {
+  transform: scale(0.96);
+}
+
+.role-pill-btn.active-pastor {
+  background: #ffffff;
+  color: #d97034;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: 800;
+}
+
+.role-pill-btn.active-accountant {
+  background: #ffffff;
+  color: #1e8267;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: 800;
+}
+
+.role-pill-btn.active-teacher {
+  background: #ffffff;
+  color: #2b6cd0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: 800;
+}
+
+.role-pill-btn.active-student {
+  background: #ffffff;
+  color: #7238cb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: 800;
+}
+
+/* Context Titles Sub-Row */
+.header-context-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(225, 195, 180, 0.55);
+}
+
+.context-titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.context-screen-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #211915;
+  margin: 0;
+}
+
+.context-screen-sub {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ==========================================================================
+   Screen / View Container
+   ========================================================================== */
+
+.screens-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 18px 90px;
+  position: relative;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.screens-container::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.screen-view {
+  display: none;
+  opacity: 0;
+  transform: translateY(6px) scale(0.99);
+  transition: opacity var(--duration-enter) var(--ease-out), transform var(--duration-enter) var(--ease-out);
+}
+
+.screen-view.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ==========================================================================
+   Emil Kowalski Design Principles: Components & Cards
+   ========================================================================== */
+
+/* Universal Button Active Scale (Rule from emil-design-eng) */
+button, .btn, .interactive-card, .clickable-pill {
+  transition: transform var(--duration-press) var(--ease-out), background-color 150ms ease, box-shadow 150ms ease;
+  outline: none;
+  border: none;
+}
+
+button:active, .btn:active, .interactive-card:active {
+  transform: scale(0.97);
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-peach-glow {
+  background: linear-gradient(135deg, #ffffff 0%, #fffbf8 100%);
+  border: 1px solid #fedbc5;
+  box-shadow: 0 4px 20px rgba(245, 158, 108, 0.08);
+}
+
+.card-mint-glow {
+  background: linear-gradient(135deg, #ffffff 0%, #f7fdfb 100%);
+  border: 1px solid #ccefe6;
+}
+
+.section-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2b231d;
+  margin: 18px 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-label span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Primary Action Buttons */
+.btn-primary {
+  width: 100%;
+  background: var(--accent-purple);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(142, 123, 217, 0.35);
+  margin-top: 10px;
+}
+
+.btn-primary:hover {
+  background: #7e69d0;
+}
+
+.btn-orange {
+  width: 100%;
+  background: linear-gradient(135deg, #f59e6c 0%, #ee7d3f 100%);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(238, 125, 63, 0.35);
+  margin-top: 12px;
+}
+
+.btn-mint {
+  background: var(--accent-mint);
+  color: white;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #f1ede8;
+  color: var(--text-main);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Screen 1: 학생 심방 & 기도제목
+   ========================================================================== */
+
+.student-hero-card {
+  background: linear-gradient(110deg, #ffe9d6 0%, #ffffff 40%, #e3f8f1 100%);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #ffd8be;
+  box-shadow: 0 6px 18px rgba(245, 158, 108, 0.12);
+}
+
+.student-info-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.student-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #ffecd9;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  overflow: hidden;
+}
+
+.student-name {
+  font-size: 19px;
+  font-weight: 800;
+  color: #211915;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.student-grade {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.quick-contact-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contact-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #ffd7be;
+  color: #c96b36;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timeline-item {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.date-badge {
+  background: #a9e8d8;
+  color: #176a56;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  min-width: 44px;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #2e2621;
+  line-height: 1.35;
+}
+
+.timeline-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.timeline-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #eafaf6;
+  color: #26987c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* Prayer Requests Cards */
+.prayer-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 13px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #f6e6e8;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 9px;
+  cursor: pointer;
+}
+
+.prayer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2b231d;
+}
+
+.prayer-heart-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ff6e87;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.prayer-hands {
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: transform 150ms ease;
+}
+
+.prayer-hands:active {
+  transform: scale(1.25);
+}
+
+/* ==========================================================================
+   Screen 2: 이번 주 교사 회의 안건
+   ========================================================================== */
+
+.agenda-date-badge {
+  background: #fdf5ea;
+  border: 1px solid #fbdcb7;
+  color: #9d5d1c;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.agenda-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-light);
+  border-left: 5px solid var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.agenda-card.cyan-border {
+  border-left-color: #38b293;
+}
+
+.agenda-card.yellow-border {
+  border-left-color: #f4aa3b;
+}
+
+.agenda-card.waiting-border {
+  border-left-color: #ee7d3f;
+  background: #fffdfb;
+}
+
+.agenda-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1f1a16;
+  line-height: 1.4;
+}
+
+.agenda-author {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.approval-badge {
+  background: #e7f8f3;
+  color: #1a7e63;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.waiting-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-approve {
+  flex: 1;
+  background: #a9e8d8;
+  color: #12634f;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 9px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.btn-reject {
+  flex: 1;
+  background: #e6e2dd;
+  color: #615852;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Screen 3: 예랑 스마트 스케줄러 (사전 출결 & 대타 관리)
+   ========================================================================== */
+
+.attendance-stats-bar {
+  background: #fdeee0;
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #784420;
+  margin-bottom: 16px;
+  border: 1px solid #fadac1;
+}
+
+.stat-item span {
+  font-weight: 900;
+  color: #c95616;
+}
+
+.teacher-att-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 15px;
+  border: 1.5px solid #f6cfd2;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.teacher-att-card.late-card {
+  border-color: #f7e0b5;
+}
+
+.teacher-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.teacher-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.teacher-avatar-sm {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f1ede8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.teacher-name-txt {
+  font-size: 15px;
+  font-weight: 800;
+  color: #27201b;
+}
+
+.teacher-reason-pill {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-absent {
+  background: #eb6060;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.badge-late {
+  background: #f3a738;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.teacher-memo-box {
+  background: #fef4f4;
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 13px;
+  color: #3f322b;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.late-card .teacher-memo-box {
+  background: #fdfaf2;
+}
+
+.substitute-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-main);
+  padding-top: 4px;
+}
+
+.substitute-badge {
+  background: #dcf5ed;
+  color: #15795f;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Screen 4: AI 영수증 등록 및 시트 연동
+   ========================================================================== */
+
+.ai-pill-header {
+  background: #d8f5ec;
+  color: #177a60;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.receipt-scanner-zone {
+  border: 2px dashed #fbd4ba;
+  background: #fffaf5;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  cursor: pointer;
+}
+
+.receipt-icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  background: #fef2e4;
+  border: 1px solid #fad3b6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.receipt-icon-sub {
+  font-size: 9px;
+  font-weight: 700;
+  color: #e27d3c;
+  margin-top: 2px;
+}
+
+.ai-scan-status {
+  flex: 1;
+}
+
+.ai-success-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1f7d63;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ai-scan-desc {
+  font-size: 11.5px;
+  color: #4b4139;
+  line-height: 1.35;
+  margin-top: 3px;
+}
+
+.retake-link {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c95616;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* Receipt Form Fields */
+.receipt-form-container {
+  background: #fff8f2;
+  border: 1px solid #fedbc5;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.form-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.form-header-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #a45318;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.auto-badge {
+  background: #fbeee3;
+  color: #aa5d25;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.form-row-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.field-box {
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  border: 1px solid #f4e3d7;
+}
+
+.field-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 3px;
+}
+
+.field-val {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #211b17;
+}
+
+.field-input, .field-select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  color: #211b17;
+  font-family: inherit;
+  outline: none;
+}
+
+.price-field-box {
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  border: 1px solid #fed0b7;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price-large {
+  font-size: 20px;
+  font-weight: 900;
+  color: #df3a3a;
+}
+
+.accuracy-pill {
+  background: #d8f5ec;
+  color: #177a60;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.info-callout {
+  background: #eefbf7;
+  border: 1px solid #caeee3;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 11.5px;
+  color: #166c55;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.35;
+  margin-top: 10px;
+}
+
+/* ==========================================================================
+   Screen 5: 역할별 회계 보안 & 권한 분리 시스템
+   ========================================================================== */
+
+.role-switcher-bar {
+  background: #ede6de;
+  border-radius: var(--radius-full);
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.role-tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 180ms var(--ease-out);
+}
+
+.role-tab-btn.active {
+  background: white;
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+}
+
+.security-hero-banner {
+  background: linear-gradient(135deg, #fdf8ee 0%, #faede1 100%);
+  border: 1px solid #f7dfc8;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.security-hero-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #4b392e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.security-hero-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.balance-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 15px;
+  border: 1px solid var(--border-light);
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.balance-card.locked {
+  background: #fffdfa;
+  border: 1px dashed #fbd4ba;
+}
+
+.balance-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #178263;
+  font-weight: 700;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  background: #25bb8d;
+  border-radius: 50%;
+  animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 187, 141, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(37, 187, 141, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 187, 141, 0); }
+}
+
+.balance-amount {
+  font-size: 26px;
+  font-weight: 900;
+  color: #1e1915;
+  letter-spacing: -0.5px;
+}
+
+.balance-sub-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stat-inc { color: #2e8b57; }
+.stat-exp { color: #d64545; }
+
+.locked-box {
+  background: #fff8f2;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #b3561a;
+}
+
+.expense-row-item {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.expense-info {
+  flex: 1;
+}
+
+.expense-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #27211d;
+}
+
+.expense-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.expense-status-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.status-done {
+  background: #dcf5ed;
+  color: #127258;
+}
+
+.status-wait {
+  background: #fef0db;
+  color: #a05a1b;
+}
+
+.expense-amount-red {
+  font-size: 14px;
+  font-weight: 800;
+  color: #d63d3d;
+}
+
+/* ==========================================================================
+   Apple Style Bottom Navigation Bar
+   ========================================================================== */
+
+.bottom-tab-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 74px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid rgba(225, 205, 195, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px 16px;
+  z-index: 95;
+}
+
+.bottom-tab-bar::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 125px;
+  height: 4px;
+  background: #2a201b;
+  border-radius: 4px;
+  opacity: 0.85;
+}
+
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: transparent;
+  color: #968a81;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 58px;
+  position: relative;
+  transition: all 160ms var(--ease-out);
+}
+
+.tab-icon {
+  font-size: 20px;
+  transition: transform 180ms var(--ease-spring);
+}
+
+.tab-btn.active {
+  color: #1a8769;
+  font-weight: 800;
+}
+
+.tab-btn.active .tab-icon {
+  transform: translateY(-2px) scale(1.12);
+}
+
+.tab-btn.active::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  width: 18px;
+  height: 3px;
+  background: #38b293;
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   Interactive Modals & Bottom Sheets (Emil Kowalski Specs)
+   ========================================================================== */
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 20, 15, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+  display: none;
+  opacity: 0;
+  transition: opacity var(--duration-enter) var(--ease-out);
+}
+
+.modal-backdrop.open {
+  display: flex;
+  opacity: 1;
+}
+
+.bottom-sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 28px 28px 0 0;
+  padding: 20px 22px 36px;
+  box-shadow: var(--shadow-sheet);
+  transform: translateY(100%);
+  transition: transform var(--duration-drawer) var(--ease-out);
+  max-height: 85%;
+  overflow-y: auto;
+  z-index: 160;
+}
+
+.modal-backdrop.open .bottom-sheet {
+  transform: translateY(0);
+}
+
+.sheet-handle {
+  width: 38px;
+  height: 4px;
+  background: #d6ccbf;
+  border-radius: var(--radius-full);
+  margin: 0 auto 16px;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sheet-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #27201b;
+}
+
+.sheet-close-btn {
+  background: #f1ede8;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b4139;
+  margin-bottom: 5px;
+}
+
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  font-family: inherit;
+  font-size: 13.5px;
+  background: #fffdfa;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+  border-color: var(--primary);
+  background: white;
+}
+
+/* ==========================================================================
+   Sonner-Style Toasts Container
+   ========================================================================== */
+
+.sonner-toast-container {
+  position: absolute;
+  top: 60px;
+  left: 20px;
+  right: 20px;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.sonner-toast {
+  pointer-events: auto;
+  background: rgba(30, 24, 20, 0.94);
+  backdrop-filter: blur(14px);
+  color: white;
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: translateY(-20px) scale(0.95);
+  opacity: 0;
+  transition: transform var(--duration-enter) var(--ease-out), opacity var(--duration-enter) var(--ease-out);
+}
+
+.sonner-toast.show {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.sonner-toast.hide {
+  transform: translateY(-15px) scale(0.95);
+  opacity: 0;
+}
+
+.sonner-icon-success { color: #38d39f; }
+.sonner-icon-info { color: #5aa9fa; }
+.sonner-icon-warn { color: #f5a623; }
+
+/* Google Sheets Preview Modal */
+.sheet-preview-table-container {
+  overflow-x: auto;
+  border: 1px solid #dcd3ca;
+  border-radius: var(--radius-sm);
+  margin-top: 10px;
+}
+
+.gsheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.gsheet-table th {
+  background: #107c41;
+  color: white;
+  padding: 8px 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gsheet-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #eee5dc;
+  white-space: nowrap;
+}
+
+.gsheet-table tr:nth-child(even) {
+  background: #fbf8f5;
+}
+
+/* ==========================================================================
+   Home Dashboard (Image 3 exact match & Apple HIG)
+   ========================================================================== */
+
+/* Quick Action Widgets Strip */
+.home-quick-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.quick-widget-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(225, 205, 190, 0.4);
+  box-shadow: 0 2px 8px rgba(160, 120, 90, 0.05);
+  cursor: pointer;
+  transition: transform var(--duration-press) var(--ease-out), box-shadow 150ms ease;
+  overflow: hidden;
+}
+
+.quick-widget-card:active {
+  transform: scale(0.96);
+}
+
+.widget-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.widget-text-box {
+  flex: 1;
+  min-width: 0;
+}
+
+.widget-title {
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget-sub {
+  font-size: 9.5px;
+  color: #8a7a70;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget-arrow {
+  font-size: 16px;
+  font-weight: 700;
+  color: #c4b5a8;
+  margin-left: auto;
+}
+
+/* 1) 이번 주 주일 섬김이 (Image 3 exact match) */
+.home-service-outer-card {
+  background: #def4ec;
+  border: 1px solid #c8ede1;
+  border-radius: 22px;
+  padding: 14px 14px 15px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(56, 178, 147, 0.06);
+}
+
+.home-service-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 11px;
+}
+
+.home-num-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: #251e18;
+  color: #ffffff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 900;
+  margin-right: 7px;
+  flex-shrink: 0;
+}
+
+.home-section-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #211a15;
+  display: flex;
+  align-items: center;
+}
+
+.service-date-pill {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1a8366;
+}
+
+.home-service-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.service-item {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.service-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fdf6ee;
+  border: 1px solid #fae2d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.service-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #7d6e64;
+  margin-bottom: 2px;
+}
+
+.service-person {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #211915;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 2) D-Day 마정즈 Chips (Image 3 exact match) */
+.dday-scroll-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 8px 2px 14px;
+  scrollbar-width: none;
+}
+.dday-scroll-row::-webkit-scrollbar { display: none; }
+
+.dday-chip {
+  border-radius: 28px;
+  padding: 10px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--duration-press) var(--ease-out), box-shadow 150ms ease;
+  flex-shrink: 0;
+}
+
+.dday-chip:active {
+  transform: scale(0.96);
+}
+
+.orange-gradient-chip {
+  background: linear-gradient(135deg, #fba876 0%, #f98852 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(249, 136, 82, 0.35);
+}
+
+.orange-gradient-chip .dday-chip-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.orange-gradient-chip .dday-chip-count {
+  font-size: 17px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.pink-gradient-chip {
+  background: linear-gradient(135deg, #f88cb0 0%, #f46a97 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(244, 106, 151, 0.35);
+}
+
+.pink-gradient-chip .dday-chip-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.pink-gradient-chip .dday-chip-count {
+  font-size: 17px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.mint-gradient-chip {
+  background: linear-gradient(135deg, #3ec59e 0%, #20a67f 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(32, 166, 127, 0.35);
+}
+
+.mint-gradient-chip .dday-chip-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.mint-gradient-chip .dday-chip-count {
+  font-size: 17px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.dday-chip-icon {
+  font-size: 20px;
+}
+
+/* 3) 섬김 로테이션 & 공지사항 (Image 3 exact match) */
+.home-rotation-outer-card {
+  background: #def4ec;
+  border: 1px solid #c8ede1;
+  border-radius: 22px;
+  padding: 14px;
+  margin-top: 6px;
+  box-shadow: 0 2px 10px rgba(56, 178, 147, 0.06);
+}
+
+.rotation-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.rotation-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border: none;
+}
+
+.rotation-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: #f7f1eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.rotation-sub {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #82756c;
+}
+
+.rotation-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #211a15;
+  margin-top: 1px;
+}
+
+
+
+/* ==========================================================================
+   NEW SCREENS: 사역자 & 교사 전용 소통함
+   ========================================================================== */
+
+.filter-chips-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 6px 0 12px;
+  scrollbar-width: none;
+}
+.filter-chips-row::-webkit-scrollbar { display: none; }
+
+.filter-chip-btn {
+  background: white;
+  border: 1px solid #e8dfd5;
+  border-radius: var(--radius-full);
+  padding: 7px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 160ms var(--ease-out);
+}
+
+.filter-chip-btn.active {
+  background: #fdf1e8;
+  border-color: #f7a877;
+  color: #d65b1c;
+}
+
+.staff-box-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-light);
+  border-left: 5px solid #ea7030;
+  box-shadow: var(--shadow-sm);
+}
+
+.staff-box-card.mint-border {
+  border-left-color: #38b293;
+}
+
+.staff-box-card.purple-border {
+  border-left-color: #8e7bd9;
+}
+
+.staff-box-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1f1915;
+  line-height: 1.4;
+}
+
+.staff-box-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.badge-review {
+  background: #fef0db;
+  color: #bd6a1e;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badge-approved {
+  background: #d8f5ec;
+  color: #177a60;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+/* ==========================================================================
+   NEW SCREENS: 사역 캘린더 & 생일 관리
+   ========================================================================== */
+
+.calendar-month-header {
+  font-size: 16px;
+  font-weight: 800;
+  color: #2a201b;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cal-day-name {
+  background: #fdf2e8;
+  color: #8e5831;
+  font-size: 11.5px;
+  font-weight: 800;
+  text-align: center;
+  padding: 7px 0;
+  border-bottom: 1px solid #fae2d0;
+}
+
+.cal-cell {
+  min-height: 52px;
+  padding: 4px;
+  border-right: 1px solid #f5ede6;
+  border-bottom: 1px solid #f5ede6;
+  position: relative;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.cal-cell:nth-child(7n) { border-right: none; }
+.cal-cell:hover { background: #fffcf8; }
+
+.cal-num {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #3e322b;
+}
+
+.cal-event-pill {
+  display: block;
+  font-size: 8.5px;
+  font-weight: 800;
+  border-radius: 4px;
+  padding: 1px 3px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.pill-pink { background: #ffe4ec; color: #cb3d67; }
+.pill-mint { background: #def6ee; color: #167a5f; }
+.pill-yellow { background: #fef1d8; color: #b0701e; }
+.pill-orange { background: #ffe9dd; color: #c95616; }
+
+/* 10월 생일 주인공 카드 */
+.birthday-showcase-card {
+  background: #fff0f4;
+  border: 1.5px solid #fed2dc;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.birthday-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #9f3150;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.birthday-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 10px;
+}
+
+.birthday-person-item {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #fcdbe4;
+  cursor: pointer;
+}
+
+.birthday-avatar-wrap {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fdf5f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.birthday-badge-mini {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 11px;
+}
+
+.birthday-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #2c201c;
+}
+
+.birthday-date {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   NEW SCREENS: 행사 담당 & 체크리스트 (스카 D-12)
+   ========================================================================== */
+
+.sub-nav-tabs {
+  display: flex;
+  border-bottom: 2px solid #eee4db;
+  margin-bottom: 14px;
+}
+
+.sub-nav-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  margin-bottom: -2px;
+}
+
+.sub-nav-btn.active {
+  color: #ea7030;
+  border-bottom-color: #ea7030;
+}
+
+.event-hero-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  border: 1.5px solid #ffd8c4;
+  box-shadow: 0 4px 18px rgba(234, 112, 48, 0.08);
+  margin-bottom: 14px;
+}
+
+.event-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.event-main-title {
+  font-size: 17px;
+  font-weight: 900;
+  color: #211915;
+}
+
+.event-sub-title {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.dday-badge-large {
+  background: #ff7d57;
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.manager-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fdf5ea;
+  border: 1px solid #fae2cc;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  color: #9c5c28;
+  margin: 12px 0 14px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 9px;
+  background: #d8f5ec;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #38b293;
+  border-radius: var(--radius-full);
+  transition: width 300ms var(--ease-out);
+}
+
+.progress-label {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #2d241f;
+  margin-bottom: 14px;
+}
+
+/* Checklist Items */
+.checklist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checklist-item {
+  background: #fdfbf8;
+  border: 1px solid #eedfd3;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 180ms var(--ease-out);
+}
+
+.checklist-item.checked-green {
+  background: #dff4ed;
+  border-color: #b7e8d8;
+}
+
+.checklist-item.checked-yellow {
+  background: #fef2d8;
+  border-color: #fae1ae;
+}
+
+.custom-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #a89f96;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: white;
+  flex-shrink: 0;
+  transition: all 150ms ease;
+}
+
+.checklist-item.checked-green .custom-checkbox,
+.checklist-item.checked-yellow .custom-checkbox {
+  background: #25bb8d;
+  border-color: #25bb8d;
+}
+
+.checklist-text-wrap {
+  flex: 1;
+}
+
+.checklist-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #211a16;
+  line-height: 1.35;
+}
+
+.checklist-item.checked-green .checklist-title,
+.checklist-item.checked-yellow .checklist-title {
+  color: #17604a;
+}
+
+/* ==========================================================================
+   ROLE-BASED MULTI-PERSONA SYSTEM (4대 역할 전용 스타일)
+   ========================================================================== */
+
+/* Top Master Role Bar */
+.master-role-bar {
+  background: #f1ede8;
+  border-bottom: 1px solid #e2d7cc;
+  padding: 8px 12px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  z-index: 85;
+}
+.master-role-bar::-webkit-scrollbar { display: none; }
+
+.role-pill-btn {
+  flex: 1;
+  min-width: 82px;
+  padding: 7px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: white;
+  border: 1px solid #dfd4c8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: all 180ms var(--ease-out);
+}
+
+.role-pill-btn:active {
+  transform: scale(0.95);
+}
+
+.role-pill-btn.active-pastor {
+  background: linear-gradient(135deg, #f79059 0%, #eb6f2b 100%);
+  color: white;
+  border-color: #d95e1e;
+  box-shadow: 0 2px 8px rgba(235, 111, 43, 0.3);
+}
+
+.role-pill-btn.active-accountant {
+  background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+  color: white;
+  border-color: #196f3d;
+  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+}
+
+.role-pill-btn.active-teacher {
+  background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+  color: white;
+  border-color: #ba4a00;
+  box-shadow: 0 2px 8px rgba(230, 126, 34, 0.3);
+}
+
+.role-pill-btn.active-student {
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  border-color: #2b669a;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+/* Role Identity Badge in Header */
+.role-identity-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 800;
+  margin-left: 6px;
+}
+
+.tag-pastor { background: #ffe9dd; color: #ba4a00; }
+.tag-accountant { background: #d4efdf; color: #196f3d; }
+.tag-teacher { background: #fdebd0; color: #b9770e; }
+.tag-student { background: #ebf5fb; color: #2471a3; }
+
+/* Student Portal: Study Cafe Seat Map */
+.seat-map-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+
+.seat-box {
+  background: white;
+  border: 1.5px solid #d4e6f1;
+  border-radius: var(--radius-sm);
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 160ms var(--ease-out);
+}
+
+.seat-box.occupied {
+  background: #f2f4f4;
+  border-color: #d5dbdb;
+  color: #7f8c8d;
+  cursor: not-allowed;
+}
+
+.seat-box.my-seat {
+  background: #d4efdf;
+  border-color: #27ae60;
+  color: #196f3d;
+  font-weight: 800;
+}
+
+.seat-box.selected {
+  background: #ebf5fb;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px #3498db;
+}
+
+.seat-num {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.seat-status-txt {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+/* Teacher: New Friend 4-Week Journey Card */
+.journey-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.journey-step-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.journey-step-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fdf2e8;
+  color: #c95616;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.journey-step-card.step-done {
+  background: #f4faf7;
+  border-color: #c8ece0;
+}
+
+.journey-step-card.step-done .journey-step-badge {
+  background: #27ae60;
+  color: white;
+}
+
+.journey-step-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #251e18;
+}
+
+.journey-step-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   USER ACCOUNT & ADMIN ROLE ASSIGNMENT SYSTEM (사용자 계정별 권한 부여)
+   ========================================================================== */
+
+.account-header-bar {
+  background: #fdfaf6;
+  border-bottom: 1px solid #ebdcd0;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.account-current-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #e2d2c4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.account-name-txt {
+  font-size: 12px;
+  font-weight: 800;
+  color: #2b221d;
+}
+
+.account-switch-btn {
+  background: #f1ebe2;
+  border: 1px solid #ded0c2;
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #695b50;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.account-switch-btn:active {
+  transform: scale(0.95);
+}
+
+/* User Accounts Management in Admin Panel */
+.user-mgmt-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.user-mgmt-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 13px 14px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 180ms var(--ease-out);
+}
+
+.user-mgmt-card:hover {
+  border-color: #f7bf9c;
+}
+
+.user-card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-info-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-mgmt-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fdf5ed;
+  border: 1.5px solid #fedbc5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.user-mgmt-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #221a15;
+}
+
+.user-mgmt-duty {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.role-assign-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fdfaf6;
+  border: 1px solid #f2e5d9;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.role-assign-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #615247;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.role-select-dropdown {
+  background: white;
+  border: 1.5px solid #fad2bb;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #3b2a20;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+
+.role-select-dropdown:focus {
+  border-color: #ea7030;
+}
+
+/* User Switcher Modal Grid */
+.user-switch-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.user-switch-item {
+  background: #fffdfb;
+  border: 1.5px solid #eee1d5;
+  border-radius: var(--radius-md);
+  padding: 12px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 160ms var(--ease-out);
+}
+
+.user-switch-item.current-user {
+  background: #fff2e8;
+  border-color: #f7a877;
+  box-shadow: 0 0 0 2px #f7a877;
+}
+
+.user-switch-item:active {
+  transform: scale(0.96);
+}
+
+
+
