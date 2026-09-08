@@ -235,7 +235,7 @@ const INITIAL_DATA = {
       role: "pastor",
       duty: "중고등부 총괄 사역 & 설교",
       phone: "010-1234-5678",
-      avatar: "👑",
+      avatar: "✝️",
       isAdmin: true
     },
     {
@@ -297,6 +297,12 @@ function loadState() {
       const parsed = JSON.parse(saved);
       if (!parsed.users || parsed.users.length === 0) {
         parsed.users = JSON.parse(JSON.stringify(INITIAL_DATA.users));
+      } else {
+        // Migrate u1 pastor avatar from 👑 to ✝️ if still present in localStorage
+        const pastorUser = parsed.users.find(u => u.id === "u1" || u.role === "pastor");
+        if (pastorUser && pastorUser.avatar === "👑") {
+          pastorUser.avatar = "✝️";
+        }
       }
       if (!parsed.currentUserId) {
         parsed.currentUserId = "u1";
@@ -1928,7 +1934,7 @@ const ROLES = {
     name: "정하람 전도사",
     title: "이룸교회 중고등부 예랑",
     subtitle: "2026년 10월 13일 주일",
-    badge: "👑 전도사 모드",
+    badge: "✝️ 전도사 모드",
     tagClass: "tag-pastor",
     activeClass: "active-pastor",
     tabs: [
@@ -2005,14 +2011,14 @@ const ROLE_NAMES = {
 };
 
 const ROLE_BADGES = {
-  pastor: '<span class="role-identity-tag tag-pastor" style="font-size:10px; padding:2px 6px;">👑 전도사</span>',
+  pastor: '<span class="role-identity-tag tag-pastor" style="font-size:10px; padding:2px 6px;">✝️ 전도사</span>',
   accountant: '<span class="role-identity-tag tag-accountant" style="font-size:10px; padding:2px 6px;">💼 회계쌤</span>',
   teacher: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님</span>',
   student: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>'
 };
 
 const DEFAULT_AVATARS = {
-  pastor: "👑",
+  pastor: "✝️",
   accountant: "💼",
   teacher: "🧑🏻‍🏫",
   student: "👦🏻"
@@ -2107,7 +2113,7 @@ function renderUserManagerSection() {
       </div>
       <div>
         <select class="role-select-dropdown" data-user-id="${user.id}">
-          <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>👑 전도사 (관리자)</option>
+          <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사 (관리자)</option>
           <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 회계선생님</option>
           <option value="teacher" ${user.role === "teacher" ? "selected" : ""}>🧑🏻‍🏫 선생님 (공과/새친구)</option>
           <option value="student" ${user.role === "student" ? "selected" : ""}>👦🏻 학생</option>
@@ -2226,7 +2232,7 @@ function switchMasterRole(roleKey, notify = true) {
   // 7. Sonner Toast Feedback
   if (notify) {
     const toastMsgMap = {
-      pastor: "👑 정하람 전도사 모드로 전환되었습니다. (사역 총괄 권한)",
+      pastor: "✝️ 정하람 전도사 모드로 전환되었습니다. (사역 총괄 권한)",
       accountant: "💼 나하은 회계선생님 모드로 전환되었습니다. (재정 마스터 권한)",
       teacher: "🧑🏻‍🏫 김대한 선생님 모드로 전환되었습니다. (공과 & 새친구반 권한)",
       student: "👦🏻 양형모 학생 모드로 전환되었습니다. (예랑 청소년부 포털)"

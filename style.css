@@ -117,11 +117,10 @@ body {
    ========================================================================== */
 
 .app-unified-header {
-  background: linear-gradient(180deg, #fed8c3 0%, #fef3ec 70%, var(--bg-primary) 100%);
-  padding: 10px 18px 14px;
-  border-bottom: 1px solid rgba(235, 205, 190, 0.5);
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 80;
+  border-bottom: 1px solid rgba(235, 205, 190, 0.5);
 }
 
 .header-main-row {
