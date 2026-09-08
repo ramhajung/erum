@@ -378,16 +378,39 @@
         <!-- Section: Quick Actions -->
         <section aria-label="빠른 실행 메뉴" class="grid grid-cols-2 gap-3">
 
-          <!-- Action 1: 권한 관리 -->
-          <button id="adminUserMgmtBanner" class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left" type="button">
-            <div class="w-10 h-10 rounded-xl bg-rose-50 text-primary flex items-center justify-center mb-3">
-              <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
-            </div>
-            <div class="font-bold text-[14px] text-gray-800 leading-tight">권한 관리</div>
-            <div class="text-[12px] text-gray-400 mt-0.5">교사 및 리더십</div>
-          </button>
+          <!-- Left: 권한 관리 + 회원승인 묶음 박스 -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
 
-          <!-- Action 2: 사역자 소통함 -->
+            <!-- 권한 관리 -->
+            <button id="adminUserMgmtBanner" class="flex items-center gap-3 p-4 active:bg-gray-50 transition-all text-left border-b border-gray-100" type="button">
+              <div class="w-9 h-9 rounded-xl bg-rose-50 text-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[19px]">admin_panel_settings</span>
+              </div>
+              <div>
+                <div class="font-bold text-[13px] text-gray-800 leading-tight">권한 관리</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">교사 및 리더십</div>
+              </div>
+            </button>
+
+            <!-- 회원승인 -->
+            <button id="openMemberApprovalBtn" class="flex items-center gap-3 p-4 active:bg-gray-50 transition-all text-left flex-1" type="button">
+              <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[19px]">how_to_reg</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold text-[13px] text-gray-800 leading-tight">회원승인</span>
+                  <span id="pendingCountBadge" class="hidden text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">
+                    <span id="pendingCountText">0명</span>
+                  </span>
+                </div>
+                <div class="text-[11px] text-gray-400 mt-0.5">승인 · 거절 관리</div>
+              </div>
+            </button>
+
+          </div>
+
+          <!-- Right: 사역자 소통함 -->
           <button id="openStaffBoxBtn" class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left" type="button">
             <div class="w-10 h-10 rounded-xl bg-teal-50 text-secondary flex items-center justify-center mb-3">
               <span class="material-symbols-outlined text-[20px]">mark_chat_unread</span>
@@ -396,26 +419,8 @@
             <div class="text-[12px] text-primary font-semibold mt-0.5">3건 새 소식</div>
           </button>
 
-          <!-- Action 3: 회원승인 -->
-          <button id="openMemberApprovalBtn" class="col-span-2 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left" type="button">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-[20px]">how_to_reg</span>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <span class="font-bold text-[14px] text-gray-800">회원승인</span>
-                  <span id="pendingCountBadge" class="hidden text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                    <span id="pendingCountText">0명 대기중</span>
-                  </span>
-                </div>
-                <div class="text-[12px] text-gray-400 mt-0.5">가입 신청자 승인 · 거절 관리</div>
-              </div>
-              <span class="material-symbols-outlined text-[18px] text-gray-300">chevron_right</span>
-            </div>
-          </button>
-
         </section>
+
 
 
         <!-- Section: 다가오는 주요 행사 (Carousel with Cool Highlight Hero Card) -->
