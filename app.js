@@ -3179,6 +3179,14 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
   const container = document.getElementById("staffBoxCardsContainer");
   if (!container || !appState.staffBox) return;
 
+  const isPastor = (currentRole === "pastor");
+
+  // 전도사에게는 '새 요청/건의 등록' 버튼 숨김 (교사/회계쌤에게만 노출)
+  const addBtn = document.getElementById("openAddStaffRequestBtn");
+  if (addBtn) {
+    addBtn.style.display = isPastor ? "none" : "";
+  }
+
   container.innerHTML = "";
   const filtered = appState.staffBox.items.filter(item => {
     if (filter === "all") return true;
@@ -3197,8 +3205,6 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
     return;
   }
 
-  const isPastor = (currentRole === "pastor");
-
   filtered.forEach(item => {
     const card = document.createElement("div");
     let borderClass = "";
@@ -3211,24 +3217,35 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
 
     const budgetText = item.budget ? ` | 예산: ${item.budget}` : "";
 
-    // 관리자(전도사)일 경우 승인완료 / 검토중을 선택할 수 있는 직관적인 토글 버튼 제공
+    // 관리자(전도사)일 경우 승인완료 / 검토중을 선택할 수 있는 직관적인 토글 버튼 + 건의 삭제 버튼 제공
     let statusControlHtml = "";
     if (isPastor) {
+      let toggleBtnHtml = "";
       if (item.status === "승인완료") {
-        statusControlHtml = `
-          <button type="button" class="staff-status-toggle-btn" data-item-id="${item.id}" style="padding:4px 10px; font-size:11.5px; font-weight:800; background:#d8f5ec; color:#177a60; border-radius:8px; border:1px solid #a3e9d3; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+        toggleBtnHtml = `
+          <button type="button" class="staff-status-toggle-btn" data-item-id="${item.id}" style="padding:4px 9px; font-size:11.5px; font-weight:800; background:#d8f5ec; color:#177a60; border-radius:8px; border:1px solid #a3e9d3; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
             <span>✓ 승인완료</span>
             <span style="font-size:9px; color:#5c9e8d; opacity:0.8;">(변경)</span>
           </button>
         `;
       } else {
-        statusControlHtml = `
-          <button type="button" class="staff-status-toggle-btn" data-item-id="${item.id}" style="padding:4px 10px; font-size:11.5px; font-weight:800; background:#fef0db; color:#bd6a1e; border-radius:8px; border:1px solid #fcd6a0; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+        toggleBtnHtml = `
+          <button type="button" class="staff-status-toggle-btn" data-item-id="${item.id}" style="padding:4px 9px; font-size:11.5px; font-weight:800; background:#fef0db; color:#bd6a1e; border-radius:8px; border:1px solid #fcd6a0; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
             <span>⏳ 검토중</span>
             <span style="font-size:9px; color:#c78546; opacity:0.8;">(승인하기)</span>
           </button>
         `;
       }
+
+      statusControlHtml = `
+        <div style="display:inline-flex; align-items:center; gap:5px;">
+          ${toggleBtnHtml}
+          <button type="button" class="staff-item-delete-btn" data-item-id="${item.id}" style="padding:4px 7px; font-size:11px; font-weight:700; background:#fff1f2; color:#e11d48; border-radius:8px; border:1px solid #fecdd3; cursor:pointer; display:inline-flex; align-items:center; gap:2px;" title="건의 삭제">
+            <span>🗑️</span>
+            <span>삭제</span>
+          </button>
+        </div>
+      `;
     } else {
       if (item.status === "승인완료") {
         statusControlHtml = `<span class="badge-approved">승인완료 ✓</span>`;
@@ -3334,6 +3351,37 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
         renderStaffBoxSection();
         updateStaffBoxHomeBadge();
         showToast(`'${item.title}' 상태가 [${nextStatus}]로 변경되었습니다! (회의 안건 동기화)`, "info");
+      });
+    }
+
+    // 관리자 건의 삭제 버튼 클릭 이벤트
+    const deleteStaffBtn = card.querySelector(".staff-item-delete-btn");
+    if (deleteStaffBtn) {
+      deleteStaffBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!confirm(`'${item.title}' 건의 항목을 소통함에서 완전히 삭제하시겠습니까?`)) {
+          return;
+        }
+
+        // 1. staffBox items 에서 제거
+        appState.staffBox.items = appState.staffBox.items.filter(s => s.id !== item.id);
+
+        // 2. 만약 회의안건이면 회의 탭의 pending 및 confirmed 에서도 동기화 삭제!
+        if (item.type === "회의안건") {
+          const rawItemTitle = item.title.replace(/^\[.*?\]\s*/, "").trim();
+          appState.agendas.pending = appState.agendas.pending.filter(a => 
+            !((item.agendaId && a.id === item.agendaId) || a.id === item.id || a.title.includes(rawItemTitle) || rawItemTitle.includes(a.title.replace("[제안]", "").trim()))
+          );
+          appState.agendas.confirmed = appState.agendas.confirmed.filter(a => 
+            !((item.agendaId && a.id === item.agendaId) || a.id === item.id || a.title.includes(rawItemTitle) || rawItemTitle.includes(a.title.replace(/\[안건 \d+\]/, "").trim()))
+          );
+          renderAgendaSection();
+        }
+
+        saveState();
+        renderStaffBoxSection();
+        updateStaffBoxHomeBadge();
+        showToast(`🗑️ '${item.title}' 건의 항목이 삭제되었습니다. (연동 완료)`, "info");
       });
     }
 
