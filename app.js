@@ -2082,7 +2082,7 @@ const ROLES = {
       { target: "view-home", icon: "home", label: "홈", title: "이룸교회 중고등부 예랑", subtitle: "2026년 10월 13일 주일" },
       { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
       { target: "view-students", icon: "groups", label: "학생부", title: "학생 심방 & 기도제목", subtitle: "청소년부 학생 돌봄 & 신앙 관리" },
-      { target: "view-agenda", icon: "diversity_3", label: "모임", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
+      { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
       { target: "view-accounting", icon: "account_balance_wallet", label: "재정", title: "부서 재정 및 회계 장부", subtitle: "실시간 실잔액 및 전체 교사 영수증 감독" }
     ],
     defaultTab: "view-home",
@@ -2101,7 +2101,7 @@ const ROLES = {
       { target: "view-accounting", icon: "account_balance_wallet", label: "회계장부", title: "부서 전체 실잔액 & 장부", subtitle: "영수증 정산 승인 및 구글 시트 연동" },
       { target: "view-receipt", icon: "photo_camera", label: "영수증", title: "AI 영수증 자동 등록", subtitle: "영수증 OCR 분석 및 구글 시트 연동" },
       { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
-      { target: "view-agenda", icon: "diversity_3", label: "모임", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" }
+      { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" }
     ],
     defaultTab: "view-accounting",
     showAccountingAdmin: true
