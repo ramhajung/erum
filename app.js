@@ -1926,17 +1926,17 @@ const ROLES = {
   pastor: {
     id: "pastor",
     name: "정하람 전도사",
-    title: "사역 총괄 대시보드",
-    subtitle: "정하람 전도사 · 마스터 관리 권한",
+    title: "이룸교회 중고등부 예랑",
+    subtitle: "2026년 10월 13일 주일",
     badge: "👑 전도사 모드",
     tagClass: "tag-pastor",
     activeClass: "active-pastor",
     tabs: [
-      { target: "view-home", icon: "🏠", label: "홈", title: "사역 총괄 대시보드", subtitle: "2024년 10월 13일 주일 🌤️" },
-      { target: "view-scheduler", icon: "🗓️", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
-      { target: "view-students", icon: "👦🏻", label: "학생부", title: "학생 심방 & 기도제목", subtitle: "청소년부 학생 돌봄 & 신앙 관리" },
-      { target: "view-agenda", icon: "📋", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
-      { target: "view-accounting", icon: "💰", label: "재정감독", title: "부서 재정 및 회계 장부", subtitle: "실시간 실잔액 및 전체 교사 영수증 감독" }
+      { target: "view-home", icon: "home", label: "홈", title: "이룸교회 중고등부 예랑", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
+      { target: "view-students", icon: "groups", label: "학생부", title: "학생 심방 & 기도제목", subtitle: "청소년부 학생 돌봄 & 신앙 관리" },
+      { target: "view-agenda", icon: "diversity_3", label: "모임", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
+      { target: "view-accounting", icon: "account_balance_wallet", label: "재정", title: "부서 재정 및 회계 장부", subtitle: "실시간 실잔액 및 전체 교사 영수증 감독" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: true
@@ -1950,11 +1950,11 @@ const ROLES = {
     tagClass: "tag-accountant",
     activeClass: "active-accountant",
     tabs: [
-      { target: "view-home", icon: "🏠", label: "홈", title: "회계 & 행정 대시보드", subtitle: "2024년 10월 13일 주일 🌤️" },
-      { target: "view-accounting", icon: "💰", label: "회계장부", title: "부서 전체 실잔액 & 장부", subtitle: "영수증 정산 승인 및 구글 시트 연동" },
-      { target: "view-receipt", icon: "📸", label: "영수증", title: "AI 영수증 자동 등록", subtitle: "영수증 OCR 분석 및 구글 시트 연동" },
-      { target: "view-scheduler", icon: "🗓️", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
-      { target: "view-agenda", icon: "📋", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" }
+      { target: "view-home", icon: "home", label: "홈", title: "회계 & 행정 대시보드", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-accounting", icon: "account_balance_wallet", label: "회계장부", title: "부서 전체 실잔액 & 장부", subtitle: "영수증 정산 승인 및 구글 시트 연동" },
+      { target: "view-receipt", icon: "photo_camera", label: "영수증", title: "AI 영수증 자동 등록", subtitle: "영수증 OCR 분석 및 구글 시트 연동" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
+      { target: "view-agenda", icon: "diversity_3", label: "모임", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" }
     ],
     defaultTab: "view-accounting",
     showAccountingAdmin: true
@@ -1968,11 +1968,11 @@ const ROLES = {
     tagClass: "tag-teacher",
     activeClass: "active-teacher",
     tabs: [
-      { target: "view-home", icon: "🏠", label: "홈", title: "교사 목양 대시보드", subtitle: "2024년 10월 13일 주일 🌤️" },
-      { target: "view-teacher-class", icon: "📚", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "🗓️", label: "스케줄", title: "주일 사전 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
-      { target: "view-agenda", icon: "📋", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
-      { target: "view-accounting", icon: "📑", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
+      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "주일 사전 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
+      { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
     defaultTab: "view-teacher-class",
     showAccountingAdmin: false
@@ -1986,10 +1986,10 @@ const ROLES = {
     tagClass: "tag-student",
     activeClass: "active-student",
     tabs: [
-      { target: "view-home", icon: "🏠", label: "홈", title: "예랑 청소년부 피드", subtitle: "주일 섬김이 · D-Day · 공지사항" },
-      { target: "view-student-study", icon: "🖥️", label: "예랑스카", title: "예랑 스카 자습실 좌석", subtitle: "중간고사 D-12 좌석 현황 & 야식 투표" },
-      { target: "view-students", icon: "💕", label: "기도나눔", title: "나의 기도제목 & 나눔", subtitle: "함께 기도하고 응원해요 🙏" },
-      { target: "view-student-counsel", icon: "💌", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
+      { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "주일 섬김이 · D-Day · 공지사항" },
+      { target: "view-student-study", icon: "chair", label: "예랑스카", title: "예랑 스카 자습실 좌석", subtitle: "중간고사 D-12 좌석 현황 & 야식 투표" },
+      { target: "view-students", icon: "favorite", label: "기도나눔", title: "나의 기도제목 & 나눔", subtitle: "함께 기도하고 응원해요 🙏" },
+      { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: false
@@ -2240,21 +2240,43 @@ function renderRoleTabBar(roleConfig) {
   if (!tabBar) return;
 
   tabBar.innerHTML = "";
-  roleConfig.tabs.forEach((tab, idx) => {
+  roleConfig.tabs.forEach((tab) => {
     const btn = document.createElement("button");
-    btn.className = `tab-btn ${tab.target === roleConfig.defaultTab ? "active" : ""}`;
+    const isActive = (tab.target === roleConfig.defaultTab);
+    btn.type = "button";
+    btn.className = `tab-btn flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-2xl transition-all duration-150 active:scale-95 ${
+      isActive ? "text-primary font-bold active" : "text-text-muted hover:text-primary hover:bg-surface-container/60 font-semibold"
+    }`;
     btn.dataset.target = tab.target;
     btn.dataset.title = tab.title;
     btn.dataset.subtitle = tab.subtitle;
 
+    const fillStyle = isActive ? "font-variation-settings: 'FILL' 1;" : "";
+    const wrapBg = isActive ? "bg-primary-fixed/50" : "";
+
     btn.innerHTML = `
-      <span class="tab-icon">${tab.icon}</span>
-      <span>${tab.label}</span>
+      <div class="tab-icon-wrap w-10 h-7 rounded-full flex items-center justify-center transition-colors ${wrapBg}">
+        <span class="material-symbols-outlined text-[23px]" style="${fillStyle}">${tab.icon}</span>
+      </div>
+      <span class="text-[11px] tracking-tight">${tab.label}</span>
     `;
 
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".bottom-tab-bar .tab-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
+      document.querySelectorAll(".bottom-tab-bar .tab-btn").forEach(b => {
+        b.classList.remove("active", "text-primary", "font-bold");
+        b.classList.add("text-text-muted", "font-semibold");
+        const iconWrap = b.querySelector(".tab-icon-wrap");
+        if (iconWrap) iconWrap.classList.remove("bg-primary-fixed/50");
+        const sym = b.querySelector(".material-symbols-outlined");
+        if (sym) sym.style.fontVariationSettings = "'FILL' 0";
+      });
+
+      btn.classList.add("active", "text-primary", "font-bold");
+      btn.classList.remove("text-text-muted", "font-semibold");
+      const activeWrap = btn.querySelector(".tab-icon-wrap");
+      if (activeWrap) activeWrap.classList.add("bg-primary-fixed/50");
+      const activeSym = btn.querySelector(".material-symbols-outlined");
+      if (activeSym) activeSym.style.fontVariationSettings = "'FILL' 1";
 
       document.querySelectorAll(".screen-view").forEach(v => {
         if (v.id === tab.target) {
@@ -2268,6 +2290,11 @@ function renderRoleTabBar(roleConfig) {
       const subtitleEl = document.getElementById("screenSubtitle");
       if (titleEl && tab.title) titleEl.textContent = tab.title;
       if (subtitleEl && tab.subtitle) subtitleEl.textContent = tab.subtitle;
+
+      // 구글 스프레드시트 실시간 동기화 (재정 탭 열람 시)
+      if (tab.target === "view-accounting" && typeof syncFromGoogleSheet === "function") {
+        syncFromGoogleSheet(false);
+      }
 
       const container = document.getElementById("screensContainer");
       if (container) container.scrollTo({ top: 0, behavior: "smooth" });

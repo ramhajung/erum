@@ -4,33 +4,33 @@
    ========================================================================== */
 
 :root {
-  /* Color Palette - Warm Church Peach & Mint */
-  --bg-primary: #fdfaf6;
-  --bg-secondary: #f6f0ea;
-  --bg-card: #ffffff;
-  --bg-cream: #fbf5ee;
+  /* Color Palette - Stitch Warm Terracotta & Sage & Linen Canvas */
+  --bg-primary: #FAF9F6;
+  --bg-secondary: #F3EDE6;
+  --bg-card: #FFFFFF;
+  --bg-cream: #F9F4E8;
   
-  --primary: #f59e6c;
-  --primary-hover: #e88950;
-  --primary-light: #fff2ea;
-  --primary-dark: #d97034;
+  --primary: #96432b;
+  --primary-hover: #7a2f18;
+  --primary-light: #FBEBE7;
+  --primary-dark: #3b0900;
   
-  --accent-mint: #38b293;
-  --accent-mint-light: #e6f7f3;
-  --accent-purple: #8e7bd9;
-  --accent-purple-light: #f1edff;
-  --accent-coral: #ee6b6b;
-  --accent-coral-light: #fef0f0;
+  --accent-mint: #47645f;
+  --accent-mint-light: #EDF3F1;
+  --accent-purple: #5c7a95;
+  --accent-purple-light: #edf5fd;
+  --accent-coral: #ba1a1a;
+  --accent-coral-light: #ffdad6;
   --accent-yellow: #f4aa3b;
-  --accent-yellow-light: #fef8eb;
-  --accent-blue: #4a90e2;
-  --accent-blue-light: #edf5fd;
+  --accent-yellow-light: #F9F4E8;
+  --accent-blue: #47645f;
+  --accent-blue-light: #EDF3F1;
 
-  --text-main: #2d2621;
-  --text-muted: #7d736a;
-  --text-sub: #a89f96;
-  --border-light: #eee5dc;
-  --border-subtle: #f0e9e2;
+  --text-main: #201E1D;
+  --text-muted: #635F5B;
+  --text-sub: #9C9790;
+  --border-light: rgba(99, 95, 91, 0.15);
+  --border-subtle: rgba(99, 95, 91, 0.08);
   
   /* Emil Design Guidelines Easing & Timing */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -41,17 +41,18 @@
   --duration-enter: 220ms;
   --duration-drawer: 280ms;
 
-  --shadow-sm: 0 2px 8px rgba(160, 130, 110, 0.06);
-  --shadow-md: 0 4px 16px rgba(160, 130, 110, 0.1);
-  --shadow-lg: 0 12px 32px rgba(140, 110, 90, 0.14);
-  --shadow-sheet: 0 -8px 30px rgba(70, 50, 40, 0.12);
+  --shadow-sm: 0 4px 16px rgba(60, 50, 40, 0.04);
+  --shadow-md: 0 8px 24px rgba(60, 50, 40, 0.06);
+  --shadow-lg: 0 16px 36px rgba(60, 50, 40, 0.09);
+  --shadow-sheet: 0 -8px 30px rgba(60, 50, 40, 0.1);
 
-  --radius-sm: 10px;
-  --radius-md: 16px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
   --radius-lg: 24px;
+  --radius-xl: 32px;
   --radius-full: 9999px;
   
-  --font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Pretendard", "SF Pro Text", "Segoe UI", sans-serif;
 }
 
 * {
@@ -388,39 +389,39 @@ button:active, .btn:active, .interactive-card:active {
 /* Primary Action Buttons */
 .btn-primary {
   width: 100%;
-  background: var(--accent-purple);
+  background: #96432b;
   color: white;
   font-size: 15px;
   font-weight: 700;
   padding: 14px;
-  border-radius: var(--radius-md);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(142, 123, 217, 0.35);
+  box-shadow: 0 4px 14px rgba(150, 67, 43, 0.25);
   margin-top: 10px;
 }
 
 .btn-primary:hover {
-  background: #7e69d0;
+  background: #7a2f18;
 }
 
 .btn-orange {
   width: 100%;
-  background: linear-gradient(135deg, #f59e6c 0%, #ee7d3f 100%);
+  background: linear-gradient(135deg, #96432b 0%, #ba5536 100%);
   color: white;
   font-size: 15px;
   font-weight: 700;
   padding: 14px;
-  border-radius: var(--radius-md);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(238, 125, 63, 0.35);
+  box-shadow: 0 4px 14px rgba(150, 67, 43, 0.25);
   margin-top: 12px;
 }
 
@@ -1593,22 +1594,12 @@ button:active, .btn:active, .interactive-card:active {
 }
 
 .tab-btn.active {
-  color: #ea7030;
+  color: #96432b;
   font-weight: 800;
 }
 
 .tab-btn.active .tab-icon {
-  transform: scale(1.12);
-}
-
-.tab-btn.active::before {
-  content: "";
-  position: absolute;
-  top: 0px;
-  width: 20px;
-  height: 3px;
-  background: #ea7030;
-  border-radius: 3px;
+  transform: scale(1.08);
 }
 
 /* ==========================================================================
@@ -2350,8 +2341,8 @@ button:active, .btn:active, .interactive-card:active {
 }
 
 .sub-nav-btn.active {
-  color: #ea7030;
-  border-bottom-color: #ea7030;
+  color: #96432b;
+  border-bottom-color: #96432b;
 }
 
 .event-hero-card {

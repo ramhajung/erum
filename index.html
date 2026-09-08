@@ -15,34 +15,168 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
 
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Tailwind Theme Configuration -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-container": "#00050d",
+            "inverse-on-surface": "#f6f0e9",
+            "tertiary-fixed": "#cce5ff",
+            "primary-fixed": "#ffdbd1",
+            "on-background": "#1d1b18",
+            "secondary-container": "#c9e9e3",
+            "surface": "#fff8f2",
+            "badge-terracotta-text": "#9E4830",
+            "on-surface-variant": "#55433e",
+            "outline-variant": "#dbc1ba",
+            "accent-butter-text": "#8F732A",
+            "inverse-surface": "#33302c",
+            "primary-container": "#b55b41",
+            "badge-indigo-bg": "#EDF3F8",
+            "badge-indigo-text": "#314B63",
+            "on-secondary-fixed-variant": "#2f4c47",
+            "on-tertiary-fixed-variant": "#2b4963",
+            "on-primary": "#ffffff",
+            "tertiary": "#43617b",
+            "outline": "#88726c",
+            "error": "#ba1a1a",
+            "on-secondary": "#ffffff",
+            "error-container": "#ffdad6",
+            "surface-container-low": "#f9f2ec",
+            "background": "#fff8f2",
+            "on-error": "#ffffff",
+            "surface-container-high": "#ede7e1",
+            "badge-terracotta-bg": "#FBEBE7",
+            "on-secondary-fixed": "#02201c",
+            "surface-card": "#FFFFFF",
+            "tertiary-fixed-dim": "#abcae8",
+            "badge-sage-bg": "#EDF3F1",
+            "text-secondary": "#635F5B",
+            "surface-container-lowest": "#ffffff",
+            "on-primary-fixed-variant": "#7a2f18",
+            "surface-container": "#f3ede6",
+            "on-primary-container": "#fffbff",
+            "primary-fixed-dim": "#ffb5a0",
+            "on-tertiary-fixed": "#001d31",
+            "surface-dim": "#dfd9d3",
+            "text-primary": "#201E1D",
+            "surface-tint": "#99452d",
+            "on-tertiary": "#ffffff",
+            "primary": "#96432b",
+            "secondary": "#47645f",
+            "badge-sage-text": "#3B5550",
+            "surface-subtle": "#F3F1EC",
+            "surface-container-highest": "#e8e1db",
+            "inverse-primary": "#ffb5a0",
+            "surface-bright": "#fff8f2",
+            "on-error-container": "#93000a",
+            "on-surface": "#1d1b18",
+            "secondary-fixed-dim": "#aecdc7",
+            "on-secondary-container": "#4d6a65",
+            "surface-canvas": "#FAF9F6",
+            "surface-variant": "#e8e1db",
+            "secondary-fixed": "#c9e9e3",
+            "accent-butter": "#F9F4E8",
+            "on-primary-fixed": "#3b0900",
+            "tertiary-container": "#5c7a95",
+            "text-muted": "#9C9790"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "3xl": "1.5rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.75rem",
+            "space-4xl": "3rem",
+            "space-lg": "1.25rem",
+            "space-3xl": "2.5rem",
+            "container-max": "28rem",
+            "space-xl": "1.5rem",
+            "space-2xs": "0.25rem",
+            "space-xs": "0.5rem",
+            "space-md": "1rem",
+            "gutter-screen": "1.25rem",
+            "space-2xl": "2rem"
+          },
+          "fontFamily": {
+            "sans": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "body-sm": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "headline-sm": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "label-sm": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "title-md": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "body-lg": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "body-md": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "display-lg": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "headline-lg": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "verse-quote": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "headline-md": ["Plus Jakarta Sans", "Pretendard", "sans-serif"],
+            "label-md": ["Plus Jakarta Sans", "Pretendard", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
 
-  <!-- Main Mobile Web Application Shell -->
-  <div class="app-wrapper" id="appWrapper">
+  <!-- Main Mobile Web Application Shell (Stitch Container) -->
+  <div class="app-wrapper w-full max-w-container-max min-h-screen bg-surface-canvas flex flex-col relative pb-28 shadow-2xl overflow-hidden mx-auto" id="appWrapper">
 
-    <!-- Unified Apple-Grade Header Bar (Image 3 exact match) -->
-    <header class="app-unified-header">
-      <div class="header-main-row">
-        <div class="header-brand-wrap">
-          <div class="church-main-title">
-            <span>이룸교회 중고등부 예랑</span>
-            <span class="weather-icon">⛅</span>
+    <!-- Ambient Glow Orbs in Background -->
+    <div class="absolute -top-12 -left-12 w-64 h-64 rounded-full bg-gradient-to-br from-primary/12 via-[#ffb5a0]/15 to-transparent blur-3xl pointer-events-none -z-0"></div>
+    <div class="absolute top-28 -right-10 w-60 h-60 rounded-full bg-gradient-to-bl from-accent-butter/70 via-secondary/8 to-transparent blur-3xl pointer-events-none -z-0"></div>
+
+    <!-- Top Status Bar & Header Anchor (Stitch Glassmorphism Header) -->
+    <header class="app-unified-header bg-surface/80 backdrop-blur-xl docked full-width top-0 sticky z-40 border-b border-outline-variant/20 shadow-[0_4px_24px_rgba(150,67,43,0.03)] transition-transform duration-150">
+      <div class="flex justify-between items-center max-w-container-max mx-auto px-gutter-screen h-[72px] w-full">
+        <!-- Brand & Community Info -->
+        <div class="flex flex-col justify-center">
+          <div class="flex items-center gap-2">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary ring-2 ring-white"></span>
+            </span>
+            <h1 class="text-headline-sm font-headline-sm font-extrabold text-text-primary tracking-tight">이룸교회 중고등부 예랑</h1>
           </div>
-          <div class="header-date-sub">(2026년 10월 13일 주일)</div>
+          <div class="flex items-center gap-1.5 mt-0.5">
+            <span class="material-symbols-outlined text-[13px] text-text-muted">calendar_today</span>
+            <p class="text-label-sm font-label-sm font-medium text-text-secondary">2026년 10월 13일 주일</p>
+          </div>
         </div>
-        
-        <!-- Interactive User Capsule Pill (Click to switch user) -->
-        <button class="user-capsule-btn" id="openUserSwitchModalBtn" title="계정 전환 및 프로필">
-          <span class="user-capsule-avatar" id="userHeaderAvatar">👑</span>
-          <span class="user-capsule-name" id="userHeaderName">정하람 전도사</span>
-          <span class="user-capsule-chevron">▾</span>
+
+        <!-- Pastor Profile Capsule (Modern FinTech Capsule) -->
+        <button id="openUserSwitchModalBtn" aria-label="담당 목회자 프로필 정보" class="flex items-center gap-2 bg-surface-card/90 backdrop-blur-md border border-white/80 rounded-full py-1.5 pl-1.5 pr-3 shadow-[0_2px_12px_rgba(60,50,40,0.06)] active:scale-95 transition-all duration-150 hover:bg-surface-card hover:border-primary/30 group" type="button">
+          <div class="relative">
+            <span id="userHeaderAvatar" class="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center text-label-sm font-bold shadow-sm ring-2 ring-white">
+              👑
+            </span>
+            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white"></span>
+          </div>
+          <div class="flex flex-col items-start leading-none text-left">
+            <span id="userHeaderName" class="text-label-sm font-label-sm font-bold text-text-primary group-hover:text-primary transition-colors">정하람 전도사</span>
+            <span class="text-[10px] text-text-muted font-medium mt-0.5">청소년부</span>
+          </div>
+          <span class="bg-badge-terracotta-bg text-badge-terracotta-text text-[11px] font-bold px-1.5 py-0.5 rounded-md border border-primary/10 ml-0.5">담당</span>
+          <span class="material-symbols-outlined text-[16px] text-text-muted group-hover:text-text-primary transition-colors -ml-1">expand_more</span>
         </button>
       </div>
-
-
 
       <!-- Context Sub-Row (Kept hidden for DOM accessibility / JS handlers) -->
       <div class="header-context-row" style="display: none;">
@@ -58,133 +192,296 @@
     <div class="sonner-toast-container" id="sonnerContainer"></div>
 
     <!-- Screens / Views Container -->
-    <main class="screens-container" id="screensContainer">
+    <main class="screens-container flex-1 px-gutter-screen pt-4 space-y-6 relative z-10" id="screensContainer">
 
       <!-- ===================================================================
-           TAB 0: 홈 대시보드 (New Image 2: 섬김이, D-Day, 로테이션, 공지)
+           TAB 0: 홈 대시보드 (Stitch Master Design)
            =================================================================== -->
-      <section class="screen-view active" id="view-home">
+      <section class="screen-view active space-y-6" id="view-home">
         
-        <!-- Quick Action Widgets Strip (Admin Management & Staff Box) -->
-        <div class="home-quick-strip">
-          <div class="quick-widget-card admin-widget-card" id="adminUserMgmtBanner" title="교사 & 학생 권한 관리">
-            <div class="widget-icon-box" style="background:#f1e9fe; color:#6b2cdb;">🛡️</div>
-            <div class="widget-text-box">
-              <div class="widget-title" style="color:#5219bc;">권한 관리</div>
-              <div class="widget-sub">교사/학생 역할 부여</div>
-            </div>
-            <span class="widget-arrow">›</span>
-          </div>
-
-          <div class="quick-widget-card staff-widget-card" id="openStaffBoxBtn" title="사역자 소통함 열기">
-            <div class="widget-icon-box" style="background:#ffeedf; color:#d9611b;">📬</div>
-            <div class="widget-text-box">
-              <div class="widget-title" style="color:#ad4309;">사역자 소통함</div>
-              <div class="widget-sub">건의 · 안건 · 구매요청</div>
-            </div>
-            <span class="widget-arrow">›</span>
-          </div>
-        </div>
-
-        <!-- 1) 이번 주 주일 섬김이 (Image 3 exact match) -->
-        <div class="home-service-outer-card">
-          <div class="home-service-header">
-            <div class="home-section-title">
-              <span class="home-num-badge">1</span>
-              <span>이번 주 주일 섬김이</span>
-            </div>
-            <span class="service-date-pill">10월 13일 (주)</span>
-          </div>
-
-          <div class="home-service-grid">
-            <div class="service-item">
-              <div class="service-icon-box">🎤</div>
-              <div>
-                <div class="service-label">대표기도</div>
-                <div class="service-person">김예원 (고2)</div>
+        <!-- Section: Quick Actions (Enhanced Neumorphic & Glass Hybrid Cards) -->
+        <section aria-label="빠른 실행 메뉴" class="grid grid-cols-2 gap-3">
+          <!-- Action 1: 권한 관리 -->
+          <button id="adminUserMgmtBanner" class="relative overflow-hidden p-4 bg-gradient-to-br from-white to-surface-card rounded-3xl border border-white/90 shadow-[0_8px_24px_rgba(60,50,40,0.05)] active:scale-98 transition-all hover:shadow-[0_10px_28px_rgba(150,67,43,0.1)] hover:border-primary/30 group text-left" type="button">
+            <div class="absolute -right-5 -top-5 w-16 h-16 rounded-full bg-gradient-to-bl from-primary/10 to-transparent pointer-events-none"></div>
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-badge-terracotta-bg to-white border border-primary/15 text-primary flex items-center justify-center shadow-sm group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-200">
+                <span class="material-symbols-outlined text-[22px]">admin_panel_settings</span>
               </div>
+              <span class="w-7 h-7 rounded-full bg-surface-container-low/70 flex items-center justify-center text-text-muted group-hover:text-primary group-hover:bg-badge-terracotta-bg transition-colors">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              </span>
             </div>
-            <div class="service-item">
-              <div class="service-icon-box">🧺</div>
-              <div>
-                <div class="service-label">헌금위원</div>
-                <div class="service-person">이유리, 이지훈</div>
-              </div>
-            </div>
-            <div class="service-item">
-              <div class="service-icon-box">🎸</div>
-              <div>
-                <div class="service-label">찬양팀</div>
-                <div class="service-person">예랑 워십팀</div>
-              </div>
-            </div>
-            <div class="service-item">
-              <div class="service-icon-box">🎧</div>
-              <div>
-                <div class="service-label">방송실</div>
-                <div class="service-person">김대한T</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2) D-Day 마정즈 (Image 3 exact match) -->
-        <div class="home-section-header" style="margin-top:16px;">
-          <div class="home-section-title">
-            <span class="home-num-badge">2</span>
-            <span>D-Day 마정즈</span>
-          </div>
-          <span style="font-size:11px; font-weight:700; color:var(--text-sub);">주요 행사 D-Day</span>
-        </div>
-        <div class="dday-scroll-row">
-          <div class="dday-chip orange-gradient-chip" id="chipGotoChecklist" title="행사 체크리스트로 이동">
-            <span class="dday-chip-icon">🖥️</span>
             <div>
-              <div class="dday-chip-title">예랑 스카</div>
-              <div class="dday-chip-count">D-12</div>
+              <span class="block text-title-md font-bold text-text-primary tracking-tight group-hover:text-primary transition-colors">권한 관리</span>
+              <span class="block text-label-sm font-label-sm text-text-secondary mt-0.5">교사 및 리더십</span>
             </div>
-          </div>
-          <div class="dday-chip pink-gradient-chip" id="chipGotoBirthdays" title="생일 캘린더로 이동">
-            <span class="dday-chip-icon">🎂</span>
-            <div>
-              <div class="dday-chip-title">10월 생일파티</div>
-              <div class="dday-chip-count">D-26</div>
-            </div>
-          </div>
-          <div class="dday-chip mint-gradient-chip">
-            <span class="dday-chip-icon">🎉</span>
-            <div>
-              <div class="dday-chip-title">친구초청예배</div>
-              <div class="dday-chip-count">D-12</div>
-            </div>
-          </div>
-        </div>
+          </button>
 
-        <!-- 3) 섬김 로테이션 & 공지사항 (Image 3 exact match) -->
-        <div class="home-rotation-outer-card">
-          <div class="home-section-header" style="margin-bottom:10px;">
-            <div class="home-section-title">
-              <span class="home-num-badge">3</span>
-              <span>섬김 로테이션 & 공지사항</span>
+          <!-- Action 2: 사역자 소통함 -->
+          <button id="openStaffBoxBtn" class="relative overflow-hidden p-4 bg-gradient-to-br from-white to-surface-card rounded-3xl border border-white/90 shadow-[0_8px_24px_rgba(60,50,40,0.05)] active:scale-98 transition-all hover:shadow-[0_10px_28px_rgba(71,100,95,0.12)] hover:border-secondary/30 group text-left" type="button">
+            <div class="absolute -right-5 -top-5 w-16 h-16 rounded-full bg-gradient-to-bl from-secondary/10 to-transparent pointer-events-none"></div>
+            <div class="flex items-start justify-between mb-3">
+              <div class="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-badge-sage-bg to-white border border-secondary/15 text-secondary flex items-center justify-center shadow-sm group-hover:scale-105 group-hover:bg-secondary group-hover:text-white transition-all duration-200">
+                <span class="material-symbols-outlined text-[22px]">mark_chat_unread</span>
+              </div>
+              <span class="inline-flex items-center gap-1 bg-badge-terracotta-bg text-badge-terracotta-text text-[11px] font-bold px-2 py-0.5 rounded-full border border-primary/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+                새소식
+              </span>
             </div>
-          </div>
-          <div class="rotation-row">
-            <div class="rotation-card">
-              <div class="rotation-avatar">🧑🏻‍🎓</div>
-              <div>
-                <div class="rotation-sub">주간 조력자</div>
-                <div class="rotation-name">최주안 고1</div>
+            <div>
+              <span class="block text-title-md font-bold text-text-primary tracking-tight group-hover:text-secondary transition-colors">사역자 소통함</span>
+              <div class="flex items-center gap-1 mt-0.5">
+                <span class="block text-label-sm font-label-sm font-semibold text-primary">3건</span>
+                <span class="text-label-sm font-label-sm text-text-secondary">새 소식 도착</span>
               </div>
             </div>
-            <div class="rotation-card rotation-notice-card">
-              <div class="rotation-avatar" style="background:#fef1dc;">⭐</div>
-              <div>
-                <div class="rotation-sub" style="color:#c06e1b;">금주 공지</div>
-                <div class="rotation-name" style="font-size:12px;">전 학년 간식 타임! 12시</div>
+          </button>
+        </section>
+
+        <!-- Section: 다가오는 주요 행사 (Carousel with Cool Highlight Hero Card) -->
+        <section aria-labelledby="events-heading" class="space-y-3.5">
+          <div class="flex items-center justify-between px-1">
+            <div class="flex items-center gap-2">
+              <h2 class="text-headline-sm font-bold text-text-primary tracking-tight" id="events-heading">다가오는 주요 행사</h2>
+              <span class="text-[11px] font-bold bg-primary-fixed/60 text-primary px-2 py-0.5 rounded-full ring-1 ring-primary/15">3개</span>
+            </div>
+            <button id="viewAllEventsBtn" class="text-label-sm font-label-sm text-text-secondary hover:text-primary font-bold flex items-center gap-0.5 transition-colors group" type="button">
+              전체보기
+              <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+            </button>
+          </div>
+
+          <!-- Horizontal Scrollable Cards Container -->
+          <div class="flex gap-3.5 overflow-x-auto hide-scrollbar -mx-gutter-screen px-gutter-screen pb-2 snap-x snap-mandatory pt-1">
+            <!-- Event Card 1: 예랑 스카 (Hero Premium Terracotta Gradient Card) -->
+            <article id="chipGotoChecklist" class="flex-shrink-0 w-[265px] snap-start bg-gradient-to-br from-[#9E4830] via-[#8B3B24] to-[#712D19] rounded-3xl p-4 text-white shadow-[0_12px_30px_rgba(150,67,43,0.28)] flex flex-col justify-between relative overflow-hidden group transition-all duration-200 cursor-pointer active:scale-98">
+              <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+              <div class="absolute right-3 bottom-2 text-white/[0.07] pointer-events-none select-none">
+                <span class="material-symbols-outlined text-[90px]">menu_book</span>
+              </div>
+              <div class="space-y-3 z-10">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/25 shadow-inner">
+                    <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                    <span class="text-white text-label-sm font-extrabold tracking-tight">D-12</span>
+                  </div>
+                  <span class="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-md text-white flex items-center justify-center border border-white/20">
+                    <span class="material-symbols-outlined text-[19px]">menu_book</span>
+                  </span>
+                </div>
+                <div>
+                  <span class="text-[11px] font-semibold text-white/75 tracking-wider uppercase">Focus Study Cafe</span>
+                  <h3 class="text-headline-md font-bold text-white tracking-tight mt-0.5">예랑 스카</h3>
+                  <p class="text-body-sm font-body-sm text-white/85 mt-0.5 line-clamp-1">중간고사 집중 스터디 카페</p>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-white/15 z-10 space-y-1.5 text-[12px]">
+                <div class="flex items-center gap-2 text-white font-semibold">
+                  <div class="w-5 h-5 rounded-md bg-white/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[13px] text-white">event</span>
+                  </div>
+                  <span>10월 25일 (토) 10:00</span>
+                </div>
+                <div class="flex items-center gap-2 text-white/80 font-medium">
+                  <div class="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[13px] text-white/80">location_on</span>
+                  </div>
+                  <span>예랑실 및 비전홀</span>
+                </div>
+              </div>
+            </article>
+
+            <!-- Event Card 2: 10월 생일파티 (Warm Butter Card) -->
+            <article id="chipGotoBirthdays" class="flex-shrink-0 w-[245px] snap-start bg-surface-card rounded-3xl p-4 border border-outline-variant/30 shadow-[0_8px_24px_rgba(60,50,40,0.06)] flex flex-col justify-between relative overflow-hidden group hover:border-accent-butter-text/50 transition-all cursor-pointer active:scale-98">
+              <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-accent-butter/80 -z-0 pointer-events-none"></div>
+              <div class="space-y-3 z-10">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-1 rounded-full bg-accent-butter text-accent-butter-text text-label-sm font-bold tracking-tight border border-accent-butter-text/20">
+                    D-26
+                  </span>
+                  <span class="w-8 h-8 rounded-xl bg-amber-50 text-accent-butter-text flex items-center justify-center border border-amber-200/50">
+                    <span class="material-symbols-outlined text-[19px]">cake</span>
+                  </span>
+                </div>
+                <div>
+                  <span class="text-[11px] font-semibold text-accent-butter-text tracking-wider uppercase">Blessing Day</span>
+                  <h3 class="text-headline-sm font-bold text-text-primary group-hover:text-accent-butter-text transition-colors">10월 생일파티</h3>
+                  <p class="text-body-sm font-body-sm text-text-muted mt-0.5">10월 생일자 축복의 시간</p>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-surface-container z-10 space-y-1.5 text-[12px]">
+                <div class="flex items-center gap-2 font-semibold text-text-secondary">
+                  <span class="material-symbols-outlined text-[15px] text-accent-butter-text">event</span>
+                  <span>11월 08일 (토) 14:00</span>
+                </div>
+                <div class="flex items-center gap-2 text-text-muted font-medium">
+                  <span class="material-symbols-outlined text-[15px]">celebration</span>
+                  <span>중고등부실 본당</span>
+                </div>
+              </div>
+            </article>
+
+            <!-- Event Card 3: 친구초청예배 (Sage Green Card) -->
+            <article class="flex-shrink-0 w-[245px] snap-start bg-surface-card rounded-3xl p-4 border border-outline-variant/30 shadow-[0_8px_24px_rgba(60,50,40,0.06)] flex flex-col justify-between relative overflow-hidden group hover:border-secondary/50 transition-all cursor-pointer active:scale-98">
+              <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-secondary/8 -z-0 pointer-events-none"></div>
+              <div class="space-y-3 z-10">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-1 rounded-full bg-badge-sage-bg text-badge-sage-text text-label-sm font-bold tracking-tight border border-secondary/20">
+                    D-12
+                  </span>
+                  <span class="w-8 h-8 rounded-xl bg-badge-sage-bg text-secondary flex items-center justify-center border border-secondary/20">
+                    <span class="material-symbols-outlined text-[19px]">volunteer_activism</span>
+                  </span>
+                </div>
+                <div>
+                  <span class="text-[11px] font-semibold text-secondary tracking-wider uppercase">Open Sunday</span>
+                  <h3 class="text-headline-sm font-bold text-text-primary group-hover:text-secondary transition-colors">친구초청예배</h3>
+                  <p class="text-body-sm font-body-sm text-text-muted mt-0.5">친구와 함께하는 열린 예배</p>
+                </div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-surface-container z-10 space-y-1.5 text-[12px]">
+                <div class="flex items-center gap-2 font-semibold text-text-secondary">
+                  <span class="material-symbols-outlined text-[15px] text-secondary">event</span>
+                  <span>10월 25일 (일) 11:00</span>
+                </div>
+                <div class="flex items-center gap-2 text-text-muted font-medium">
+                  <span class="material-symbols-outlined text-[15px]">favorite</span>
+                  <span>이룸교회 대예배실</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Section: 공지사항 및 주간 섬김 (Notices & Duty Roster) -->
+        <section aria-labelledby="duty-heading" class="space-y-4">
+          <!-- Notice Strip Banner -->
+          <div class="bg-gradient-to-r from-white via-surface-card to-badge-terracotta-bg/30 rounded-2xl p-3.5 border border-primary/15 shadow-[0_4px_16px_rgba(150,67,43,0.06)] flex items-center justify-between gap-3 hover:border-primary/30 transition-all cursor-pointer group">
+            <div class="flex items-center gap-3">
+              <div class="relative w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
+                <span class="material-symbols-outlined text-[19px]">campaign</span>
+              </div>
+              <div class="leading-tight">
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-primary-fixed text-primary border border-primary/20">금주 공지</span>
+                  <span class="text-[11px] font-semibold text-text-muted">12시</span>
+                </div>
+                <p class="text-body-sm font-bold text-text-primary mt-1 group-hover:text-primary transition-colors">전 학년 간식 타임! (식당 3층 모임)</p>
+              </div>
+            </div>
+            <div class="w-7 h-7 rounded-full bg-surface-container-low flex items-center justify-center text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all">
+              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </div>
+          </div>
+
+          <!-- Weekly Duty Roster Block -->
+          <div class="bg-surface-card rounded-3xl p-4.5 border border-white/80 shadow-[0_8px_30px_rgba(60,50,40,0.05)] space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-surface-container/80">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-badge-terracotta-bg text-primary flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[19px]">assignment_ind</span>
+                </div>
+                <div>
+                  <h2 class="text-title-md font-bold text-text-primary" id="duty-heading">이번 주 주일 섬김 (10/18)</h2>
+                  <p class="text-[11px] text-text-muted">정성된 마음으로 준비하는 예배</p>
+                </div>
+              </div>
+              <button aria-label="섬김 명단 수정 또는 조회" class="text-text-muted hover:text-primary p-1.5 rounded-xl hover:bg-surface-container transition-colors" type="button">
+                <span class="material-symbols-outlined text-[20px]">edit_note</span>
+              </button>
+            </div>
+
+            <!-- 2x2 Duty Grid with Tinted Pastel Icon Accents -->
+            <div class="grid grid-cols-2 gap-2.5">
+              <!-- 1) 대표기도 -->
+              <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-secondary/40 hover:bg-white transition-all group">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <div class="w-6 h-6 rounded-lg bg-emerald-50 text-secondary flex items-center justify-center">
+                      <span class="material-symbols-outlined text-[14px]">pan_tool</span>
+                    </div>
+                    <span class="text-label-sm font-bold text-text-secondary">대표기도</span>
+                  </div>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-secondary border border-secondary/20 shadow-2xs">학생회</span>
+                </div>
+                <div>
+                  <p class="text-title-md font-extrabold text-text-primary group-hover:text-secondary transition-colors">김예원</p>
+                  <p class="text-label-sm font-label-sm text-text-muted">고등부 2학년</p>
+                </div>
+              </div>
+
+              <!-- 2) 헌금위원 -->
+              <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-primary/40 hover:bg-white transition-all group">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <div class="w-6 h-6 rounded-lg bg-rose-50 text-primary flex items-center justify-center">
+                      <span class="material-symbols-outlined text-[14px]">volunteer_activism</span>
+                    </div>
+                    <span class="text-label-sm font-bold text-text-secondary">헌금위원</span>
+                  </div>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-primary border border-primary/20 shadow-2xs">2인</span>
+                </div>
+                <div>
+                  <p class="text-title-md font-extrabold text-text-primary truncate group-hover:text-primary transition-colors">이유리 · 이지훈</p>
+                  <p class="text-label-sm font-label-sm text-text-muted">중등부 3학년</p>
+                </div>
+              </div>
+
+              <!-- 3) 찬양팀 -->
+              <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-tertiary/40 hover:bg-white transition-all group">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <div class="w-6 h-6 rounded-lg bg-sky-50 text-tertiary flex items-center justify-center">
+                      <span class="material-symbols-outlined text-[14px]">music_note</span>
+                    </div>
+                    <span class="text-label-sm font-bold text-text-secondary">찬양팀</span>
+                  </div>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-badge-indigo-bg text-badge-indigo-text border border-badge-indigo-text/20">예배전</span>
+                </div>
+                <div>
+                  <p class="text-title-md font-extrabold text-text-primary group-hover:text-tertiary transition-colors">예랑 워십팀</p>
+                  <p class="text-label-sm font-label-sm text-text-muted">인도: 한성민 싱어</p>
+                </div>
+              </div>
+
+              <!-- 4) 방송실 -->
+              <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-outline/40 hover:bg-white transition-all group">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <div class="w-6 h-6 rounded-lg bg-stone-100 text-outline flex items-center justify-center">
+                      <span class="material-symbols-outlined text-[14px]">tune</span>
+                    </div>
+                    <span class="text-label-sm font-bold text-text-secondary">방송실</span>
+                  </div>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-badge-sage-bg text-badge-sage-text border border-badge-sage-text/20">음향/자막</span>
+                </div>
+                <div>
+                  <p class="text-title-md font-extrabold text-text-primary group-hover:text-outline transition-colors">김대한 선생님</p>
+                  <p class="text-label-sm font-label-sm text-text-muted">미디어사역부</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        <!-- Bible Verse of the Week Card (Emotional & Cohesive Quote Design) -->
+        <section aria-label="이번 주 말씀 암송" class="relative overflow-hidden rounded-3xl p-5 bg-gradient-to-br from-[#FCF8EE] via-[#FAF3E0] to-[#F5ECE0] border border-accent-butter-text/25 shadow-[0_6px_20px_rgba(143,115,42,0.07)] text-center">
+          <div class="absolute -left-2 -top-2 text-accent-butter-text/15 pointer-events-none select-none">
+            <span class="material-symbols-outlined text-[64px]">format_quote</span>
+          </div>
+          <div class="relative z-10 space-y-2">
+            <div class="inline-flex items-center justify-center gap-1.5 bg-white/70 backdrop-blur-sm px-3 py-1 rounded-full border border-accent-butter-text/20 text-accent-butter-text text-label-sm font-bold">
+              <span class="material-symbols-outlined text-[15px]">menu_book</span>
+              <span>금주의 말씀 · 디모데전서 4:12</span>
+            </div>
+            <blockquote class="text-verse-quote font-verse-quote text-[#3D352E] px-3 py-1 font-medium leading-relaxed tracking-tight">
+              “누구든지 네 연소함을 업신여기지 못하게 하고 오직 말과 행실과 사랑과 믿음과 정절에 있어서 믿는 자에게 본이 되어”
+            </blockquote>
+            <p class="text-[11px] font-semibold text-accent-butter-text/80 tracking-wide">— 이룸교회 예랑 2026 주제 구절 —</p>
+          </div>
+        </section>
 
       </section>
 
@@ -948,27 +1245,42 @@
 
     </main>
 
-    <!-- Bottom Tab Bar (iOS HIG Style) -->
-    <nav class="bottom-tab-bar" id="bottomTabBar">
-      <button class="tab-btn active" data-target="view-home" data-title="이룸교회 중고등부 예랑" data-subtitle="2024년 10월 13일 주일 🌤️">
-        <span class="tab-icon">🏠</span>
-        <span>홈</span>
+    <!-- Fixed Bottom Navigation Bar (Stitch Apple/Toss Dock Shell) -->
+    <nav aria-label="하단 네비게이션" class="bottom-tab-bar bg-surface/85 backdrop-blur-xl fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center max-w-container-max mx-auto px-space-xs py-2 border-t border-outline-variant/20 shadow-[0_-8px_24px_rgba(60,50,40,0.06)]" id="bottomTabBar">
+      <!-- 1: 홈 (Active) -->
+      <button class="tab-btn flex flex-col items-center justify-center text-primary font-bold gap-0.5 py-1 px-3 rounded-2xl active:scale-95 transition-all duration-150 relative group active" data-target="view-home" data-title="이룸교회 중고등부 예랑" data-subtitle="2026년 10월 13일 주일" type="button">
+        <div class="tab-icon-wrap w-10 h-7 rounded-full bg-primary-fixed/50 flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined text-[23px]" style="font-variation-settings: 'FILL' 1;">home</span>
+        </div>
+        <span class="text-[11px] font-bold tracking-tight">홈</span>
       </button>
-      <button class="tab-btn" data-target="view-scheduler" data-title="예랑 스마트 스케줄러" data-subtitle="사역 캘린더 · 생일 · 행사 D-Day · 사전 출결">
-        <span class="tab-icon">🗓️</span>
-        <span>스케줄</span>
+      <!-- 2: 스케줄 -->
+      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-scheduler" data-title="예랑 스마트 스케줄러" data-subtitle="사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" type="button">
+        <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[23px]">calendar_today</span>
+        </div>
+        <span class="text-[11px] font-semibold tracking-tight">스케줄</span>
       </button>
-      <button class="tab-btn" data-target="view-students" data-title="학생 심방 & 기도제목" data-subtitle="청소년부 학생 돌봄 & 신앙 관리">
-        <span class="tab-icon">👦🏻</span>
-        <span>학생부</span>
+      <!-- 3: 학생부 -->
+      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-students" data-title="학생 심방 & 기도제목" data-subtitle="청소년부 학생 돌봄 & 신앙 관리" type="button">
+        <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[23px]">groups</span>
+        </div>
+        <span class="text-[11px] font-semibold tracking-tight">학생부</span>
       </button>
-      <button class="tab-btn" data-target="view-agenda" data-title="이번 주 교사 회의 안건" data-subtitle="2026.09.13 주일 교사 회의 안건">
-        <span class="tab-icon">📋</span>
-        <span>회의</span>
+      <!-- 4: 모임 -->
+      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-agenda" data-title="이번 주 교사 회의 안건" data-subtitle="2026.09.13 주일 교사 회의 안건" type="button">
+        <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[23px]">diversity_3</span>
+        </div>
+        <span class="text-[11px] font-semibold tracking-tight">모임</span>
       </button>
-      <button class="tab-btn" data-target="view-accounting" data-title="역할별 회계 보안 시스템" data-subtitle="영수증 정산 및 권한별 잔액 열람">
-        <span class="tab-icon">🔒</span>
-        <span>회계</span>
+      <!-- 5: 재정 -->
+      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-accounting" data-title="역할별 회계 보안 시스템" data-subtitle="영수증 정산 및 권한별 잔액 열람" type="button">
+        <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[23px]">account_balance_wallet</span>
+        </div>
+        <span class="text-[11px] font-semibold tracking-tight">재정</span>
       </button>
     </nav>
 
