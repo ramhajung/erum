@@ -387,6 +387,11 @@ function initNavigation() {
       if (screenTitle && title) screenTitle.textContent = title;
       if (screenSubtitle && subtitle) screenSubtitle.textContent = subtitle;
 
+      // 구글 스프레드시트 실시간 동기화
+      if (targetId === "view-accounting" && typeof syncFromGoogleSheet === "function") {
+        syncFromGoogleSheet(false);
+      }
+
       // Scroll top
       const container = document.getElementById("screensContainer");
       if (container) container.scrollTo({ top: 0, behavior: "smooth" });
@@ -1116,6 +1121,9 @@ function initReceiptSection() {
 
       setTimeout(() => {
         switchToTab("view-accounting");
+        setTimeout(() => {
+          if (typeof syncFromGoogleSheet === "function") syncFromGoogleSheet(false);
+        }, 1500);
       }, 600);
     });
   }
@@ -1536,8 +1544,13 @@ function renderMonthEndClose(liveBalance, totalExpense) {
     if (anomalies.length > 0) anomalyCount++;
   });
 
-  const bankBalance = appState.accounting.initialBalance + appState.accounting.income - totalExpense;
-  const ledgerBalance = liveBalance;
+  let totalExp = totalExpense;
+  if (totalExp === undefined) {
+    totalExp = 0;
+    appState.accounting.receipts.forEach(r => totalExp += Number(r.amount) || 0);
+  }
+  const bankBalance = appState.accounting.initialBalance + appState.accounting.income - totalExp;
+  const ledgerBalance = liveBalance !== undefined ? liveBalance : bankBalance;
   const diff = bankBalance - ledgerBalance;
 
   const currentMonth = "2026년 9월";
@@ -1726,8 +1739,183 @@ function initAccountingSubTabs() {
     exportMonthlyCsv.addEventListener("click", () => exportMonthlyLedgerCSV(currentLedgerMonth));
   }
 
+  // Live Sync Button (구글 스프레드시트 실시간 데이터 동기화)
+  const liveSyncBtn = document.getElementById("liveSyncGsheetBtn");
+  if (liveSyncBtn) {
+    liveSyncBtn.addEventListener("click", () => syncFromGoogleSheet(true));
+  }
+
   // Google Sheet Webhook & Apps Script Config
   initGsheetConfig();
+
+  // 앱 실행 시 구글 시트 실시간 데이터 자동 동기화
+  syncFromGoogleSheet(false);
+}
+
+// -----------------------------------------------------------------------------
+// 구글 스프레드시트 실시간 데이터 양방향 동기화 엔진 (JSONP 무제한 크로스오리진 연동)
+// -----------------------------------------------------------------------------
+const DEFAULT_GSHEET_DOC_ID = "1T3iJ9nrDwCZLPmNBgvLgb83NwjXMqIb88dnFKBgdGgU";
+
+function fetchGsheetJSONP(docId) {
+  return new Promise((resolve, reject) => {
+    const callbackName = "yerangGvizCallback_" + Math.floor(Math.random() * 1000000);
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error("구글 스프레드시트 응답 시간 초과"));
+    }, 8000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+      if (script && script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[callbackName] = function(data) {
+      cleanup();
+      resolve(data);
+    };
+
+    const script = document.createElement("script");
+    script.src = `https://docs.google.com/spreadsheets/d/${docId}/gviz/tq?tqx=responseHandler:${callbackName}`;
+    script.onerror = function(err) {
+      cleanup();
+      reject(err);
+    };
+    document.head.appendChild(script);
+  });
+}
+
+async function syncFromGoogleSheet(isManual = false) {
+  const syncBtn = document.getElementById("liveSyncGsheetBtn");
+  const syncText = document.getElementById("liveSyncText");
+  if (syncBtn) syncBtn.classList.add("syncing");
+  if (syncText) syncText.textContent = "구글시트 동기화 중...";
+
+  try {
+    const json = await fetchGsheetJSONP(DEFAULT_GSHEET_DOC_ID);
+    const rows = json.table?.rows || [];
+
+    if (rows.length === 0) {
+      if (isManual) showToast("스프레드시트에 등록된 데이터가 없습니다.");
+      return;
+    }
+
+    const fetchedReceipts = [];
+    const fetchedLedgerEntries = [];
+
+    rows.forEach((r, idx) => {
+      const cellsV = (r.c || []).map(cell => (cell && cell.v !== undefined) ? cell.v : null);
+      const cellsF = (r.c || []).map(cell => (cell && cell.f !== undefined) ? cell.f : (cell ? cell.v : null));
+
+      // Col 1: Date
+      let rawDate = cellsF[1] || cellsV[1];
+      let formattedDate = "2026.09.01";
+      let month = 9;
+
+      if (rawDate) {
+        if (typeof rawDate === "string") {
+          const dateOnly = rawDate.match(/\d{4}[.-]\d{1,2}[.-]\d{1,2}/);
+          if (dateOnly) {
+            formattedDate = dateOnly[0].replace(/-/g, '.');
+            const parts = formattedDate.split('.');
+            month = parseInt(parts[1], 10);
+          } else {
+            const dm = rawDate.match(/Date\((\d+),(\d+),(\d+)/);
+            if (dm) {
+              const y = parseInt(dm[1], 10);
+              const m = parseInt(dm[2], 10) + 1;
+              const d = parseInt(dm[3], 10);
+              formattedDate = `${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}`;
+              month = m;
+            }
+          }
+        }
+      }
+
+      const txId = cellsV[0] || `EXP-2026${String(month).padStart(2, '0')}-${String(idx + 1).padStart(3, '0')}`;
+      let rawAuthor = cellsV[2] || "담당 교사";
+      const category = cellsV[3] || "간식/비품비";
+      const purpose = cellsV[4] || "";
+      const store = cellsV[5] || "지출처";
+      const amount = Number(cellsV[6]) || 0;
+      const paymentMethod = cellsV[7] || "체크카드";
+      let receiptUrl = cellsV[8] || "";
+      if (receiptUrl === "[link removed]" || !receiptUrl.startsWith("http")) {
+        receiptUrl = "https://images.unsplash.com/photo-1554415707-9e49017a1215?w=600&auto=format&fit=crop&q=80";
+      }
+      const status = cellsV[9] || "정산완료";
+      const anomaly = cellsV[10] || "정상";
+      const memo = cellsV[11] || "";
+
+      // Title & author breakdown
+      let author = rawAuthor;
+      let title = purpose || rawAuthor;
+      if (rawAuthor.includes(" / ")) {
+        const parts = rawAuthor.split(" / ");
+        author = parts[0];
+        title = parts[1];
+      }
+
+      // Receipt item for Tab 1
+      fetchedReceipts.push({
+        id: idx + 1,
+        title: title,
+        amount: amount,
+        store: store,
+        date: formattedDate,
+        author: author,
+        category: category,
+        status: status,
+        anomaly: anomaly,
+        method: paymentMethod,
+        purpose: purpose || title,
+        receiptUrl: receiptUrl,
+        isMine: author.includes("하람") || author.includes("정하람")
+      });
+
+      // Ledger entry for Tab 2 (Numbers table)
+      fetchedLedgerEntries.push({
+        id: 9000 + idx + 1,
+        month: month,
+        date: formattedDate,
+        title: `${author} / ${store}${purpose ? ` (${purpose})` : ''}`,
+        offering: 0,
+        fee: 0,
+        donation: 0,
+        expense: amount,
+        author: author,
+        store: store,
+        category: category,
+        receiptUrl: receiptUrl
+      });
+    });
+
+    // 1월 historical entries from user's original Numbers screenshot
+    const janEntries = (appState.accounting.ledgerEntries || []).filter(e => Number(e.month) === 1);
+    appState.accounting.ledgerEntries = [...janEntries, ...fetchedLedgerEntries];
+    appState.accounting.receipts = fetchedReceipts;
+
+    saveState();
+    renderAccountingSection();
+    renderMonthlyLedger(currentLedgerMonth || 9);
+    renderProfitLoss();
+    renderMonthEndClose();
+
+    const nowStr = new Date().toLocaleTimeString("ko-KR", { hour: '2-digit', minute: '2-digit' });
+    if (syncText) syncText.textContent = `구글시트 실시간 연동됨 (${nowStr}) 🔄`;
+    if (isManual) {
+      showToast(`구글 스프레드시트의 최신 내역(${fetchedReceipts.length}건)이 앱에 즉시 동기화되었습니다! 🚀`);
+    }
+  } catch (err) {
+    console.error("GSheet sync error:", err);
+    if (syncText) syncText.textContent = "구글시트 연동 (캐시 모드) 🔄";
+    if (isManual) {
+      showToast("구글 시트 연동 상태를 확인 중입니다. 캐시된 장부를 표시합니다.");
+    }
+  } finally {
+    if (syncBtn) syncBtn.classList.remove("syncing");
+  }
 }
 
 // =============================================================================

@@ -1132,6 +1132,31 @@ button:active, .btn:active, .interactive-card:active {
   font-weight: 700;
 }
 
+.live-sync-btn {
+  background: rgba(37, 187, 141, 0.12);
+  border: 1px solid rgba(37, 187, 141, 0.3);
+  padding: 5px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  color: #0f684f;
+}
+
+.live-sync-btn:hover {
+  background: rgba(37, 187, 141, 0.18);
+}
+
+.live-sync-btn:active {
+  transform: scale(0.96);
+  background: rgba(37, 187, 141, 0.25);
+}
+
+.live-sync-btn.syncing .live-dot {
+  background: #ea580c;
+  animation: pulse-dot 0.6s infinite;
+}
+
 .live-dot {
   width: 7px;
   height: 7px;
