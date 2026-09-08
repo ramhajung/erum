@@ -2276,10 +2276,10 @@ function switchMasterRole(roleKey, notify = true) {
   // 6. Update user header bar and admin banner visibility
   renderUserHeaderBar();
 
-  // 6-1. 사역자 소통함: 학생에게는 숨김
+  // 6-1. 사역자 소통함: 학생·선생님에게는 숨김 (전도사·회계쌤만 노출)
   const staffBoxBtn = document.getElementById("openStaffBoxBtn");
   if (staffBoxBtn) {
-    staffBoxBtn.style.display = roleKey === "student" ? "none" : "";
+    staffBoxBtn.style.display = (roleKey === "student" || roleKey === "teacher") ? "none" : "";
   }
 
   // 7. Sonner Toast Feedback
