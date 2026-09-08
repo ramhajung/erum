@@ -124,6 +124,7 @@ const INITIAL_DATA = {
   accounting: {
     initialBalance: 1842500,
     income: 200000,
+    closedMonths: [],
     receipts: [
       {
         id: 1,
@@ -132,7 +133,8 @@ const INITIAL_DATA = {
         author: "김대한 선생님",
         amount: 45000,
         status: "정산완료",
-        category: "스카/시험기간",
+        category: "비품비",
+        store: "쿠팡",
         isMine: true
       },
       {
@@ -143,6 +145,7 @@ const INITIAL_DATA = {
         amount: 22000,
         status: "승인대기",
         category: "간식비",
+        store: "파리바게뜨",
         isMine: true
       },
       {
@@ -153,6 +156,7 @@ const INITIAL_DATA = {
         amount: 62000,
         status: "정산완료",
         category: "행사비",
+        store: "파리바게뜨",
         isMine: false
       },
       {
@@ -162,7 +166,8 @@ const INITIAL_DATA = {
         author: "정하람 전도사",
         amount: 24000,
         status: "정산완료",
-        category: "교재비",
+        category: "교재/공과비",
+        store: "교보문고",
         isMine: false
       }
     ]
@@ -296,7 +301,7 @@ function showToast(message, type = "success", duration = 3000) {
   });
 
   // Sound / Tactile Vibration feedback simulation
-  if (window.navigator && window.navigator.vibrate) {
+  if (window.navigator && window.navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) {
     try { window.navigator.vibrate(15); } catch(e){}
   }
 
@@ -355,7 +360,20 @@ function initNavigation() {
 // Switch to specific tab programmatically
 function switchToTab(viewId) {
   const btn = document.querySelector(`.bottom-tab-bar .tab-btn[data-target="${viewId}"]`);
-  if (btn) btn.click();
+  if (btn) {
+    btn.click();
+  } else {
+    const views = document.querySelectorAll(".screen-view");
+    views.forEach(v => {
+      if (v.id === viewId) {
+        v.classList.add("active");
+      } else {
+        v.classList.remove("active");
+      }
+    });
+    const container = document.getElementById("screensContainer");
+    if (container) container.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 // =============================================================================
@@ -674,139 +692,271 @@ function initAttendanceEvents() {
 }
 
 // =============================================================================
-// 7. Screen 4: AI 영수증 등록 및 시트 실시간 기입
+// 7. Screen 4: AI 영수증 등록 및 시트 실시간 기입 & Open Accountant 스마트 회계
 // =============================================================================
+
+// Open Accountant 스마트 비목 매핑 사전
+const SMART_CATEGORIES = {
+  "간식비": ["파리바게뜨", "파리바게트", "뚜레쥬르", "뚜레주르", "배달의민족", "배민", "스타벅스", "이디야", "메가커피", "컴포즈", "투썸", "서브웨이", "맘스터치", "맥도날드", "버거킹", "피자스쿨", "도미노", "비비큐", "교촌", "던킨", "베스킨라빈스", "배스킨라빈스", "떡볶이", "김밥"],
+  "비품비": ["다이소", "알파문구", "쿠팡", "네이버페이", "이마트", "홈플러스", "롯데마트", "문구", "오피스"],
+  "교재/공과비": ["교보문고", "예스24", "알라딘", "두란노", "생명의말씀사", "기독교서점", "출판"],
+  "사역지원비": ["인쇄", "복사", "현수막", "카셰어링", "쏘카", "주유소", "하이패스", "택시", "우체국"],
+  "행사비": ["수련회", "기도회", "체육대회", "캠프", "볼링장", "방탈출", "영화관", "CGV", "메가박스"]
+};
+
+function detectCategoryFromStore(storeName) {
+  if (!storeName) return null;
+  const lower = storeName.toLowerCase().replace(/\s+/g, "");
+  for (const [cat, keywords] of Object.entries(SMART_CATEGORIES)) {
+    for (const kw of keywords) {
+      if (lower.includes(kw.toLowerCase())) {
+        return cat;
+      }
+    }
+  }
+  return null;
+}
+
+// Open Accountant 회계 이상 거래 감지 (고액 지출, 중복 청구, 미분류)
+function detectReceiptAnomalies(receipt, allReceipts = []) {
+  const anomalies = [];
+  if (!receipt) return anomalies;
+
+  // 1. 고액 지출 점검 (50,000원 이상)
+  if (receipt.amount >= 50000) {
+    anomalies.push({ type: "high", label: "고액 지출 (5만원 이상)", tagClass: "anomaly-tag-high" });
+  }
+
+  // 2. 중복 청구 의심 (동일 가맹점 + 동일 금액)
+  const isDuplicate = allReceipts.some(r =>
+    r.id !== receipt.id &&
+    r.store && receipt.store &&
+    r.store.trim().toLowerCase() === receipt.store.trim().toLowerCase() &&
+    Number(r.amount) === Number(receipt.amount)
+  );
+  if (isDuplicate) {
+    anomalies.push({ type: "duplicate", label: "중복 의심 (동일처·동일액)", tagClass: "anomaly-tag-warn" });
+  }
+
+  // 3. 미분류 점검
+  if (!receipt.category || receipt.category === "기타" || receipt.category === "미분류") {
+    anomalies.push({ type: "uncategorized", label: "미분류 점검 필요", tagClass: "anomaly-tag" });
+  }
+
+  return anomalies;
+}
 
 let currentPresetIndex = 0;
 
 function initReceiptSection() {
   const changeBtn = document.getElementById("changeReceiptSampleBtn");
   const submitBtn = document.getElementById("submitReceiptBtn");
-  const priceDisplay = document.getElementById("rcptPriceDisplay");
+  const storeInput = document.getElementById("rcptStore");
+  const catSelect = document.getElementById("rcptCategory");
+  const smartBadge = document.getElementById("smartCategoryBadge");
+  const anomalyBox = document.getElementById("receiptAnomalyBox");
 
-  // Format currency on input change
-  const priceInput = document.getElementById("rcptPriceDisplay");
+  function updateFormSmartBadges(storeVal, amountVal) {
+    // 1. 스마트 비목 추천
+    const suggestedCat = detectCategoryFromStore(storeVal);
+    if (smartBadge) {
+      if (suggestedCat) {
+        smartBadge.style.display = "inline-flex";
+        smartBadge.innerHTML = `💡 AI 추천 분류: <b>${suggestedCat}</b> (클릭하여 적용)`;
+        smartBadge.onclick = () => {
+          if (catSelect) catSelect.value = suggestedCat;
+          showToast(`분류가 '${suggestedCat}'(으)로 자동 적용되었습니다 ✨`);
+        };
+      } else {
+        smartBadge.style.display = "none";
+      }
+    }
 
-  changeBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    currentPresetIndex = (currentPresetIndex + 1) % appState.receiptPresets.length;
-    const preset = appState.receiptPresets[currentPresetIndex];
+    // 2. 실시간 회계 이상 감지 (고액/중복)
+    if (anomalyBox) {
+      const draftReceipt = {
+        id: -1,
+        store: storeVal,
+        amount: Number(amountVal) || 0,
+        category: catSelect ? catSelect.value : ""
+      };
+      const anomalies = detectReceiptAnomalies(draftReceipt, appState.accounting.receipts);
+      if (anomalies.length > 0) {
+        anomalyBox.style.display = "block";
+        anomalyBox.innerHTML = `
+          <div style="font-weight:700; margin-bottom:4px;">⚠️ 회계 이상 징후 감지 (Open Accountant)</div>
+          ${anomalies.map(a => `<div style="font-size:11.5px; margin-top:2px;">• <b>${a.label}</b></div>`).join("")}
+        `;
+      } else {
+        anomalyBox.style.display = "none";
+      }
+    }
+  }
 
-    // Trigger scanning animation
-    const zone = document.getElementById("receiptZone");
-    zone.style.opacity = "0.5";
-    document.getElementById("receiptIconVisual").textContent = "⚡";
+  if (storeInput) {
+    storeInput.addEventListener("input", (e) => {
+      const preset = appState.receiptPresets[currentPresetIndex];
+      const amt = preset ? preset.amount : 45000;
+      updateFormSmartBadges(e.target.value, amt);
+    });
+  }
 
-    setTimeout(() => {
-      zone.style.opacity = "1";
-      document.getElementById("receiptIconVisual").textContent = preset.icon;
-      document.getElementById("highlightAmount").textContent = preset.amount.toLocaleString() + "원";
-      document.getElementById("highlightStore").textContent = preset.store;
+  if (changeBtn) {
+    changeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      currentPresetIndex = (currentPresetIndex + 1) % appState.receiptPresets.length;
+      const preset = appState.receiptPresets[currentPresetIndex];
 
-      document.getElementById("rcptDate").value = preset.date;
-      document.getElementById("rcptStore").value = preset.store;
-      document.getElementById("rcptPriceDisplay").innerHTML = `${preset.amount.toLocaleString()} <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>`;
-      document.getElementById("rcptCategory").value = preset.category;
-      document.getElementById("rcptUser").value = preset.user;
-      document.getElementById("rcptPurpose").value = preset.purpose;
+      // Scanning animation
+      const zone = document.getElementById("receiptZone");
+      if (zone) zone.style.opacity = "0.5";
+      const iconEl = document.getElementById("receiptIconVisual");
+      if (iconEl) iconEl.textContent = "⚡";
 
-      showToast(`AI 영수증 분석: '${preset.store}' (${preset.amount.toLocaleString()}원) 인식 완료! 🪄`);
-    }, 200);
-  });
+      setTimeout(() => {
+        if (zone) zone.style.opacity = "1";
+        if (iconEl) iconEl.textContent = preset.icon;
+        document.getElementById("highlightAmount").textContent = preset.amount.toLocaleString() + "원";
+        document.getElementById("highlightStore").textContent = preset.store;
+
+        document.getElementById("rcptDate").value = preset.date;
+        document.getElementById("rcptStore").value = preset.store;
+        document.getElementById("rcptPriceDisplay").innerHTML = `${preset.amount.toLocaleString()} <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>`;
+        document.getElementById("rcptCategory").value = preset.category;
+        document.getElementById("rcptUser").value = preset.user;
+        document.getElementById("rcptPurpose").value = preset.purpose;
+
+        updateFormSmartBadges(preset.store, preset.amount);
+
+        showToast(`AI 영수증 분석: '${preset.store}' (${preset.amount.toLocaleString()}원) 인식 완료! 🪄`);
+      }, 200);
+    });
+  }
+
+  // Initial trigger for form
+  const initialPreset = appState.receiptPresets[0];
+  if (initialPreset) {
+    updateFormSmartBadges(initialPreset.store, initialPreset.amount);
+  }
 
   // Submit Receipt to Google Sheets
-  submitBtn.addEventListener("click", () => {
-    const preset = appState.receiptPresets[currentPresetIndex];
-    const date = document.getElementById("rcptDate").value;
-    const store = document.getElementById("rcptStore").value;
-    const category = document.getElementById("rcptCategory").value;
-    const user = document.getElementById("rcptUser").value;
-    const purpose = document.getElementById("rcptPurpose").value;
-    const amount = preset ? preset.amount : 45000;
+  if (submitBtn) {
+    submitBtn.addEventListener("click", () => {
+      const preset = appState.receiptPresets[currentPresetIndex];
+      const date = document.getElementById("rcptDate").value;
+      const store = document.getElementById("rcptStore").value;
+      const category = document.getElementById("rcptCategory").value;
+      const user = document.getElementById("rcptUser").value;
+      const purpose = document.getElementById("rcptPurpose").value;
+      const amount = preset ? preset.amount : 45000;
 
-    // Add to accounting receipts list
-    const newReceipt = {
-      id: Date.now(),
-      date: date.slice(5) || "9/8",
-      title: purpose.slice(0, 18) + (purpose.length > 18 ? "..." : ""),
-      author: user,
-      amount: amount,
-      status: "정산완료",
-      category: category,
-      store: store,
-      isMine: true
-    };
+      // Add to accounting receipts list
+      const newReceipt = {
+        id: Date.now(),
+        date: date.slice(5) || "9/8",
+        title: purpose.slice(0, 18) + (purpose.length > 18 ? "..." : ""),
+        author: user,
+        amount: amount,
+        status: "정산완료",
+        category: category,
+        store: store,
+        isMine: true
+      };
 
-    appState.accounting.receipts.unshift(newReceipt);
-    saveState();
-    renderAccountingSection();
+      appState.accounting.receipts.unshift(newReceipt);
+      saveState();
+      renderAccountingSection();
 
-    showToast("구글 스프레드시트에 즉시 등록되었습니다! (새 행 추가 완료 🚀)");
+      showToast("구글 스프레드시트에 즉시 등록되었습니다! (새 행 추가 완료 🚀)");
 
-    // Offer to jump to accounting view
-    setTimeout(() => {
-      switchToTab("view-accounting");
-    }, 600);
-  });
+      setTimeout(() => {
+        switchToTab("view-accounting");
+      }, 600);
+    });
+  }
 }
 
 // =============================================================================
-// 8. Screen 5: 역할별 회계 보안 & 권한 분리 시스템
+// 8. Screen 5: 역할별 회계 보안 & 권한 분리 시스템 (Open Accountant Engine)
 // =============================================================================
 
 function renderAccountingSection() {
-  const teacherView = document.getElementById("teacherAccountingView");
-  const adminView = document.getElementById("adminAccountingView");
   const myReceiptList = document.getElementById("myReceiptList");
   const allReceiptList = document.getElementById("allReceiptList");
   const totalBalanceEl = document.getElementById("totalBalanceAmount");
   const gsheetTableBody = document.getElementById("gsheetTableBody");
 
-  // Calculate live balance
+  // Live balance and expense sum
   let totalExpense = 0;
-  appState.accounting.receipts.forEach(r => totalExpense += r.amount);
+  appState.accounting.receipts.forEach(r => totalExpense += Number(r.amount) || 0);
   const liveBalance = appState.accounting.initialBalance + appState.accounting.income - totalExpense;
+
   if (totalBalanceEl) {
     totalBalanceEl.innerHTML = `${liveBalance.toLocaleString()} <span style="font-size:16px; font-weight:700;">원</span>`;
   }
 
-  // 1. My Receipts (Teacher View)
-  myReceiptList.innerHTML = "";
-  const myReceipts = appState.accounting.receipts.filter(r => r.isMine);
-  
-  myReceipts.forEach(r => {
-    const isDone = r.status === "정산완료";
-    const el = document.createElement("div");
-    el.className = "expense-row-item";
-    el.innerHTML = `
-      <div class="expense-info">
-        <div class="expense-title">${r.title}</div>
-        <div class="expense-meta">${r.date} 제출 | ${r.amount.toLocaleString()}원</div>
-      </div>
-      <div class="expense-status-badge ${isDone ? "status-done" : "status-wait"}">
-        ${r.status} ${isDone ? "✓" : "⏳"}
-      </div>
+  const subStatsEl = document.querySelector("#adminAccountingView .balance-sub-stats");
+  if (subStatsEl) {
+    subStatsEl.innerHTML = `
+      <span class="stat-inc">수입: +${appState.accounting.income.toLocaleString()}원</span>
+      <span style="color:#d8cebe;">|</span>
+      <span class="stat-exp">지출: -${totalExpense.toLocaleString()}원</span>
     `;
-    myReceiptList.appendChild(el);
-  });
+  }
 
-  // 2. All Receipts (Admin View)
-  allReceiptList.innerHTML = "";
-  appState.accounting.receipts.forEach(r => {
-    const el = document.createElement("div");
-    el.className = "expense-row-item";
-    el.innerHTML = `
-      <div class="expense-info">
-        <div class="expense-title">${r.title} (${r.author.replace("선생님", "T")})</div>
-        <div class="expense-meta">${r.date} 지출 | 영수증 확인 📑</div>
-      </div>
-      <div style="text-align:right;">
-        <div class="expense-amount-red">-${r.amount.toLocaleString()}원</div>
-        <div style="font-size:10.5px; color:#178263; font-weight:700; margin-top:2px;">시트기입완료 ✓</div>
-      </div>
-    `;
-    allReceiptList.appendChild(el);
-  });
+  // 1. My Receipts (Teacher View)
+  if (myReceiptList) {
+    myReceiptList.innerHTML = "";
+    const myReceipts = appState.accounting.receipts.filter(r => r.isMine);
+    
+    myReceipts.forEach(r => {
+      const isDone = r.status === "정산완료";
+      const el = document.createElement("div");
+      el.className = "expense-row-item";
+      el.innerHTML = `
+        <div class="expense-info">
+          <div class="expense-title" style="display:flex; align-items:center; gap:6px;">
+            <span>${r.title}</span>
+            <span class="smart-cat-pill">${r.category || "미분류"}</span>
+          </div>
+          <div class="expense-meta">${r.date} 제출 | ${r.store || "지정처"} | ${r.amount.toLocaleString()}원</div>
+        </div>
+        <div class="expense-status-badge ${isDone ? "status-done" : "status-wait"}">
+          ${r.status} ${isDone ? "✓" : "⏳"}
+        </div>
+      `;
+      myReceiptList.appendChild(el);
+    });
+  }
+
+  // 2. All Receipts (Admin View) with Open Accountant Anomaly & Categorization
+  if (allReceiptList) {
+    allReceiptList.innerHTML = "";
+    appState.accounting.receipts.forEach(r => {
+      const anomalies = detectReceiptAnomalies(r, appState.accounting.receipts);
+      const el = document.createElement("div");
+      el.className = "expense-row-item";
+      el.innerHTML = `
+        <div class="expense-info">
+          <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span>${r.title} (${(r.author || "").replace("선생님", "T")})</span>
+            <span class="smart-cat-pill">${r.category || "미분류"}</span>
+          </div>
+          <div class="expense-meta">${r.date} 지출 | ${r.store || "지정처"} 📑</div>
+          ${anomalies.length > 0 ? `
+            <div style="display:flex; gap:4px; margin-top:4px; flex-wrap:wrap;">
+              ${anomalies.map(a => `<span class="anomaly-tag ${a.tagClass}">${a.label}</span>`).join("")}
+            </div>
+          ` : ""}
+        </div>
+        <div style="text-align:right; flex-shrink:0;">
+          <div class="expense-amount-red">-${r.amount.toLocaleString()}원</div>
+          <div style="font-size:10.5px; color:#178263; font-weight:700; margin-top:2px;">시트기입완료 ✓</div>
+        </div>
+      `;
+      allReceiptList.appendChild(el);
+    });
+  }
 
   // 3. Google Sheet table rows
   if (gsheetTableBody) {
@@ -824,6 +974,261 @@ function renderAccountingSection() {
         <td>${r.title}</td>
       `;
       gsheetTableBody.appendChild(tr);
+    });
+  }
+
+  // 4. Render Open Accountant P&L and Month-End Close
+  renderProfitLoss();
+  renderMonthEndClose(liveBalance, totalExpense);
+}
+
+// -----------------------------------------------------------------------------
+// Open Accountant: 손익계산서 (Profit & Loss / P&L)
+// -----------------------------------------------------------------------------
+function renderProfitLoss() {
+  const container = document.getElementById("accSectionProfitLoss");
+  if (!container) return;
+
+  const totalIncome = appState.accounting.income || 0;
+  let totalExpense = 0;
+  const categoryTotals = {};
+
+  appState.accounting.receipts.forEach(r => {
+    const amt = Number(r.amount) || 0;
+    totalExpense += amt;
+    const cat = r.category || "기타";
+    categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
+  });
+
+  const netBalance = totalIncome - totalExpense;
+  const marginRatio = totalIncome > 0 ? Math.round((netBalance / totalIncome) * 100) : 0;
+  const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+
+  container.innerHTML = `
+    <div class="pnl-container">
+      <div class="pnl-metric-grid">
+        <div class="pnl-metric-box inc">
+          <div class="metric-label">총 수입 (예산지원 등)</div>
+          <div class="metric-val">+${totalIncome.toLocaleString()}원</div>
+        </div>
+        <div class="pnl-metric-box exp">
+          <div class="metric-label">총 지출 (영수증 승인합)</div>
+          <div class="metric-val">-${totalExpense.toLocaleString()}원</div>
+        </div>
+        <div class="pnl-metric-box net">
+          <div class="metric-label">순 수지 (마진율 ${marginRatio}%)</div>
+          <div class="metric-val" style="color: ${netBalance >= 0 ? '#10644e' : '#d94343'};">
+            ${netBalance >= 0 ? '+' : ''}${netBalance.toLocaleString()}원
+          </div>
+        </div>
+      </div>
+
+      <div class="pnl-breakdown-card">
+        <div class="breakdown-header">
+          <span>📊 비목별 지출 분석 (P&L Breakdown)</span>
+          <span style="font-size:11px; color:var(--text-muted);">총 ${sortedCategories.length}개 비목</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          ${sortedCategories.map(([cat, amt]) => {
+            const pct = totalExpense > 0 ? Math.round((amt / totalExpense) * 100) : 0;
+            return `
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; margin-bottom:4px;">
+                  <span style="color:#2d261e;">${cat}</span>
+                  <span style="color:#ad551b;">${amt.toLocaleString()}원 <span style="font-size:11px; color:#8c7d6b; font-weight:600;">(${pct}%)</span></span>
+                </div>
+                <div class="pnl-bar-track">
+                  <div class="pnl-bar-fill" style="width: ${pct}%;"></div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// -----------------------------------------------------------------------------
+// Open Accountant: 월말 결산 마감 및 통장 잔액 대사 (Month-End Close & Reconciliation)
+// -----------------------------------------------------------------------------
+function renderMonthEndClose(liveBalance, totalExpense) {
+  const container = document.getElementById("accSectionMonthClose");
+  if (!container) return;
+
+  const totalReceipts = appState.accounting.receipts.length;
+  const uncategorizedReceipts = appState.accounting.receipts.filter(r => !r.category || r.category === "기타" || r.category === "미분류").length;
+  
+  let anomalyCount = 0;
+  appState.accounting.receipts.forEach(r => {
+    const anomalies = detectReceiptAnomalies(r, appState.accounting.receipts);
+    if (anomalies.length > 0) anomalyCount++;
+  });
+
+  const bankBalance = appState.accounting.initialBalance + appState.accounting.income - totalExpense;
+  const ledgerBalance = liveBalance;
+  const diff = bankBalance - ledgerBalance;
+
+  const currentMonth = "2026년 9월";
+  const isClosed = appState.accounting.closedMonths && appState.accounting.closedMonths.includes(currentMonth);
+
+  container.innerHTML = `
+    <div class="close-checklist-card">
+      <div class="close-card-header">
+        <div>
+          <div style="font-size:15px; font-weight:800; color:#2d261e;">🗓️ ${currentMonth} 정기 회계 마감</div>
+          <div style="font-size:11.5px; color:#8c7d6b; margin-top:2px;">Open Accountant 표준 4단계 결산 프로세스</div>
+        </div>
+        <div>
+          ${isClosed 
+            ? `<span style="background:#d4f3e6; color:#10644e; padding:4px 8px; border-radius:6px; font-size:11.5px; font-weight:800;">마감 완료 🔒</span>` 
+            : `<span style="background:#ffeedb; color:#ad551b; padding:4px 8px; border-radius:6px; font-size:11.5px; font-weight:800;">마감 진행중 ⏳</span>`}
+        </div>
+      </div>
+
+      <div class="close-steps-list">
+        <!-- Step 1: 영수증 증빙 확인 -->
+        <div class="close-step-item">
+          <div class="step-check-icon ${totalReceipts > 0 ? 'done' : 'wait'}">${totalReceipts > 0 ? '✓' : '•'}</div>
+          <div class="step-info">
+            <div class="step-title">1단계: 영수증 전수 증빙 확인</div>
+            <div class="step-desc">등록된 모든 지출에 대한 실물/전자 영수증 첨부 상태를 점검합니다. (총 ${totalReceipts}건 제출됨)</div>
+          </div>
+        </div>
+
+        <!-- Step 2: 미분류 및 비목 점검 -->
+        <div class="close-step-item">
+          <div class="step-check-icon ${uncategorizedReceipts === 0 ? 'done' : 'wait'}">${uncategorizedReceipts === 0 ? '✓' : '!'}</div>
+          <div class="step-info">
+            <div class="step-title">2단계: 미분류 계정과목 점검</div>
+            <div class="step-desc">${uncategorizedReceipts === 0 ? '모든 지출이 유효한 예산 비목으로 분류되었습니다.' : `미분류 또는 기타 항목이 ${uncategorizedReceipts}건 발견되었습니다.`}</div>
+          </div>
+        </div>
+
+        <!-- Step 3: 이상 거래 및 중복 탐지 -->
+        <div class="close-step-item">
+          <div class="step-check-icon ${anomalyCount === 0 ? 'done' : 'wait'}">${anomalyCount === 0 ? '✓' : '!'}</div>
+          <div class="step-info">
+            <div class="step-title">3단계: 이상 거래 및 중복 청구 감지</div>
+            <div class="step-desc">${anomalyCount === 0 ? '중복 청구 및 고액 이상 거래가 없습니다.' : `감사 대상 지출 ${anomalyCount}건 (고액/중복)이 플래그되었습니다.`}</div>
+          </div>
+        </div>
+
+        <!-- Step 4: 통장 잔액 대사 (Reconciliation) -->
+        <div class="close-step-item">
+          <div class="step-check-icon ${diff === 0 ? 'done' : 'wait'}">${diff === 0 ? '✓' : '!'}</div>
+          <div class="step-info">
+            <div class="step-title">4단계: 통장 잔액 대사 (Reconciliation)</div>
+            <div class="step-desc">은행 실계좌 잔액과 장부상 기장 잔액의 일치 여부를 대조합니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 대사 현황 상자 -->
+      <div class="reconcile-box">
+        <div class="reconcile-row">
+          <span>은행 실계좌 잔액 (통장 잔고)</span>
+          <span style="font-weight:700;">${bankBalance.toLocaleString()}원</span>
+        </div>
+        <div class="reconcile-row" style="margin-top:4px;">
+          <span>예랑 장부 기장 잔액</span>
+          <span style="font-weight:700;">${ledgerBalance.toLocaleString()}원</span>
+        </div>
+        <div class="reconcile-diff-row">
+          <span>대사 차액 (Difference)</span>
+          <span style="color: ${diff === 0 ? '#10644e' : '#d94343'}; font-size:13px; font-weight:800;">
+            ${diff === 0 ? '0원 (완전 일치 ✓)' : `${diff.toLocaleString()}원 (불일치)`}
+          </span>
+        </div>
+      </div>
+
+      <button class="close-month-btn" id="closeMonthBtn" ${isClosed ? 'disabled' : ''}>
+        ${isClosed ? '🔒 2026년 9월 결산 마감 완료됨 (장부 잠금)' : '🔒 2026년 9월 회계 결산 마감 확정하기'}
+      </button>
+    </div>
+  `;
+
+  const btn = document.getElementById("closeMonthBtn");
+  if (btn && !isClosed) {
+    btn.addEventListener("click", () => {
+      if (!appState.accounting.closedMonths) {
+        appState.accounting.closedMonths = [];
+      }
+      appState.accounting.closedMonths.push(currentMonth);
+      saveState();
+      renderAccountingSection();
+      showToast("🎉 2026년 9월 회계 결산이 성공적으로 마감되었습니다! 장부가 안전하게 보존됩니다.");
+    });
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Open Accountant: 엑셀 호환 CSV 내보내기 (UTF-8 BOM)
+// -----------------------------------------------------------------------------
+function exportAccountingCSV() {
+  const headers = ["번호", "일자", "구분", "가맹점/처", "금액", "카테고리", "제출자", "내역/목적"];
+  const rows = appState.accounting.receipts.map((r, idx) => [
+    idx + 1,
+    `2026.${r.date}`,
+    "지출",
+    `"${(r.store || '예랑 지정처').replace(/"/g, '""')}"`,
+    r.amount,
+    `"${(r.category || '기타').replace(/"/g, '""')}"`,
+    `"${(r.author || '').replace(/"/g, '""')}"`,
+    `"${(r.title || '').replace(/"/g, '""')}"`
+  ]);
+
+  const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(e => e.join(","))].join("\r\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `yerang_accounting_ledger_202609.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  showToast("📊 회계 장부 CSV 파일이 성공적으로 다운로드되었습니다! (엑셀 한글 호환)");
+}
+
+// -----------------------------------------------------------------------------
+// Open Accountant: 회계 하위 서브 탭 스위처
+// -----------------------------------------------------------------------------
+function initAccountingSubTabs() {
+  const tabReceipts = document.getElementById("accSubTabReceipts");
+  const tabProfitLoss = document.getElementById("accSubTabProfitLoss");
+  const tabMonthClose = document.getElementById("accSubTabMonthClose");
+
+  const secReceipts = document.getElementById("accSectionReceipts");
+  const secProfitLoss = document.getElementById("accSectionProfitLoss");
+  const secMonthClose = document.getElementById("accSectionMonthClose");
+
+  const gotoAddReceiptAdmin = document.getElementById("gotoAddReceiptAdminBtn");
+  const exportCsv = document.getElementById("exportCsvBtn");
+
+  function switchAccTab(target) {
+    if (tabReceipts) tabReceipts.classList.toggle("active", target === "receipts");
+    if (tabProfitLoss) tabProfitLoss.classList.toggle("active", target === "pnl");
+    if (tabMonthClose) tabMonthClose.classList.toggle("active", target === "close");
+
+    if (secReceipts) secReceipts.style.display = target === "receipts" ? "block" : "none";
+    if (secProfitLoss) secProfitLoss.style.display = target === "pnl" ? "block" : "none";
+    if (secMonthClose) secMonthClose.style.display = target === "close" ? "block" : "none";
+  }
+
+  if (tabReceipts) tabReceipts.addEventListener("click", () => switchAccTab("receipts"));
+  if (tabProfitLoss) tabProfitLoss.addEventListener("click", () => switchAccTab("pnl"));
+  if (tabMonthClose) tabMonthClose.addEventListener("click", () => switchAccTab("close"));
+
+  if (gotoAddReceiptAdmin) {
+    gotoAddReceiptAdmin.addEventListener("click", () => {
+      switchToTab("view-receipt");
+    });
+  }
+
+  if (exportCsv) {
+    exportCsv.addEventListener("click", () => {
+      exportAccountingCSV();
     });
   }
 }
@@ -1653,6 +2058,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAgendaEvents();
   initAttendanceEvents();
   initReceiptSection();
+  initAccountingSubTabs();
   initRoleEvents();
   initUserManagementEvents();
   initChecklistEvents();

@@ -1228,6 +1228,295 @@ button:active, .btn:active, .interactive-card:active {
 }
 
 /* ==========================================================================
+   Open Accountant: Smart Categorize & Anomaly Detection UI
+   ========================================================================== */
+
+.smart-cat-badge {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 11.5px;
+  color: #166534;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: fadeIn 200ms ease;
+}
+
+.receipt-anomaly-alert {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 11.5px;
+  color: #9f1239;
+  margin-top: 8px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.anomaly-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.anomaly-tag-warn {
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fda4af;
+}
+.anomaly-tag-high {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+.smart-cat-pill {
+  background: #f0fdf4;
+  color: #15803d;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #bbf7d0;
+}
+
+/* ==========================================================================
+   Open Accountant: Profit & Loss (P&L) Statement UI
+   ========================================================================== */
+
+.pnl-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pnl-metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.pnl-metric-box {
+  background: white;
+  border: 1px solid #eee1d5;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pnl-metric-box.net {
+  grid-column: span 2;
+  background: #fcfaf7;
+  border-color: #eadcd0;
+}
+
+.pnl-metric-box .metric-label,
+.pnl-metric-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.pnl-metric-box .metric-val,
+.pnl-metric-val {
+  font-size: 17px;
+  font-weight: 900;
+  margin-top: 4px;
+  letter-spacing: -0.3px;
+}
+
+.pnl-metric-box.inc .metric-val {
+  color: #059669;
+}
+
+.pnl-metric-box.exp .metric-val {
+  color: #dc2626;
+}
+
+.pnl-breakdown-card {
+  background: white;
+  border: 1px solid #eee1d5;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pnl-breakdown-card .breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #211915;
+  margin-bottom: 12px;
+}
+
+.pnl-row-item {
+  margin-bottom: 12px;
+}
+.pnl-row-item:last-child {
+  margin-bottom: 0;
+}
+
+.pnl-row-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+  color: #2e2621;
+  margin-bottom: 5px;
+}
+
+.pnl-bar-track {
+  width: 100%;
+  height: 7px;
+  background: #f3ece5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pnl-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  transition: width 400ms var(--ease-out);
+}
+
+/* ==========================================================================
+   Open Accountant: Month-End Close & Reconciliation UI
+   ========================================================================== */
+
+.close-checklist-card {
+  background: white;
+  border: 1px solid #eee1d5;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.close-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.close-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.close-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: #faf7f2;
+  border: 1px solid #f0e6dc;
+}
+
+.step-check-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  margin-top: 1px;
+}
+
+.step-check-icon.done {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.step-check-icon.wait {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.step-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.step-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #211915;
+  margin-bottom: 2px;
+}
+
+.step-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.reconcile-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1.5px solid #86efac;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-top: 12px;
+}
+
+.reconcile-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: #166534;
+  margin-bottom: 6px;
+}
+
+.reconcile-diff-row {
+  border-top: 1px dashed #86efac;
+  padding-top: 8px;
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 900;
+  color: #14532d;
+}
+
+.close-month-btn {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.25);
+  margin-top: 12px;
+  transition: transform var(--duration-press) var(--ease-out);
+}
+.close-month-btn:active {
+  transform: scale(0.97);
+}
+
+/* ==========================================================================
    Apple Style Bottom Navigation Bar
    ========================================================================== */
 

@@ -557,6 +557,12 @@
             </div>
           </div>
 
+          <!-- Open Accountant: Smart Categorize & Anomaly Detection Badges -->
+          <div id="smartCategoryBadge" class="smart-cat-badge">
+            <span>✨ AI 스마트 분류: </span><b id="smartCatRuleText">가맹점 패턴 매칭 적용됨</b>
+          </div>
+          <div id="receiptAnomalyBox" class="receipt-anomaly-alert" style="display:none;"></div>
+
           <div class="field-box" style="margin-top: 10px;">
             <div class="field-label">📝 지출 목적 / 세부 품목</div>
             <input type="text" class="field-input" id="rcptPurpose" value="예랑 스카 야간 자습용 고속 멀티탭 10구 3개 구매">
@@ -646,13 +652,44 @@
             </div>
           </div>
 
-          <div class="section-label">
-            <span>📊 전체 교사 영수증 & 금액 상세 내역</span>
-            <span style="font-size:11px; font-weight:700; color:var(--accent-mint);">실시간 집계</span>
+          <!-- Open Accountant Sub-Navigation Tabs -->
+          <div class="sub-nav-tabs" style="margin-top: 14px; margin-bottom: 12px;">
+            <button class="sub-nav-btn active" id="accSubTabReceipts">영수증 내역</button>
+            <button class="sub-nav-btn" id="accSubTabProfitLoss">수입/지출 결산 (P&L)</button>
+            <button class="sub-nav-btn" id="accSubTabMonthClose">월말 결산 체크리스트</button>
           </div>
-          <div id="allReceiptList">
+
+          <!-- Section 1: 영수증 및 지출 상세 내역 (스마트 카테고리 & 이상 탐지 배지) -->
+          <div id="accSectionReceipts">
+            <div class="section-label">
+              <span>📊 전체 교사 영수증 & 지출 내역</span>
+              <span style="font-size:11px; font-weight:700; color:var(--accent-mint);">실시간 집계</span>
+            </div>
+            <div id="allReceiptList">
+              <!-- Populated by JS -->
+            </div>
+            <div style="display:flex; gap:8px; margin-top:14px;">
+              <button class="btn-orange" id="gotoAddReceiptAdminBtn" style="flex:1;">
+                <span>📷</span> <span>+ 영수증 사진 등록</span>
+              </button>
+              <button class="btn-secondary" id="exportCsvBtn" style="flex:1; border-color:#fad5b6; color:#ad551b; font-size:12px; font-weight:800;">
+                <span>📥</span> <span>장부 CSV 내보내기</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 2: 수입/지출 손익 결산서 (Open Accountant P&L) -->
+          <div id="accSectionProfitLoss" style="display: none;">
             <!-- Populated by JS -->
           </div>
+
+          <!-- Section 3: 월말 결산 마감 & 대사 (Open Accountant Month-End Close) -->
+          <div id="accSectionMonthClose" style="display: none;">
+            <!-- Populated by JS -->
+          </div>
+
+        </div>
+      </section>
 
       <!-- ===================================================================
            ROLE EXCLUSIVE VIEW 1: 선생님 전용 (공과공부 & 새친구반 적응 관리)
