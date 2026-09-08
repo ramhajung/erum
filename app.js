@@ -787,6 +787,9 @@ let currentPresetIndex = 0;
 let currentUploadedImage = null;
 let currentLedgerMonth = 1;
 
+// 공식 구글 Apps Script Webhook URL 기본값
+const DEFAULT_GSHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxGj8aUgeBqKZ1yfVRBdn2ZtiPLIRfqXJWvy1ZCRi19qBNqK7uEZqoHVB5fJsqxPwNx/exec";
+
 // Google Apps Script 연동 템플릿 코드
 const APPS_SCRIPT_TEMPLATE = `/**
  * 이룸교회 중고등부 예랑 - 스마트 회계 & 영수증 드라이브 자동 연동 스크립트
@@ -1082,7 +1085,7 @@ function initReceiptSection() {
       appState.accounting.ledgerEntries.unshift(newLedgerEntry);
 
       // 3. Send to Google Apps Script Web App if configured
-      const webhookUrl = localStorage.getItem("yerang_gsheet_webhook_url");
+      const webhookUrl = localStorage.getItem("yerang_gsheet_webhook_url") || DEFAULT_GSHEET_WEBHOOK_URL;
       if (webhookUrl && webhookUrl.startsWith("http")) {
         try {
           fetch(webhookUrl, {
@@ -1385,7 +1388,7 @@ function initGsheetConfig() {
   }
 
   if (urlInput) {
-    urlInput.value = localStorage.getItem("yerang_gsheet_webhook_url") || "";
+    urlInput.value = localStorage.getItem("yerang_gsheet_webhook_url") || DEFAULT_GSHEET_WEBHOOK_URL;
   }
 
   if (openBtn) {
