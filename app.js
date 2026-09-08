@@ -2879,7 +2879,6 @@ function initAuthScreen() {
       e.preventDefault();
       const name = document.getElementById("signupNameInput").value.trim();
       const role = document.getElementById("signupRoleInput").value;
-      const duty = document.getElementById("signupDutyInput").value.trim();
       const phone = document.getElementById("signupPhoneInput").value.trim();
 
       if (!name) return;
@@ -2888,7 +2887,7 @@ function initAuthScreen() {
         id: "u_" + Date.now(),
         name: name,
         role: role,
-        duty: duty || `${ROLE_NAMES[role]}`,
+        duty: `${ROLE_NAMES[role]}`,
         phone: phone || "010-0000-0000",
         avatar: DEFAULT_AVATARS[role] || "👤",
         isAdmin: (role === "pastor")
