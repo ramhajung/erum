@@ -1,0 +1,9 @@
+{
+  "name": "yerang",
+  "version": "1.0.0",
+  "private": true,
+  "description": "이룸교회 중고등부 예랑 스마트 사역 관리 앱",
+  "scripts": {
+    "build": "echo 'Static build ready'"
+  }
+}
