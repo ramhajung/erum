@@ -416,7 +416,7 @@
               <span class="material-symbols-outlined text-[20px]">mark_chat_unread</span>
             </div>
             <div class="font-bold text-[14px] text-gray-800 leading-tight">사역자 소통함</div>
-            <div class="text-[12px] text-primary font-semibold mt-0.5">3건 새 소식</div>
+            <div id="staffBoxCountText" class="text-[12px] text-primary font-semibold mt-0.5">3건 새 소식</div>
           </button>
 
         </section>
@@ -1453,8 +1453,9 @@
       </button>
       <!-- 4: 회의 -->
       <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-agenda" data-title="이번 주 교사 회의 안건" data-subtitle="2026.09.13 주일 교사 회의 안건" type="button">
-        <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center">
+        <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center relative">
           <span class="material-symbols-outlined text-[23px]">diversity_3</span>
+          <span id="meetingNavBadgeStatic" class="meeting-nav-badge hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none shadow-sm">0</span>
         </div>
         <span class="text-[11px] font-semibold tracking-tight">회의</span>
       </button>
@@ -1680,7 +1681,7 @@
         <!-- Filter Chips: 전체, 검토중, 승인완료 -->
         <div class="filter-chips-row">
           <button class="filter-chip-btn active" data-staff-filter="all">[전체]</button>
-          <button class="filter-chip-btn" data-staff-filter="검토중">⏳ 검토중</button>
+          <button class="filter-chip-btn" data-staff-filter="검토중">⏳ 검토중 <span id="staffFilterReviewBadge" style="display:none; margin-left:4px; padding:1px 6px; background:#ffedd5; color:#c2410c; border-radius:999px; font-size:10px; font-weight:800;">0</span></button>
           <button class="filter-chip-btn" data-staff-filter="승인완료">✓ 승인완료</button>
         </div>
 

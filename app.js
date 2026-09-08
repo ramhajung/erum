@@ -225,7 +225,7 @@ const INITIAL_DATA = {
     items: [
       { id: 1, type: "구매요청", title: "방송실 고속 HDMI 케이블 & 멀티탭 10구", author: "김대한T", budget: "45,000원", status: "승인완료", badgeType: "approved" },
       { id: 2, type: "사역건의", title: "예랑 스카 야식 쉼터 공간 분리 제안", author: "소예진T", budget: null, status: "검토중", badgeType: "review" },
-      { id: 3, type: "회의안건", title: "9월 교사 월례회 중간고사 심방 안건", author: "정하람 전도사", budget: null, status: "공유됨", badgeType: "normal" }
+      { id: 3, type: "회의안건", title: "찬양팀 토요 연습시간 변경의 건", author: "소예진 선생님", budget: null, status: "검토중", badgeType: "review", agendaId: 101 }
     ]
   },
   users: [
@@ -322,6 +322,21 @@ function loadState() {
       }
       if (typeof parsed.isAuthenticated !== "boolean") {
         parsed.isAuthenticated = false;
+      }
+      if (!parsed.agendas) {
+        parsed.agendas = JSON.parse(JSON.stringify(INITIAL_DATA.agendas));
+      }
+      if (!parsed.staffBox) {
+        parsed.staffBox = JSON.parse(JSON.stringify(INITIAL_DATA.staffBox));
+      }
+      // Ensure agendaId linkage between pending agendas and staffBox items
+      if (parsed.agendas && parsed.agendas.pending && parsed.staffBox && parsed.staffBox.items) {
+        parsed.agendas.pending.forEach(pa => {
+          const matched = parsed.staffBox.items.find(si => si.type === "회의안건" && (si.agendaId === pa.id || si.title.includes(pa.title.replace("[제안]", "").trim())));
+          if (matched) {
+            matched.agendaId = pa.id;
+          }
+        });
       }
       return parsed;
     } catch (e) {
@@ -613,9 +628,16 @@ function renderAgendaSection() {
       deleteBtn.addEventListener("click", () => {
         if (confirm(`'${agenda.title}' 안건을 회의 목록에서 삭제하시겠습니까?`)) {
           appState.agendas.confirmed = appState.agendas.confirmed.filter(a => a.id !== agenda.id);
+          // 사역자 소통함(staffBox)에서도 연동 삭제
+          if (appState.staffBox && appState.staffBox.items) {
+            const raw = agenda.title.replace(/\[안건 \d+\]/, "").trim();
+            appState.staffBox.items = appState.staffBox.items.filter(s => !(s.agendaId === agenda.id || s.id === agenda.id || s.title.includes(raw) || raw.includes(s.title)));
+          }
           saveState();
           renderAgendaSection();
-          showToast(`🗑️ 안건이 삭제되었습니다.`, "info");
+          renderStaffBoxSection();
+          updateStaffBoxHomeBadge();
+          showToast(`🗑️ 안건이 삭제되었습니다. (소통함 연동)`, "info");
         }
       });
     }
@@ -667,6 +689,8 @@ function renderAgendaSection() {
 
   confirmedCountEl.textContent = appState.agendas.confirmed.length;
   pendingCountEl.textContent = appState.agendas.pending.length;
+
+  updateMeetingNavBadge();
 }
 
 function openEditAgendaModal(agendaId) {
@@ -693,9 +717,33 @@ function approveAgenda(id) {
     type: "peach"
   });
 
+  // 사역자 소통함(staffBox)에도 동일 안건이 있다면 승인완료로 함께 연동 업데이트
+  if (appState.staffBox && appState.staffBox.items) {
+    const rawTitle = item.title.replace("[제안]", "").trim();
+    let linkedStaff = appState.staffBox.items.find(s => s.agendaId === item.id || s.id === item.id || s.title.includes(rawTitle) || rawTitle.includes(s.title));
+    if (linkedStaff) {
+      linkedStaff.agendaId = item.id;
+      linkedStaff.status = "승인완료";
+      linkedStaff.badgeType = "approved";
+    } else {
+      appState.staffBox.items.unshift({
+        id: item.id,
+        agendaId: item.id,
+        type: "회의안건",
+        title: rawTitle,
+        author: item.author.replace("제안자:", "").trim(),
+        budget: null,
+        status: "승인완료",
+        badgeType: "approved"
+      });
+    }
+  }
+
   saveState();
   renderAgendaSection();
-  showToast("안건이 전도사님 승인되어 확정 안건 목록에 등록되었습니다! 📌");
+  renderStaffBoxSection();
+  updateStaffBoxHomeBadge();
+  showToast("안건이 전도사님 승인되어 확정 안건 목록에 등록되었습니다! (소통함도 함께 승인됨) 📌");
 }
 
 function rejectAgenda(id) {
@@ -703,9 +751,21 @@ function rejectAgenda(id) {
   if (index === -1) return;
 
   const item = appState.agendas.pending.splice(index, 1)[0];
+
+  // 사역자 소통함(staffBox)에서도 동일 안건이 있다면 반려(삭제) 연동
+  if (appState.staffBox && appState.staffBox.items) {
+    const rawTitle = item.title.replace("[제안]", "").trim();
+    const linkedIndex = appState.staffBox.items.findIndex(s => s.agendaId === item.id || s.id === item.id || s.title.includes(rawTitle) || rawTitle.includes(s.title));
+    if (linkedIndex !== -1) {
+      appState.staffBox.items.splice(linkedIndex, 1);
+    }
+  }
+
   saveState();
   renderAgendaSection();
-  showToast(`'${item.title}' 안건이 반려 처리되었습니다.`, "warn");
+  renderStaffBoxSection();
+  updateStaffBoxHomeBadge();
+  showToast(`'${item.title}' 안건이 반려 처리되었습니다. (소통함 연동 완료)`, "warn");
 }
 
 function initAgendaEvents() {
@@ -736,37 +796,72 @@ function initAgendaEvents() {
       const author = document.getElementById("agendaAuthorInput").value;
       const title = document.getElementById("agendaTitleInput").value;
       const desc = document.getElementById("agendaDescInput").value;
+      const newId = Date.now();
 
       if (currentRole === "pastor") {
         // 전도사는 바로 확정된 안건으로 등록!
         const nextNum = appState.agendas.confirmed.length + 1;
         const newConfirmed = {
-          id: Date.now(),
+          id: newId,
           title: `[안건 ${nextNum}] ${title}`,
           author: `작성: ${author}`,
           statusBadge: "전도사 직속 안건 📌",
           type: "cyan"
         };
         appState.agendas.confirmed.push(newConfirmed);
+
+        // 사역자 소통함에도 승인완료 회의안건으로 동기화 등록
+        if (appState.staffBox && appState.staffBox.items) {
+          appState.staffBox.items.unshift({
+            id: newId,
+            agendaId: newId,
+            type: "회의안건",
+            title: title,
+            author: author,
+            budget: null,
+            status: "승인완료",
+            badgeType: "approved"
+          });
+        }
+
         saveState();
         renderAgendaSection();
+        renderStaffBoxSection();
+        updateStaffBoxHomeBadge();
         closeModal("agendaModal");
         form.reset();
-        showToast(`🎉 회의 안건 [안건 ${nextNum}]이 확정 안건으로 바로 등록되었습니다!`, "success");
+        showToast(`🎉 회의 안건 [안건 ${nextNum}]이 확정 안건으로 바로 등록되었습니다! (소통함 동기화)`, "success");
       } else {
         // 교사는 승인 대기로 등록
         const newAgenda = {
-          id: Date.now(),
+          id: newId,
           title: `[제안] ${title}`,
           author: `제안자: ${author}`,
           desc: desc
         };
         appState.agendas.pending.push(newAgenda);
+
+        // 사역자 소통함(staffBox)에도 '회의안건'으로 자동 등록 (동기화)
+        if (appState.staffBox && appState.staffBox.items) {
+          appState.staffBox.items.unshift({
+            id: newId,
+            agendaId: newId,
+            type: "회의안건",
+            title: title,
+            author: author,
+            budget: null,
+            status: "검토중",
+            badgeType: "review"
+          });
+        }
+
         saveState();
         renderAgendaSection();
+        renderStaffBoxSection();
+        updateStaffBoxHomeBadge();
         closeModal("agendaModal");
         form.reset();
-        showToast("신규 안건 제안이 등록되었습니다 (승인 대기 중) ⏳");
+        showToast("신규 안건 제안이 등록되었습니다 (소통함 연동 및 승인 대기 중) ⏳");
       }
     });
   }
@@ -785,13 +880,26 @@ function initAgendaEvents() {
 
       if (!title) return;
 
+      const oldTitle = target.title;
       target.title = title;
       target.author = author;
 
+      // Also update linked item in staffBox!
+      if (appState.staffBox && appState.staffBox.items) {
+        const oldRaw = oldTitle.replace(/\[안건 \d+\]/, "").trim();
+        const newRaw = title.replace(/\[안건 \d+\]/, "").trim();
+        const linked = appState.staffBox.items.find(s => s.agendaId === target.id || s.id === target.id || s.title.includes(oldRaw));
+        if (linked) {
+          linked.title = newRaw;
+          if (author) linked.author = author.replace(/^제안:\s*/, "").replace(/^작성:\s*/, "");
+        }
+      }
+
       saveState();
       renderAgendaSection();
+      renderStaffBoxSection();
       closeModal("editAgendaModal");
-      showToast("✅ 회의 안건 내용이 성공적으로 수정되었습니다!");
+      showToast("✅ 회의 안건 내용이 성공적으로 수정되었습니다! (소통함 연동)");
     });
   }
 }
@@ -2477,6 +2585,50 @@ function updatePendingCountBadge() {
   }
 }
 
+function updateMeetingNavBadge() {
+  const pendingCount = (appState.agendas && appState.agendas.pending) ? appState.agendas.pending.length : 0;
+  
+  const badges = document.querySelectorAll(".meeting-nav-badge, #meetingNavBadgeStatic");
+  badges.forEach(badge => {
+    if (pendingCount > 0) {
+      badge.textContent = pendingCount;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  });
+
+  const pendingCountEl = document.getElementById("pendingAgendaCount");
+  if (pendingCountEl) {
+    pendingCountEl.textContent = pendingCount;
+  }
+}
+
+function updateStaffBoxHomeBadge() {
+  const countText = document.getElementById("staffBoxCountText");
+  const filterBadge = document.getElementById("staffFilterReviewBadge");
+  if (!appState.staffBox) return;
+
+  // 검토중인 안건/요청 개수 계산
+  const reviewCount = appState.staffBox.items.filter(i => i.status === "검토중").length;
+  if (countText) {
+    if (reviewCount > 0) {
+      countText.textContent = `${reviewCount}건 검토 대기중 ⏳`;
+      countText.style.color = "#ea580c";
+    } else {
+      countText.textContent = `모든 소통 확인 완료 ✓`;
+      countText.style.color = "#16a34a";
+    }
+  }
+
+  if (filterBadge) {
+    filterBadge.textContent = reviewCount;
+    filterBadge.style.display = reviewCount > 0 ? "inline-block" : "none";
+  }
+
+  updateMeetingNavBadge();
+}
+
 function changeUserRole(userId, newRole) {
   const user = appState.users.find(u => u.id === userId);
   if (!user) return;
@@ -2574,10 +2726,10 @@ function switchMasterRole(roleKey, notify = true) {
   // 6. Update user header bar and admin banner visibility
   renderUserHeaderBar();
 
-  // 6-1. 사역자 소통함: 학생·선생님에게는 숨김 (전도사·회계쌤만 노출)
+  // 6-1. 사역자 소통함: 학생에게는 숨김 (전도사·회계쌤·선생님에게 노출)
   const staffBoxBtn = document.getElementById("openStaffBoxBtn");
   if (staffBoxBtn) {
-    staffBoxBtn.style.display = (roleKey === "student" || roleKey === "teacher") ? "none" : "";
+    staffBoxBtn.style.display = (roleKey === "student") ? "none" : "";
   }
 
   // 6-2. 회원승인: 전도사에게만 노출
@@ -2585,6 +2737,11 @@ function switchMasterRole(roleKey, notify = true) {
   if (memberApprovalBtn) {
     memberApprovalBtn.style.display = roleKey === "pastor" ? "" : "none";
   }
+
+  // 역할에 따른 안건/소통함 및 배지 상태 즉시 갱신
+  renderAgendaSection();
+  renderStaffBoxSection();
+  updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
   if (notify) {
@@ -2616,10 +2773,13 @@ function renderRoleTabBar(roleConfig) {
 
     const fillStyle = isActive ? "font-variation-settings: 'FILL' 1;" : "";
     const wrapBg = isActive ? "bg-primary-fixed/50" : "";
+    const isMeetingTab = (tab.target === "view-agenda");
+    const badgeHtml = isMeetingTab ? `<span class="meeting-nav-badge hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none shadow-sm">0</span>` : "";
 
     btn.innerHTML = `
-      <div class="tab-icon-wrap w-10 h-7 rounded-full flex items-center justify-center transition-colors ${wrapBg}">
+      <div class="tab-icon-wrap w-10 h-7 rounded-full flex items-center justify-center transition-colors relative ${wrapBg}">
         <span class="material-symbols-outlined text-[23px]" style="${fillStyle}">${tab.icon}</span>
+        ${badgeHtml}
       </div>
       <span class="text-[11px] tracking-tight">${tab.label}</span>
     `;
@@ -2665,6 +2825,8 @@ function renderRoleTabBar(roleConfig) {
 
     tabBar.appendChild(btn);
   });
+
+  updateMeetingNavBadge();
 }
 
 function initUserManagementEvents() {
@@ -3093,14 +3255,92 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
         const nextStatus = item.status === "승인완료" ? "검토중" : "승인완료";
         item.status = nextStatus;
         item.badgeType = nextStatus === "승인완료" ? "approved" : "review";
+
+        // 회의안건인 경우 회의 탭 안건 목록과 양방향 실시간 동기화!
+        if (item.type === "회의안건") {
+          const rawItemTitle = item.title.replace(/^\[.*?\]\s*/, "").trim();
+          if (nextStatus === "승인완료") {
+            // pending -> confirmed 로 이동
+            const pIdx = appState.agendas.pending.findIndex(a => 
+              (item.agendaId && a.id === item.agendaId) || 
+              a.id === item.id ||
+              a.title.includes(rawItemTitle) || 
+              rawItemTitle.includes(a.title.replace("[제안]", "").trim())
+            );
+            if (pIdx !== -1) {
+              const pItem = appState.agendas.pending.splice(pIdx, 1)[0];
+              item.agendaId = pItem.id;
+              appState.agendas.confirmed.push({
+                id: pItem.id,
+                title: pItem.title.replace("[제안]", `[안건 ${appState.agendas.confirmed.length + 1}]`),
+                author: pItem.author.replace("제안자:", "제안:"),
+                statusBadge: "전도사 승인완료 ✅",
+                type: "peach"
+              });
+            } else {
+              const alreadyInConfirmed = appState.agendas.confirmed.some(a => 
+                (item.agendaId && a.id === item.agendaId) || a.id === item.id || a.title.includes(rawItemTitle)
+              );
+              if (!alreadyInConfirmed) {
+                const newId = item.agendaId || item.id || Date.now();
+                item.agendaId = newId;
+                appState.agendas.confirmed.push({
+                  id: newId,
+                  title: `[안건 ${appState.agendas.confirmed.length + 1}] ${rawItemTitle}`,
+                  author: `제안: ${item.author}`,
+                  statusBadge: "전도사 승인완료 ✅",
+                  type: "peach"
+                });
+              }
+            }
+          } else {
+            // 승인완료 -> 검토중(pending)으로 되돌리기
+            const cIdx = appState.agendas.confirmed.findIndex(a => 
+              (item.agendaId && a.id === item.agendaId) || 
+              a.id === item.id ||
+              a.title.includes(rawItemTitle) || 
+              rawItemTitle.includes(a.title.replace(/\[안건 \d+\]/, "").trim())
+            );
+            if (cIdx !== -1) {
+              const cItem = appState.agendas.confirmed.splice(cIdx, 1)[0];
+              item.agendaId = cItem.id;
+              const cleanTitle = cItem.title.replace(/\[안건 \d+\]/, "").trim();
+              appState.agendas.pending.push({
+                id: cItem.id,
+                title: `[제안] ${cleanTitle}`,
+                author: cItem.author.replace("제안:", "제안자:"),
+                desc: cleanTitle
+              });
+            } else {
+              const alreadyInPending = appState.agendas.pending.some(a => 
+                (item.agendaId && a.id === item.agendaId) || a.id === item.id || a.title.includes(rawItemTitle)
+              );
+              if (!alreadyInPending) {
+                const newId = item.agendaId || item.id || Date.now();
+                item.agendaId = newId;
+                appState.agendas.pending.push({
+                  id: newId,
+                  title: `[제안] ${rawItemTitle}`,
+                  author: `제안자: ${item.author}`,
+                  desc: rawItemTitle
+                });
+              }
+            }
+          }
+          renderAgendaSection();
+        }
+
         saveState();
         renderStaffBoxSection();
-        showToast(`'${item.title}' 상태가 [${nextStatus}]로 변경되었습니다!`, "info");
+        updateStaffBoxHomeBadge();
+        showToast(`'${item.title}' 상태가 [${nextStatus}]로 변경되었습니다! (회의 안건 동기화)`, "info");
       });
     }
 
     container.appendChild(card);
   });
+
+  updateStaffBoxHomeBadge();
 }
 
 function initStaffBoxEvents() {
@@ -3129,23 +3369,61 @@ function initStaffBoxEvents() {
       const author = document.getElementById("staffReqAuthorInput").value;
       const title = document.getElementById("staffReqTitleInput").value;
       const budget = document.getElementById("staffReqBudgetInput").value;
+      const newId = Date.now();
+      const cleanTitle = title.replace(/^\[.*?\]\s*/, "").trim();
+      const isPastor = (currentRole === "pastor");
+
+      let initialStatus = "검토중";
+      let initialBadge = "review";
+      if (type === "구매요청") {
+        initialStatus = "승인완료";
+        initialBadge = "approved";
+      } else if (type === "회의안건" && isPastor) {
+        initialStatus = "승인완료";
+        initialBadge = "approved";
+      }
 
       const newReq = {
-        id: Date.now(),
+        id: newId,
+        agendaId: type === "회의안건" ? newId : null,
         type: type,
-        title: title.replace(/^\[.*?\]\s*/, ""),
+        title: cleanTitle,
         author: author,
         budget: budget || null,
-        status: type === "구매요청" ? "승인완료" : "검토중",
-        badgeType: type === "구매요청" ? "approved" : "review"
+        status: initialStatus,
+        badgeType: initialBadge
       };
 
       appState.staffBox.items.unshift(newReq);
+
+      // '회의안건'인 경우 회의 탭의 안건 목록에도 동기화 추가!
+      if (type === "회의안건") {
+        if (initialStatus === "승인완료") {
+          const nextNum = appState.agendas.confirmed.length + 1;
+          appState.agendas.confirmed.push({
+            id: newId,
+            title: `[안건 ${nextNum}] ${cleanTitle}`,
+            author: `작성: ${author}`,
+            statusBadge: "전도사 직속 안건 📌",
+            type: "cyan"
+          });
+        } else {
+          appState.agendas.pending.push({
+            id: newId,
+            title: `[제안] ${cleanTitle}`,
+            author: `제안자: ${author}`,
+            desc: cleanTitle
+          });
+        }
+        renderAgendaSection();
+      }
+
       saveState();
       renderStaffBoxSection();
+      updateStaffBoxHomeBadge();
       closeModal("addStaffRequestModal");
       form.reset();
-      showToast("소통함에 신규 요청/건의가 등록되었습니다! 📬");
+      showToast("소통함에 신규 요청/건의가 등록되었습니다! (회의 안건 연동 완료) 📬");
     });
   }
 }
@@ -3422,6 +3700,8 @@ function renderAll() {
   renderAccountingSection();
   renderChecklistSection();
   renderStaffBoxSection();
+  updateStaffBoxHomeBadge();
+  updateMeetingNavBadge();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
