@@ -1781,9 +1781,6 @@
           <!-- Populated by JS -->
         </div>
 
-        <button class="btn-orange" id="openAddNewUserBtn" style="background:#6c35c4; margin-top:14px;">
-          <span>＋</span> <span>새 교사 / 학생 계정 등록</span>
-        </button>
       </div>
     </div>
 
@@ -1919,6 +1916,25 @@
         <div id="memberApprovalEmpty" style="display:none; text-align:center; padding:32px 0; color:#94a3b8;">
           <span style="font-size:36px;">🎉</span>
           <div style="margin-top:8px; font-size:13px; font-weight:700; color:#64748b;">승인 대기 중인 가입 신청이 없습니다</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: 계정 삭제 확인 다이얼로그 -->
+    <div class="modal-backdrop" id="deleteUserConfirmModal">
+      <div class="bottom-sheet" style="max-height:auto;">
+        <div class="sheet-handle"></div>
+        <div style="padding:24px 20px 20px;">
+          <div style="text-align:center; margin-bottom:18px;">
+            <div style="font-size:36px; margin-bottom:10px;">🗑️</div>
+            <div style="font-size:16px; font-weight:800; color:#1e293b; margin-bottom:6px;">계정을 삭제할까요?</div>
+            <div id="deleteUserConfirmName" style="font-size:13px; color:#64748b; font-weight:600;"></div>
+            <div style="font-size:12px; color:#ef4444; margin-top:6px; font-weight:600;">삭제 후 복구할 수 없습니다.</div>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-secondary" data-close="deleteUserConfirmModal" style="flex:1; font-weight:700;">취소</button>
+            <button id="deleteUserConfirmBtn" style="flex:1; padding:12px; background:#ef4444; color:white; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer;">삭제하기</button>
+          </div>
         </div>
       </div>
     </div>

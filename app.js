@@ -2144,6 +2144,11 @@ function renderUserManagerSection() {
           <option value="teacher" ${user.role === "teacher" ? "selected" : ""}>🧑🏻‍🏫 선생님 (공과/새친구)</option>
           <option value="student" ${user.role === "student" ? "selected" : ""}>👦🏻 학생</option>
         </select>
+        ${!isCurrent ? `
+          <button type="button" class="delete-user-btn" data-user-id="${user.id}" data-user-name="${user.name}" style="padding:6px 9px; font-size:13px; background:#fff0f0; color:#ef4444; border-radius:8px; border:1.5px solid #fecaca; cursor:pointer; line-height:1;" title="계정 삭제">
+            🗑️
+          </button>
+        ` : ''}
       </div>
     `;
 
@@ -2162,8 +2167,45 @@ function renderUserManagerSection() {
       });
     }
 
+    // Delete button event
+    const deleteBtn = card.querySelector(".delete-user-btn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", () => {
+        showDeleteUserConfirm(user.id, user.name);
+      });
+    }
+
     container.appendChild(card);
   });
+}
+
+// 삭제 확인 모달
+let _deleteTargetUserId = null;
+
+function showDeleteUserConfirm(userId, userName) {
+  _deleteTargetUserId = userId;
+  const nameEl = document.getElementById("deleteUserConfirmName");
+  if (nameEl) nameEl.textContent = `"${userName}" 계정`;
+  openModal("deleteUserConfirmModal");
+}
+
+function initDeleteUserConfirm() {
+  const confirmBtn = document.getElementById("deleteUserConfirmBtn");
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", () => {
+      if (!_deleteTargetUserId) return;
+      const user = appState.users.find(u => u.id === _deleteTargetUserId);
+      const name = user ? user.name : "";
+      appState.users = appState.users.filter(u => u.id !== _deleteTargetUserId);
+      saveState();
+      _deleteTargetUserId = null;
+      closeModal("deleteUserConfirmModal");
+      renderUserManagerSection();
+      renderUserSwitchGrid();
+      updatePendingCountBadge();
+      showToast(`🗑️ '${name}' 계정이 삭제되었습니다.`, "info");
+    });
+  }
 }
 
 function approveUser(userId) {
@@ -3159,6 +3201,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAccountingSubTabs();
   initRoleEvents();
   initUserManagementEvents();
+  initDeleteUserConfirm();
   initChecklistEvents();
   initStaffBoxEvents();
   initCalendarEvents();
