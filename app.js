@@ -2895,8 +2895,22 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
   container.innerHTML = "";
   const filtered = appState.staffBox.items.filter(item => {
     if (filter === "all") return true;
+    if (filter === "검토중") return item.status === "검토중";
+    if (filter === "승인완료") return item.status === "승인완료";
     return item.type === filter;
   });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:32px 0; color:#94a3b8;">
+        <span style="font-size:32px;">📭</span>
+        <div style="font-size:13px; font-weight:700; color:#64748b; margin-top:6px;">해당 상태의 소통함 항목이 없습니다.</div>
+      </div>
+    `;
+    return;
+  }
+
+  const isPastor = (currentRole === "pastor");
 
   filtered.forEach(item => {
     const card = document.createElement("div");
@@ -2908,33 +2922,55 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
     const iconMap = { "구매요청": "🛒", "사역건의": "💡", "회의안건": "📝" };
     const icon = iconMap[item.type] || "📌";
 
-    let badgeHtml = "";
-    if (item.status === "승인완료") {
-      badgeHtml = `<span class="badge-approved">승인완료 ✓</span>`;
-    } else if (item.status === "검토중") {
-      badgeHtml = `<span class="badge-review">검토중 ⏳</span>`;
-    } else {
-      badgeHtml = `<span style="font-size:11px; font-weight:700; color:#888;">${item.status}</span>`;
-    }
-
     const budgetText = item.budget ? ` | 예산: ${item.budget}` : "";
+
+    // 관리자(전도사)일 경우 승인완료 / 검토중을 선택할 수 있는 직관적인 토글 버튼 제공
+    let statusControlHtml = "";
+    if (isPastor) {
+      if (item.status === "승인완료") {
+        statusControlHtml = `
+          <button type="button" class="staff-status-toggle-btn" data-item-id="${item.id}" style="padding:4px 10px; font-size:11.5px; font-weight:800; background:#d8f5ec; color:#177a60; border-radius:8px; border:1px solid #a3e9d3; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+            <span>✓ 승인완료</span>
+            <span style="font-size:9px; color:#5c9e8d; opacity:0.8;">(변경)</span>
+          </button>
+        `;
+      } else {
+        statusControlHtml = `
+          <button type="button" class="staff-status-toggle-btn" data-item-id="${item.id}" style="padding:4px 10px; font-size:11.5px; font-weight:800; background:#fef0db; color:#bd6a1e; border-radius:8px; border:1px solid #fcd6a0; cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+            <span>⏳ 검토중</span>
+            <span style="font-size:9px; color:#c78546; opacity:0.8;">(승인하기)</span>
+          </button>
+        `;
+      }
+    } else {
+      if (item.status === "승인완료") {
+        statusControlHtml = `<span class="badge-approved">승인완료 ✓</span>`;
+      } else if (item.status === "검토중") {
+        statusControlHtml = `<span class="badge-review">검토중 ⏳</span>`;
+      } else {
+        statusControlHtml = `<span style="font-size:11px; font-weight:700; color:#888;">${item.status}</span>`;
+      }
+    }
 
     card.innerHTML = `
       <div class="staff-box-title">${icon} [${item.type}] ${item.title}</div>
-      <div class="staff-box-meta-row">
-        <div>작성자: <b>${item.author}</b>${budgetText}</div>
-        ${badgeHtml}
+      <div class="staff-box-meta-row" style="margin-top:10px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="font-size:12px; color:#64748b;">작성자: <b style="color:#1e293b;">${item.author}</b>${budgetText}</div>
+        <div>${statusControlHtml}</div>
       </div>
     `;
 
-    // Click to review if in review
-    if (item.status === "검토중") {
-      card.style.cursor = "pointer";
-      card.addEventListener("click", () => {
-        item.status = "승인완료";
+    // 관리자 토글 버튼 클릭 이벤트
+    const toggleBtn = card.querySelector(".staff-status-toggle-btn");
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const nextStatus = item.status === "승인완료" ? "검토중" : "승인완료";
+        item.status = nextStatus;
+        item.badgeType = nextStatus === "승인완료" ? "approved" : "review";
         saveState();
         renderStaffBoxSection();
-        showToast(`'${item.title}' 건의가 사역자 회의에서 승인되었습니다! 🎉`);
+        showToast(`'${item.title}' 상태가 [${nextStatus}]로 변경되었습니다!`, "info");
       });
     }
 
