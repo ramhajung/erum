@@ -754,8 +754,6 @@ function initReceiptSection() {
 // 8. Screen 5: 역할별 회계 보안 & 권한 분리 시스템
 // =============================================================================
 
-let currentRole = "teacher"; // 'teacher' | 'admin'
-
 function renderAccountingSection() {
   const teacherView = document.getElementById("teacherAccountingView");
   const adminView = document.getElementById("adminAccountingView");
@@ -1333,35 +1331,25 @@ function initModalClosers() {
 
 // Frame Switcher (Mobile Mockup vs Wide Desktop View)
 function initFrameSwitcher() {
-  const toggleBtn = document.getElementById("viewModeToggle");
-  const toggleText = document.getElementById("viewModeText");
-  const wrapper = document.getElementById("appWrapper");
-
-  toggleBtn.addEventListener("click", () => {
-    const isExpanded = wrapper.classList.toggle("expanded-view");
-    if (isExpanded) {
-      toggleText.textContent = "모바일 뷰";
-      showToast("💻 와이드 데스크톱 뷰 모드로 전환되었습니다.", "info");
-    } else {
-      toggleText.textContent = "와이드 뷰";
-      showToast("📱 아이폰 모바일 프레임 모드로 전환되었습니다.", "info");
-    }
-  });
-
-  // Reset Data button
-  document.getElementById("resetDataBtn").addEventListener("click", () => {
-    if (confirm("모든 데이터를 이미지 초기 상태로 복원하시겠습니까?")) {
-      localStorage.removeItem("yerang_app_state_v1");
-      appState = JSON.parse(JSON.stringify(INITIAL_DATA));
-      renderAll();
-      showToast("모든 데이터가 초기 이미지 시안 상태로 복원되었습니다! 🔄");
-    }
-  });
+  const resetBtn = document.getElementById("resetDataBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (confirm("모든 데이터를 초기 상태로 복원하시겠습니까?")) {
+        localStorage.removeItem("yerang_app_state_v1");
+        appState = JSON.parse(JSON.stringify(INITIAL_DATA));
+        renderAll();
+        showToast("모든 데이터가 초기 상태로 복원되었습니다! 🔄");
+        const modal = document.getElementById("userSwitchModal");
+        if (modal) modal.classList.remove("open");
+      }
+    });
+  }
 }
 
-// Update clock in status bar
+// Update clock (if element exists)
 function initClock() {
   const timeEl = document.getElementById("currentTime");
+  if (!timeEl) return;
   function updateTime() {
     const now = new Date();
     const h = String(now.getHours()).padStart(2, "0");

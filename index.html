@@ -20,33 +20,8 @@
 </head>
 <body>
 
-  <!-- Top Controller (Desktop / Mobile Frame Switcher) -->
-  <div class="top-controls">
-    <button id="viewModeToggle" class="mode-btn" title="화면 크기 전환">
-      <span>📱</span> <span id="viewModeText">와이드 뷰</span>
-    </button>
-    <button id="resetDataBtn" class="mode-btn" title="데이터 초기화">
-      <span>🔄</span> <span>초기 데이터 복원</span>
-    </button>
-  </div>
-
-  <!-- Main Mobile Shell Application -->
+  <!-- Main Mobile Web Application Shell -->
   <div class="app-wrapper" id="appWrapper">
-    
-    <!-- iPhone Island Notch -->
-    <div class="phone-island">
-      <div class="camera-lens"></div>
-    </div>
-
-    <!-- iOS Status Bar -->
-    <div class="ios-status-bar">
-      <span id="currentTime">10:09</span>
-      <div class="status-icons">
-        <span>📶</span>
-        <span>5G</span>
-        <span>🔋 98%</span>
-      </div>
-    </div>
 
     <!-- Unified Apple-Grade Header Bar (Image 3 exact match) -->
     <header class="app-unified-header">
@@ -1165,7 +1140,10 @@
           <!-- Populated by JS -->
         </div>
 
-        <button class="btn-secondary" data-close="userSwitchModal" style="width:100%; margin-top:16px;">닫기</button>
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <button class="btn-secondary" id="resetDataBtn" style="flex:1; color:#c2410c; background:#fff7ed; border-color:#fed7aa; font-size:12px; font-weight:700;">🔄 데이터 초기화</button>
+          <button class="btn-secondary" data-close="userSwitchModal" style="flex:1; font-weight:700;">닫기</button>
+        </div>
       </div>
     </div>
 
