@@ -810,10 +810,11 @@ function doPost(e) {
       sheet = ss.getSheets()[0];
     }
 
-    // 2) 영수증 사진 구글 드라이브 자동 저장
+    // 2) 영수증 사진 구글 드라이브 자동 저장 (월별 하위 폴더 자동 분류)
     let receiptUrl = "";
     if (data.imageBase64) {
-      receiptUrl = saveReceiptToDrive(data.imageBase64, dateStr + "_" + (data.author || "교사") + "_" + (data.store || "지출") + ".jpg");
+      const fileName = "[" + dateStr + "] " + (data.store || "지출") + "_" + (amount ? amount.toLocaleString() + "원" : "") + "_" + (data.author || "교사") + ".jpg";
+      receiptUrl = saveReceiptToDrive(data.imageBase64, fileName, ss, sheetName);
     }
 
     // 3) 해당 월 시트에 데이터 기입
@@ -847,12 +848,25 @@ function doPost(e) {
   }
 }
 
-function saveReceiptToDrive(base64Data, fileName) {
-  const folders = DriveApp.getFoldersByName(RECEIPT_FOLDER_NAME);
-  const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(RECEIPT_FOLDER_NAME);
+function saveReceiptToDrive(base64Data, fileName, ss, monthName) {
+  // 1) 스프레드시트가 있는 부모 폴더(예: '예랑' 프로젝트 폴더) 자동 탐색
+  const ssFile = DriveApp.getFileById(ss.getId());
+  const parents = ssFile.getParents();
+  const parentFolder = parents.hasNext() ? parents.next() : DriveApp.getRootFolder();
+
+  // 2) '예랑_영수증_보관함' 폴더 생성/가져오기
+  const rootFolders = parentFolder.getFoldersByName(RECEIPT_FOLDER_NAME);
+  const rootFolder = rootFolders.hasNext() ? rootFolders.next() : parentFolder.createFolder(RECEIPT_FOLDER_NAME);
+
+  // 3) '1월_영수증', '9월_영수증' 등 월별 하위 폴더 자동 생성/분류
+  const monthFolderName = (monthName || "기타") + "_영수증";
+  const subFolders = rootFolder.getFoldersByName(monthFolderName);
+  const targetFolder = subFolders.hasNext() ? subFolders.next() : rootFolder.createFolder(monthFolderName);
+
+  // 4) 파일 저장 및 열람 권한 설정
   const cleanBase64 = base64Data.replace(/^data:image\\/\\w+;base64,/, "");
   const decodedBlob = Utilities.newBlob(Utilities.base64Decode(cleanBase64), "image/jpeg", fileName);
-  const file = folder.createFile(decodedBlob);
+  const file = targetFolder.createFile(decodedBlob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return file.getUrl();
 }`;
