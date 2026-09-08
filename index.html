@@ -1518,8 +1518,9 @@
         </div>
         <form id="agendaForm">
           <div class="form-group">
-            <label>제안자 이름</label>
+            <label>작성자 / 제안자</label>
             <select id="agendaAuthorInput">
+              <option value="정하람 전도사">정하람 전도사</option>
               <option value="소예진 선생님">소예진 선생님</option>
               <option value="김대한 선생님">김대한 선생님</option>
               <option value="김희순 집사">김희순 집사</option>
@@ -1535,6 +1536,35 @@
             <textarea id="agendaDescInput" rows="2" placeholder="안건의 필요성 및 추진 방안을 적어주세요."></textarea>
           </div>
           <button type="submit" class="btn-orange" style="margin-top:16px;">안건 제안 제출 (승인 대기 등록)</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 2-1: 확정 안건 수정 모달 (전도사 전용) -->
+    <div class="modal-backdrop" id="editAgendaModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">✏️ 회의 안건 수정</h3>
+            <p style="font-size:11px; color:#c2410c; font-weight:700;">확정된 안건 제목 및 작성자 수정</p>
+          </div>
+          <button class="sheet-close-btn" data-close="editAgendaModal">✕</button>
+        </div>
+        <form id="editAgendaForm" style="padding-top:6px;">
+          <input type="hidden" id="editAgendaIdInput">
+          <div class="form-group">
+            <label>안건 제목</label>
+            <input type="text" id="editAgendaTitleInput" placeholder="안건 제목" required>
+          </div>
+          <div class="form-group">
+            <label>작성자 / 제안자</label>
+            <input type="text" id="editAgendaAuthorInput" placeholder="예: 작성: 정하람 전도사" required>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <button type="button" class="btn-secondary" data-close="editAgendaModal" style="flex:1; font-weight:700;">취소</button>
+            <button type="submit" class="btn-orange" style="flex:1.5; margin-top:0;">수정 저장</button>
+          </div>
         </form>
       </div>
     </div>
