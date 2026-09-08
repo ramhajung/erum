@@ -2176,7 +2176,81 @@ function approveUser(userId) {
 
   renderUserManagerSection();
   renderUserSwitchGrid();
+  renderMemberApprovalModal();
+  updatePendingCountBadge();
   showToast(`🎉 '${user.name}'님의 가입 승인이 완료되었습니다! 이제 로그인 가능합니다.`, "success");
+}
+
+function rejectUser(userId) {
+  const user = appState.users.find(u => u.id === userId);
+  if (!user) return;
+  const userName = user.name;
+  appState.users = appState.users.filter(u => u.id !== userId);
+  saveState();
+  renderMemberApprovalModal();
+  renderUserManagerSection();
+  renderUserSwitchGrid();
+  updatePendingCountBadge();
+  showToast(`❌ '${userName}'님의 가입 신청이 거절되었습니다.`, "info");
+}
+
+function renderMemberApprovalModal() {
+  const container = document.getElementById("memberApprovalListContainer");
+  const emptyEl = document.getElementById("memberApprovalEmpty");
+  if (!container) return;
+
+  const pendingUsers = appState.users.filter(u => u.isPending);
+  container.innerHTML = "";
+
+  if (pendingUsers.length === 0) {
+    container.style.display = "none";
+    if (emptyEl) emptyEl.style.display = "block";
+    return;
+  }
+
+  container.style.display = "flex";
+  if (emptyEl) emptyEl.style.display = "none";
+
+  pendingUsers.forEach(user => {
+    const card = document.createElement("div");
+    card.style.cssText = "background:#fff; border:1.5px solid #d1fae5; border-radius:14px; padding:14px 14px; display:flex; align-items:center; gap:12px;";
+    card.innerHTML = `
+      <div style="width:40px; height:40px; border-radius:50%; background:#ecfdf5; display:flex; align-items:center; justify-content:center; font-size:20px; border:1.5px solid #a7f3d0; shrink:0;">
+        ${user.avatar || "👤"}
+      </div>
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:14px; font-weight:800; color:#1e293b; margin-bottom:2px;">${user.name}</div>
+        <div style="font-size:11.5px; color:#64748b;">ID: ${user.username || "-"} · ${user.phone || "번호 없음"}</div>
+        <div style="font-size:11px; color:#f59e0b; font-weight:700; margin-top:2px;">⏳ 승인 대기중</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; shrink:0;">
+        <button type="button" data-approve-id="${user.id}" style="padding:7px 12px; font-size:12px; font-weight:800; background:#10b981; color:white; border-radius:9px; border:none; cursor:pointer; white-space:nowrap;">✓ 승인</button>
+        <button type="button" data-reject-id="${user.id}" style="padding:7px 12px; font-size:12px; font-weight:800; background:#f1f5f9; color:#ef4444; border-radius:9px; border:1.5px solid #fecaca; cursor:pointer; white-space:nowrap;">✕ 거절</button>
+      </div>
+    `;
+
+    card.querySelector("[data-approve-id]").addEventListener("click", () => {
+      approveUser(user.id);
+    });
+    card.querySelector("[data-reject-id]").addEventListener("click", () => {
+      rejectUser(user.id);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function updatePendingCountBadge() {
+  const badge = document.getElementById("pendingCountBadge");
+  const countText = document.getElementById("pendingCountText");
+  const pendingCount = appState.users.filter(u => u.isPending).length;
+  if (!badge) return;
+  if (pendingCount > 0) {
+    badge.classList.remove("hidden");
+    if (countText) countText.textContent = `${pendingCount}명 대기중`;
+  } else {
+    badge.classList.add("hidden");
+  }
 }
 
 function changeUserRole(userId, newRole) {
@@ -2280,6 +2354,12 @@ function switchMasterRole(roleKey, notify = true) {
   const staffBoxBtn = document.getElementById("openStaffBoxBtn");
   if (staffBoxBtn) {
     staffBoxBtn.style.display = (roleKey === "student" || roleKey === "teacher") ? "none" : "";
+  }
+
+  // 6-2. 회원승인: 전도사에게만 노출
+  const memberApprovalBtn = document.getElementById("openMemberApprovalBtn");
+  if (memberApprovalBtn) {
+    memberApprovalBtn.style.display = roleKey === "pastor" ? "" : "none";
   }
 
   // 7. Sonner Toast Feedback
@@ -2548,6 +2628,17 @@ function initHomeDashboardEvents() {
       openModal("staffBoxModal");
     });
   }
+
+  const memberApprovalBtn = document.getElementById("openMemberApprovalBtn");
+  if (memberApprovalBtn) {
+    memberApprovalBtn.addEventListener("click", () => {
+      renderMemberApprovalModal();
+      openModal("memberApprovalModal");
+    });
+  }
+
+  // 초기 승인대기 배지 업데이트
+  updatePendingCountBadge();
 
   // D-Day chip click actions
   const chipChecklist = document.getElementById("chipGotoChecklist");

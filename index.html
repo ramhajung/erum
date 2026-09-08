@@ -377,15 +377,15 @@
         
         <!-- Section: Quick Actions (Enhanced Neumorphic & Glass Hybrid Cards) -->
         <section aria-label="빠른 실행 메뉴" class="grid grid-cols-2 gap-3">
-          <!-- Action 1: 권한 관리 -->
+        <!-- Action 1: 권한 관리 -->
           <button id="adminUserMgmtBanner" class="relative overflow-hidden p-4 bg-gradient-to-br from-white to-surface-card rounded-3xl border border-white/90 shadow-[0_8px_24px_rgba(60,50,40,0.05)] active:scale-98 transition-all hover:shadow-[0_10px_28px_rgba(150,67,43,0.1)] hover:border-primary/30 group text-left" type="button">
             <div class="absolute -right-5 -top-5 w-16 h-16 rounded-full bg-gradient-to-bl from-primary/10 to-transparent pointer-events-none"></div>
             <div class="flex items-start justify-between mb-3">
               <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-badge-terracotta-bg to-white border border-primary/15 text-primary flex items-center justify-center shadow-sm group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-200">
                 <span class="material-symbols-outlined text-[22px]">admin_panel_settings</span>
               </div>
-              <span class="w-7 h-7 rounded-full bg-surface-container-low/70 flex items-center justify-center text-text-muted group-hover:text-primary group-hover:bg-badge-terracotta-bg transition-colors">
-                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              <span class="inline-flex items-center gap-1 bg-purple-50 text-purple-700 text-[11px] font-bold px-2 py-0.5 rounded-full border border-purple-200">
+                관리자
               </span>
             </div>
             <div>
@@ -412,6 +412,27 @@
                 <span class="block text-label-sm font-label-sm font-semibold text-primary">3건</span>
                 <span class="text-label-sm font-label-sm text-text-secondary">새 소식 도착</span>
               </div>
+            </div>
+          </button>
+
+          <!-- Action 3: 회원승인 -->
+          <button id="openMemberApprovalBtn" class="relative overflow-hidden p-4 bg-gradient-to-br from-white to-surface-card rounded-3xl border border-white/90 shadow-[0_8px_24px_rgba(60,50,40,0.05)] active:scale-98 transition-all hover:shadow-[0_10px_28px_rgba(16,185,129,0.12)] hover:border-emerald-400/30 group text-left col-span-2" type="button">
+            <div class="absolute -right-5 -top-5 w-16 h-16 rounded-full bg-gradient-to-bl from-emerald-100/60 to-transparent pointer-events-none"></div>
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-50 to-white border border-emerald-200 text-emerald-600 flex items-center justify-center shadow-sm group-hover:scale-105 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-200 shrink-0">
+                <span class="material-symbols-outlined text-[22px]">how_to_reg</span>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-title-md font-bold text-text-primary tracking-tight group-hover:text-emerald-600 transition-colors">회원승인</span>
+                  <span id="pendingCountBadge" class="hidden inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-[11px] font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                    <span id="pendingCountText">0명 대기중</span>
+                  </span>
+                </div>
+                <span class="text-label-sm font-label-sm text-text-secondary">가입 신청자 승인 · 거절 관리</span>
+              </div>
+              <span class="material-symbols-outlined text-[20px] text-text-muted group-hover:text-emerald-500 transition-colors">chevron_right</span>
             </div>
           </button>
         </section>
@@ -1885,6 +1906,33 @@
             </div>
             <textarea id="appsScriptCodeBlock" readonly style="width:100%; height:130px; font-size:11px; font-family:monospace; background:#faf7f4; border:1px solid #e2d5c8; border-radius:8px; padding:8px; color:#444; resize:none;"></textarea>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 13: 회원승인 관리 모달 -->
+    <div class="modal-backdrop" id="memberApprovalModal">
+      <div class="bottom-sheet" style="max-height: 85%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">✅ 회원승인 관리</h3>
+            <p style="font-size:11px; color:#059669; font-weight:700;">가입 신청자 승인 · 거절</p>
+          </div>
+          <button class="sheet-close-btn" data-close="memberApprovalModal">✕</button>
+        </div>
+
+        <div style="background:#ecfdf5; border:1px solid #6ee7b7; border-radius:10px; padding:10px 12px; font-size:11.5px; color:#065f46; line-height:1.4; margin-bottom:14px;">
+          ✓ 회원가입 후 승인대기 중인 사용자 목록입니다. 승인 시 즉시 로그인 가능, 거절 시 계정이 삭제됩니다.
+        </div>
+
+        <div id="memberApprovalListContainer" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Populated by JS -->
+        </div>
+
+        <div id="memberApprovalEmpty" style="display:none; text-align:center; padding:32px 0; color:#94a3b8;">
+          <span style="font-size:36px;">🎉</span>
+          <div style="margin-top:8px; font-size:13px; font-weight:700; color:#64748b;">승인 대기 중인 가입 신청이 없습니다</div>
         </div>
       </div>
     </div>
