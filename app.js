@@ -2122,7 +2122,7 @@ function renderUserManagerSection() {
     card.innerHTML = `
       <div class="user-mgmt-info">
         <div class="user-mgmt-avatar">${user.avatar || "👤"}</div>
-        <div class="user-mgmt-details">
+        <div class="user-mgmt-details" style="flex:1;">
           <div class="user-mgmt-name" style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
             <span>${user.name}</span>
             ${pendingBadge}
@@ -2132,20 +2132,23 @@ function renderUserManagerSection() {
           ${user.username ? `<div style="font-size:11px; color:#888;">ID: ${user.username}</div>` : ''}
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:6px;">
+      <div style="display:flex; align-items:center; gap:6px; margin-top:8px;">
         ${user.isPending ? `
           <button type="button" class="approve-user-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:12px; font-weight:800; background:#10b981; color:white; border-radius:8px; border:none; cursor:pointer;">
             승인하기 ✓
           </button>
         ` : ''}
-        <select class="role-select-dropdown" data-user-id="${user.id}">
+        <select class="role-select-dropdown" data-user-id="${user.id}" style="flex:1;">
           <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사 (관리자)</option>
           <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 회계선생님</option>
           <option value="teacher" ${user.role === "teacher" ? "selected" : ""}>🧑🏻‍🏫 선생님 (공과/새친구)</option>
           <option value="student" ${user.role === "student" ? "selected" : ""}>👦🏻 학생</option>
         </select>
+        <button type="button" class="edit-user-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:12px; font-weight:700; background:#f5efff; color:#6c35c4; border-radius:8px; border:1.5px solid #e0c8ff; cursor:pointer; display:flex; align-items:center; gap:3px; white-space:nowrap;" title="계정 정보 수정">
+          <span>✏️</span> <span>수정</span>
+        </button>
         ${!isCurrent ? `
-          <button type="button" class="delete-user-btn" data-user-id="${user.id}" data-user-name="${user.name}" style="padding:6px 9px; font-size:13px; background:#fff0f0; color:#ef4444; border-radius:8px; border:1.5px solid #fecaca; cursor:pointer; line-height:1;" title="계정 삭제">
+          <button type="button" class="delete-user-btn" data-user-id="${user.id}" data-user-name="${user.name}" style="padding:6px 9px; font-size:13px; background:#fff0f0; color:#ef4444; border-radius:8px; border:1.5px solid #fecaca; cursor:pointer; line-height:1; margin-left:auto;" title="계정 삭제">
             🗑️
           </button>
         ` : ''}
@@ -2167,6 +2170,14 @@ function renderUserManagerSection() {
       });
     }
 
+    // Edit button event
+    const editBtn = card.querySelector(".edit-user-btn");
+    if (editBtn) {
+      editBtn.addEventListener("click", () => {
+        openEditUserModal(user.id);
+      });
+    }
+
     // Delete button event
     const deleteBtn = card.querySelector(".delete-user-btn");
     if (deleteBtn) {
@@ -2178,6 +2189,64 @@ function renderUserManagerSection() {
     container.appendChild(card);
   });
 }
+
+function openEditUserModal(userId) {
+  const user = appState.users.find(u => u.id === userId);
+  if (!user) return;
+
+  document.getElementById("editUserIdInput").value = user.id;
+  document.getElementById("editUserNameInput").value = user.name || "";
+  document.getElementById("editUserDutyInput").value = user.duty || "";
+  document.getElementById("editUserPhoneInput").value = user.phone || "";
+  document.getElementById("editUserUsernameInput").value = user.username || "";
+
+  openModal("editUserModal");
+}
+
+function initEditUserEvents() {
+  const form = document.getElementById("editUserForm");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const userId = document.getElementById("editUserIdInput").value;
+      const user = appState.users.find(u => u.id === userId);
+      if (!user) return;
+
+      const name = document.getElementById("editUserNameInput").value.trim();
+      const duty = document.getElementById("editUserDutyInput").value.trim();
+      const phone = document.getElementById("editUserPhoneInput").value.trim();
+      const username = document.getElementById("editUserUsernameInput").value.trim();
+
+      if (!name) {
+        showToast("⚠️ 이름을 입력해주세요.", "warn");
+        return;
+      }
+
+      // Check username duplicate (exclude current user)
+      if (username && username !== user.username) {
+        const dup = appState.users.find(u => u.id !== userId && u.username === username);
+        if (dup) {
+          showToast("⚠️ 이미 사용 중인 아이디입니다.", "warn");
+          return;
+        }
+      }
+
+      user.name = name;
+      user.duty = duty;
+      user.phone = phone;
+      if (username) user.username = username;
+
+      saveState();
+      closeModal("editUserModal");
+      renderUserManagerSection();
+      renderUserSwitchGrid();
+      renderUserHeaderBar();
+
+      showToast(`✅ '${name}' 계정 정보가 성공적으로 수정되었습니다!`);
+    });
+  }
+}
+
 
 // 삭제 확인 모달
 let _deleteTargetUserId = null;
@@ -3202,6 +3271,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initRoleEvents();
   initUserManagementEvents();
   initDeleteUserConfirm();
+  initEditUserEvents();
   initChecklistEvents();
   initStaffBoxEvents();
   initCalendarEvents();

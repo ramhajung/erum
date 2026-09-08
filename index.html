@@ -1784,37 +1784,39 @@
       </div>
     </div>
 
-    <!-- Modal 10: 새 사용자 등록 모달 -->
-    <div class="modal-backdrop" id="addNewUserModal">
+    <!-- Modal 10: 계정 정보 수정 모달 -->
+    <div class="modal-backdrop" id="editUserModal">
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
-          <h3 class="sheet-title">새 사용자 계정 등록</h3>
-          <button class="sheet-close-btn" data-close="addNewUserModal">✕</button>
+          <div>
+            <h3 class="sheet-title">✏️ 계정 정보 수정</h3>
+            <p style="font-size:11px; color:#6c35c4; font-weight:700;">사역 직분, 연락처, 아이디 변경</p>
+          </div>
+          <button class="sheet-close-btn" data-close="editUserModal">✕</button>
         </div>
-        <form id="newUserForm">
+        <form id="editUserForm" style="padding-top:6px;">
+          <input type="hidden" id="editUserIdInput">
           <div class="form-group">
             <label>이름</label>
-            <input type="text" id="newUserNameInput" placeholder="예: 박예은 선생님" required>
-          </div>
-          <div class="form-group">
-            <label>부여할 권한 (역할)</label>
-            <select id="newUserRoleInput">
-              <option value="teacher" selected>선생님 (공과/새친구반 목양)</option>
-              <option value="accountant">회계선생님 (재정/장부 관리)</option>
-              <option value="student">학생 (청소년부 포털)</option>
-              <option value="pastor">전도사 (총괄 관리자)</option>
-            </select>
+            <input type="text" id="editUserNameInput" placeholder="이름" required>
           </div>
           <div class="form-group">
             <label>담당 사역 / 직분</label>
-            <input type="text" id="newUserDutyInput" placeholder="예: 중1반 담임 / 찬양팀 건반" required>
+            <input type="text" id="editUserDutyInput" placeholder="예: 중고등부 회계 & 재정 장부 결산" required>
           </div>
           <div class="form-group">
-            <label>연락처</label>
-            <input type="text" id="newUserPhoneInput" placeholder="예: 010-9999-8888">
+            <label>연락처 (전화번호)</label>
+            <input type="text" id="editUserPhoneInput" placeholder="예: 010-2345-6789">
           </div>
-          <button type="submit" class="btn-orange" style="background:#6c35c4; margin-top:16px;">사용자 계정 생성 및 권한 부여</button>
+          <div class="form-group">
+            <label>로그인 아이디 (ID)</label>
+            <input type="text" id="editUserUsernameInput" placeholder="아이디" required>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <button type="button" class="btn-secondary" data-close="editUserModal" style="flex:1; font-weight:700;">취소</button>
+            <button type="submit" class="btn-orange" style="flex:1.5; background:#6c35c4; margin-top:0;">저장하기</button>
+          </div>
         </form>
       </div>
     </div>
