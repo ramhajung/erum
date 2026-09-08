@@ -284,7 +284,8 @@ const INITIAL_DATA = {
       isAdmin: false
     }
   ],
-  currentUserId: "u1"
+  currentUserId: "u1",
+  isAuthenticated: false
 };
 
 // State storage
@@ -306,6 +307,9 @@ function loadState() {
       }
       if (!parsed.currentUserId) {
         parsed.currentUserId = "u1";
+      }
+      if (typeof parsed.isAuthenticated !== "boolean") {
+        parsed.isAuthenticated = false;
       }
       return parsed;
     } catch (e) {
@@ -2755,6 +2759,159 @@ function initCalendarEvents() {
 }
 
 // =============================================================================
+// 10-1. Authentication & Onboarding Gate Engine
+// =============================================================================
+
+function checkAuthState() {
+  const authScreen = document.getElementById("authGateScreen");
+  const mainShell = document.getElementById("mainAppShell");
+  if (!authScreen || !mainShell) return;
+
+  if (appState.isAuthenticated) {
+    authScreen.classList.add("hidden-auth");
+    mainShell.classList.remove("hidden-app");
+  } else {
+    authScreen.classList.remove("hidden-auth");
+    mainShell.classList.add("hidden-app");
+    populateLoginUserSelect();
+  }
+}
+
+function populateLoginUserSelect() {
+  const select = document.getElementById("loginUserSelect");
+  if (!select) return;
+  select.innerHTML = "";
+
+  appState.users.forEach(user => {
+    const opt = document.createElement("option");
+    opt.value = user.id;
+    opt.textContent = `${user.avatar || "👤"} ${user.name} (${ROLE_NAMES[user.role] || user.duty || ""})`;
+    if (user.id === appState.currentUserId) {
+      opt.selected = true;
+    }
+    select.appendChild(opt);
+  });
+}
+
+function loginUser(userId) {
+  const user = appState.users.find(u => u.id === userId);
+  if (!user) return;
+
+  appState.currentUserId = userId;
+  appState.isAuthenticated = true;
+  saveState();
+
+  switchMasterRole(user.role, false);
+  renderAll();
+
+  // Hide Auth Screen & Reveal Main Shell with smooth transition
+  const authScreen = document.getElementById("authGateScreen");
+  const mainShell = document.getElementById("mainAppShell");
+  if (authScreen) authScreen.classList.add("hidden-auth");
+  if (mainShell) mainShell.classList.remove("hidden-app");
+
+  showToast(`✨ '${user.name}'님 환영합니다! (${ROLE_NAMES[user.role]})`);
+}
+
+function logoutUser() {
+  appState.isAuthenticated = false;
+  saveState();
+
+  const authScreen = document.getElementById("authGateScreen");
+  const mainShell = document.getElementById("mainAppShell");
+  if (authScreen) authScreen.classList.remove("hidden-auth");
+  if (mainShell) mainShell.classList.add("hidden-app");
+
+  populateLoginUserSelect();
+  closeModal("userSwitchModal");
+  showToast("🚪 로그아웃되었습니다. 다시 로그인해주세요.", "info");
+}
+
+function initAuthScreen() {
+  // Tab Switching: 로그인 vs 회원가입
+  const loginTabBtn = document.getElementById("authTabLoginBtn");
+  const signupTabBtn = document.getElementById("authTabSignupBtn");
+  const loginPanel = document.getElementById("authLoginPanel");
+  const signupPanel = document.getElementById("authSignupPanel");
+
+  if (loginTabBtn && signupTabBtn && loginPanel && signupPanel) {
+    loginTabBtn.addEventListener("click", () => {
+      loginTabBtn.className = "py-2.5 text-[13px] font-extrabold rounded-xl transition-all duration-150 bg-white text-primary shadow-sm";
+      signupTabBtn.className = "py-2.5 text-[13px] font-bold rounded-xl transition-all duration-150 text-text-muted hover:text-text-primary";
+      loginPanel.classList.remove("hidden");
+      signupPanel.classList.add("hidden");
+    });
+
+    signupTabBtn.addEventListener("click", () => {
+      signupTabBtn.className = "py-2.5 text-[13px] font-extrabold rounded-xl transition-all duration-150 bg-white text-primary shadow-sm";
+      loginTabBtn.className = "py-2.5 text-[13px] font-bold rounded-xl transition-all duration-150 text-text-muted hover:text-text-primary";
+      loginPanel.classList.add("hidden");
+      signupPanel.classList.remove("hidden");
+    });
+  }
+
+  // 1-Click Demo Quick Logins
+  document.querySelectorAll(".demo-login-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const uid = btn.dataset.userId;
+      if (uid) {
+        loginUser(uid);
+      }
+    });
+  });
+
+  // Standard Login Form
+  const standardForm = document.getElementById("standardLoginForm");
+  if (standardForm) {
+    standardForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const select = document.getElementById("loginUserSelect");
+      if (select && select.value) {
+        loginUser(select.value);
+      }
+    });
+  }
+
+  // Auth Sign Up Form
+  const signupForm = document.getElementById("authSignupForm");
+  if (signupForm) {
+    signupForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("signupNameInput").value.trim();
+      const role = document.getElementById("signupRoleInput").value;
+      const duty = document.getElementById("signupDutyInput").value.trim();
+      const phone = document.getElementById("signupPhoneInput").value.trim();
+
+      if (!name) return;
+
+      const newUser = {
+        id: "u_" + Date.now(),
+        name: name,
+        role: role,
+        duty: duty || `${ROLE_NAMES[role]}`,
+        phone: phone || "010-0000-0000",
+        avatar: DEFAULT_AVATARS[role] || "👤",
+        isAdmin: (role === "pastor")
+      };
+
+      appState.users.push(newUser);
+      loginUser(newUser.id);
+      signupForm.reset();
+
+      showToast(`🎉 반갑습니다, '${name}'님! 계정이 등록되었습니다.`);
+    });
+  }
+
+  // Logout button inside User Switcher Modal
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      logoutUser();
+    });
+  }
+}
+
+// =============================================================================
 // 11. Bootstrap & Master Render
 // =============================================================================
 
@@ -2785,8 +2942,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initModalClosers();
   initFrameSwitcher();
   initClock();
+  initAuthScreen();
 
   renderAll();
+
+  // Check login auth state
+  checkAuthState();
 
   // Initialize current user and active role
   const currentUser = getCurrentUser();
@@ -2794,9 +2955,11 @@ document.addEventListener("DOMContentLoaded", () => {
   switchMasterRole(initialRole, false);
   renderUserHeaderBar();
 
-  // Welcome toast
-  setTimeout(() => {
-    showToast("이룸교회 중고등부 예랑 앱에 오신 것을 환영합니다! 🌤️");
-  }, 400);
+  // Welcome toast (only if already logged in)
+  if (appState.isAuthenticated) {
+    setTimeout(() => {
+      showToast("이룸교회 중고등부 예랑 앱에 오신 것을 환영합니다! 🌤️");
+    }, 400);
+  }
 });
 

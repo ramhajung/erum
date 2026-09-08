@@ -143,6 +143,150 @@
     <div class="absolute -top-12 -left-12 w-64 h-64 rounded-full bg-gradient-to-br from-primary/12 via-[#ffb5a0]/15 to-transparent blur-3xl pointer-events-none -z-0"></div>
     <div class="absolute top-28 -right-10 w-60 h-60 rounded-full bg-gradient-to-bl from-accent-butter/70 via-secondary/8 to-transparent blur-3xl pointer-events-none -z-0"></div>
 
+    <!-- ===================================================================
+         AUTH GATE SCREEN: 로그인 & 회원가입 화면 (Onboarding & Authentication)
+         =================================================================== -->
+    <div id="authGateScreen" class="flex-1 flex flex-col justify-between px-5 pt-8 pb-10 relative z-30 min-h-screen">
+      <!-- Top Brand Header -->
+      <div class="flex flex-col items-center text-center mt-2">
+        <div class="w-16 h-16 rounded-3xl bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center shadow-lg shadow-primary/25 ring-4 ring-white mb-3.5">
+          <span class="material-symbols-outlined text-[36px]">church</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-fixed/50 text-primary text-[12px] font-extrabold tracking-wide mb-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+          이룸교회 청소년부
+        </div>
+        <h1 class="text-[26px] font-extrabold text-text-primary tracking-tight">예랑 사역 포털</h1>
+        <p class="text-[13px] text-text-secondary mt-1 font-medium">스마트 목양 · 출결 · 회의 · 실시간 회계 관리</p>
+
+        <!-- Auth Mode Segmented Control (로그인 vs 회원가입) -->
+        <div class="w-full grid grid-cols-2 p-1 bg-surface-container/70 rounded-2xl border border-outline-variant/15 mt-6">
+          <button type="button" id="authTabLoginBtn" class="py-2.5 text-[13px] font-extrabold rounded-xl transition-all duration-150 bg-white text-primary shadow-sm">
+            로그인
+          </button>
+          <button type="button" id="authTabSignupBtn" class="py-2.5 text-[13px] font-bold rounded-xl transition-all duration-150 text-text-muted hover:text-text-primary">
+            새 계정 등록 (회원가입)
+          </button>
+        </div>
+      </div>
+
+      <!-- Content 1: 로그인 패널 -->
+      <div id="authLoginPanel" class="mt-6 flex-1 flex flex-col justify-center">
+        <!-- 1-Click Fast Demo Personas -->
+        <div class="mb-5">
+          <div class="flex items-center justify-between mb-2.5 px-1">
+            <span class="text-[12px] font-extrabold text-text-secondary">⚡ 빠른 시작 (1-터치 데모 계정)</span>
+            <span class="text-[11px] font-medium text-primary bg-badge-terracotta-bg px-2 py-0.5 rounded-full border border-primary/10">즉시 체험</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5" id="demoLoginGrid">
+            <!-- 1. 정하람 전도사 -->
+            <button type="button" class="demo-login-btn text-left p-3 rounded-2xl bg-white border border-outline-variant/20 hover:border-primary/40 shadow-[0_4px_16px_rgba(60,50,40,0.04)] hover:shadow-md transition-all active:scale-95 group" data-user-id="u1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-7 h-7 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center text-[14px]">✝️</span>
+                <div>
+                  <span class="block text-[13px] font-extrabold text-text-primary group-hover:text-primary transition-colors">정하람 전도사</span>
+                  <span class="block text-[10px] text-text-muted">사역 총괄 / 관리자</span>
+                </div>
+              </div>
+            </button>
+            <!-- 2. 나하은 회계선생님 -->
+            <button type="button" class="demo-login-btn text-left p-3 rounded-2xl bg-white border border-outline-variant/20 hover:border-primary/40 shadow-[0_4px_16px_rgba(60,50,40,0.04)] hover:shadow-md transition-all active:scale-95 group" data-user-id="u2">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-7 h-7 rounded-full bg-secondary-fixed/50 text-secondary flex items-center justify-center text-[14px]">💼</span>
+                <div>
+                  <span class="block text-[13px] font-extrabold text-text-primary group-hover:text-primary transition-colors">나하은 회계쌤</span>
+                  <span class="block text-[10px] text-text-muted">재정 마스터 / 결산</span>
+                </div>
+              </div>
+            </button>
+            <!-- 3. 김대한 선생님 -->
+            <button type="button" class="demo-login-btn text-left p-3 rounded-2xl bg-white border border-outline-variant/20 hover:border-primary/40 shadow-[0_4px_16px_rgba(60,50,40,0.04)] hover:shadow-md transition-all active:scale-95 group" data-user-id="u3">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-7 h-7 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-[14px]">🧑🏻‍🏫</span>
+                <div>
+                  <span class="block text-[13px] font-extrabold text-text-primary group-hover:text-primary transition-colors">김대한 선생님</span>
+                  <span class="block text-[10px] text-text-muted">고3반 & 새친구반 목양</span>
+                </div>
+              </div>
+            </button>
+            <!-- 4. 양형모 학생 -->
+            <button type="button" class="demo-login-btn text-left p-3 rounded-2xl bg-white border border-outline-variant/20 hover:border-primary/40 shadow-[0_4px_16px_rgba(60,50,40,0.04)] hover:shadow-md transition-all active:scale-95 group" data-user-id="u5">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="w-7 h-7 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center text-[14px]">👦🏻</span>
+                <div>
+                  <span class="block text-[13px] font-extrabold text-text-primary group-hover:text-primary transition-colors">양형모 학생</span>
+                  <span class="block text-[10px] text-text-muted">고3 · 예랑 포털</span>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Or Select from Registered Users Form -->
+        <div class="p-4 rounded-3xl bg-white border border-outline-variant/20 shadow-[0_8px_24px_rgba(60,50,40,0.05)]">
+          <form id="standardLoginForm">
+            <div class="mb-3.5">
+              <label for="loginUserSelect" class="block text-[12px] font-extrabold text-text-secondary mb-1.5">내 계정 선택하여 로그인</label>
+              <select id="loginUserSelect" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-bold text-text-primary focus:outline-none focus:border-primary">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+            <button type="submit" class="btn-primary w-full py-3.5 rounded-xl font-extrabold text-[14px] flex items-center justify-center gap-1.5 shadow-md">
+              <span class="material-symbols-outlined text-[18px]">login</span>
+              <span>로그인 및 사역 시작</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Content 2: 회원가입 패널 (Initial Hidden) -->
+      <div id="authSignupPanel" class="mt-6 flex-1 hidden flex-col justify-center">
+        <div class="p-4.5 rounded-3xl bg-white border border-outline-variant/20 shadow-[0_8px_24px_rgba(60,50,40,0.05)]">
+          <div class="mb-4">
+            <h3 class="text-[16px] font-extrabold text-text-primary">새 사역자 / 학생 등록</h3>
+            <p class="text-[11.5px] text-text-muted mt-0.5">역할에 따라 전용 대시보드 권한이 부여됩니다.</p>
+          </div>
+          <form id="authSignupForm" class="space-y-3">
+            <div>
+              <label class="block text-[12px] font-extrabold text-text-secondary mb-1">성함 / 이름 *</label>
+              <input type="text" id="signupNameInput" placeholder="예: 박예은 선생님" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-medium text-text-primary focus:outline-none focus:border-primary" required>
+            </div>
+            <div>
+              <label class="block text-[12px] font-extrabold text-text-secondary mb-1">소속 및 직분 (역할) *</label>
+              <select id="signupRoleInput" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-bold text-text-primary focus:outline-none focus:border-primary">
+                <option value="teacher" selected>🧑🏻‍🏫 교사 (공과/새친구반 목양)</option>
+                <option value="accountant">💼 회계 (재정/장부 관리 마스터)</option>
+                <option value="student">👦🏻 학생 (청소년부 포털 & 스카)</option>
+                <option value="pastor">✝️ 전도사 (사역 총괄 관리자)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[12px] font-extrabold text-text-secondary mb-1">담당 부서 / 반 / 섬김 영역</label>
+              <input type="text" id="signupDutyInput" placeholder="예: 중1반 담임 / 찬양팀 멘토" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-medium text-text-primary focus:outline-none focus:border-primary">
+            </div>
+            <div>
+              <label class="block text-[12px] font-extrabold text-text-secondary mb-1">연락처 (휴대폰)</label>
+              <input type="tel" id="signupPhoneInput" placeholder="010-0000-0000" class="w-full bg-surface-canvas border border-outline-variant/30 rounded-xl px-3 py-2.5 text-[14px] font-medium text-text-primary focus:outline-none focus:border-primary">
+            </div>
+            <button type="submit" class="btn-primary w-full py-3.5 rounded-xl font-extrabold text-[14px] flex items-center justify-center gap-1.5 shadow-md mt-4">
+              <span class="material-symbols-outlined text-[18px]">how_to_reg</span>
+              <span>가입 완료 & 사역 시작하기</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="text-center mt-6">
+        <p class="text-[11px] text-text-muted">이룸교회 중고등부 예랑 사역 시스템 · 2026</p>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         MAIN APP SHELL (Header + Screens + Bottom Tab Bar)
+         =================================================================== -->
+    <div id="mainAppShell" class="flex-1 flex flex-col relative">
+
     <!-- Top Status Bar & Header Anchor (Stitch Glassmorphism Header) -->
     <header class="app-unified-header bg-surface/90 backdrop-blur-xl docked full-width top-0 sticky z-40 border-b border-outline-variant/20 shadow-[0_4px_24px_rgba(150,67,43,0.04)] transition-transform duration-150">
       <div class="flex justify-between items-center max-w-container-max mx-auto px-4 h-[72px] w-full gap-2">
@@ -1283,6 +1427,7 @@
         <span class="text-[11px] font-semibold tracking-tight">재정</span>
       </button>
     </nav>
+    </div><!-- Close #mainAppShell -->
 
 
     <!-- ===================================================================
@@ -1570,6 +1715,7 @@
         </div>
 
         <div style="display:flex; gap:8px; margin-top:16px;">
+          <button class="btn-secondary" id="logoutBtn" style="flex:1; color:#ba1a1a; background:#fff1f0; border-color:#ffdad6; font-size:12px; font-weight:700;">🚪 로그아웃</button>
           <button class="btn-secondary" id="resetDataBtn" style="flex:1; color:#c2410c; background:#fff7ed; border-color:#fed7aa; font-size:12px; font-weight:700;">🔄 데이터 초기화</button>
           <button class="btn-secondary" data-close="userSwitchModal" style="flex:1; font-weight:700;">닫기</button>
         </div>
