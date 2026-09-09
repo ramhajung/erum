@@ -4262,7 +4262,6 @@ function renderCalendarSection() {
       <div style="display:flex; align-items:center; gap:6px;">
         <span>🎂</span> <span>${currentCalendarMonth}월 생일 주인공 (${curBirthdays.length}명)</span>
       </div>
-      ${isPastor ? `<button type="button" class="btn-primary-mini" id="openAddBdayQuickBtn" style="padding:3px 8px; font-size:11px; border-radius:6px; background:#e11d48;">+ 생일자 추가</button>` : ''}
     </div>
   `;
 
@@ -4284,7 +4283,6 @@ function renderCalendarSection() {
             <div class="birthday-date">${currentCalendarYear}.${currentCalendarMonth}.${b.day}</div>
             <div class="birthday-name" style="display:flex; align-items:center; justify-content:space-between;">
               <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${b.name}</span>
-              ${isPastor ? '<span style="font-size:10px; color:#e11d48; margin-left:4px;">관리⚙️</span>' : ''}
             </div>
           </div>
         </div>
