@@ -1788,6 +1788,51 @@
       </div>
     </div>
 
+    <!-- Modal: 행사 체크리스트 수정 모달 (전도사 전용) -->
+    <div class="modal-backdrop" id="editChecklistModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title">✏️ 체크리스트 항목 수정</h3>
+          <button class="sheet-close-btn" data-close="editChecklistModal">✕</button>
+        </div>
+        <form id="editChecklistForm">
+          <input type="hidden" id="editChkIdInput">
+          <div class="form-group">
+            <label>행사 대상</label>
+            <input type="text" value="예랑 스카 (D-12)" readonly>
+          </div>
+          <div class="form-group">
+            <label>할 일 제목</label>
+            <input type="text" id="editChkTitleInput" placeholder="할 일 제목 입력" required>
+          </div>
+          <div class="form-group">
+            <label>담당 선생님</label>
+            <select id="editChkManagerInput">
+              <option value="소예진T">소예진T</option>
+              <option value="김대한T">김대한T</option>
+              <option value="양선아T">양선아T</option>
+              <option value="정하람 전도사">정하람 전도사</option>
+              <option value="나하은T">나하은T</option>
+              <option value="김희순 집사">김희순 집사</option>
+            </select>
+          </div>
+          <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:10px; background:#f8fafc; padding:10px 12px; border-radius:10px; border:1px solid #e2e8f0;">
+            <input type="checkbox" id="editChkCheckedInput" style="width:18px; height:18px; accent-color:#059669; cursor:pointer;">
+            <label for="editChkCheckedInput" style="margin:0; font-size:13px; font-weight:700; cursor:pointer; color:#334155;">완료 여부 (체크 완료 처리)</label>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <button type="button" id="deleteChkModalBtn" class="btn-secondary" style="flex:1; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;">
+              <span>🗑️</span> <span>삭제</span>
+            </button>
+            <button type="submit" class="btn-orange" style="flex:2;">
+              <span>수정 완료 ✓</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal: 이번 주 예배 섬김 명단 수정 모달 -->
     <div class="modal-backdrop" id="editWorshipDutyModal">
       <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">

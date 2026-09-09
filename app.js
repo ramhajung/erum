@@ -3451,11 +3451,70 @@ function initSchedulerSubTabs() {
 }
 
 // --- Event Checklist (New Image 4: 예랑 스카 D-12) ---
+function isChecklistAssignee(item, user) {
+  if (!item || !user) return false;
+  // If item doesn't have manager specified, fallback to title text extraction
+  let managerName = item.manager || "";
+  if (!managerName && item.title) {
+    const match = item.title.match(/\(([^)]+)\)/);
+    if (match) managerName = match[1];
+  }
+  const userName = (user.name || "").trim();
+  if (!managerName || !userName) return false;
+
+  const cleanManager = managerName.replace(/선생님|전도사|목사|집사|교사|T/g, "").replace(/\s+/g, "");
+  const cleanUser = userName.replace(/선생님|전도사|목사|집사|교사|T/g, "").replace(/\s+/g, "");
+
+  if (cleanManager && cleanUser && (cleanManager === cleanUser || cleanManager.includes(cleanUser) || cleanUser.includes(cleanManager))) {
+    return true;
+  }
+  return false;
+}
+
+function openEditChecklistModal(item) {
+  const modal = document.getElementById("editChecklistModal");
+  if (!modal) return;
+  const idInput = document.getElementById("editChkIdInput");
+  const titleInput = document.getElementById("editChkTitleInput");
+  const managerInput = document.getElementById("editChkManagerInput");
+  const checkedInput = document.getElementById("editChkCheckedInput");
+
+  if (idInput) idInput.value = item.id;
+  // Clean raw title from parenthesis manager if present
+  let cleanTitle = item.title || "";
+  cleanTitle = cleanTitle.replace(/\s*\([^)]+\)\s*$/, "").trim();
+  if (titleInput) titleInput.value = cleanTitle;
+  if (managerInput) managerInput.value = item.manager || "정하람 전도사";
+  if (checkedInput) checkedInput.checked = !!item.checked;
+
+  openModal("editChecklistModal");
+}
+
+function deleteChecklistItem(itemId, itemTitle) {
+  if (!confirm(`'${itemTitle}' 체크리스트 항목을 정말 삭제하시겠습니까?`)) {
+    return;
+  }
+  appState.checklist.items = appState.checklist.items.filter(i => i.id !== itemId);
+  saveState();
+  renderChecklistSection();
+  closeModal("editChecklistModal");
+  showToast("체크리스트 항목이 삭제되었습니다. 🗑️");
+}
+
 function renderChecklistSection() {
   const container = document.getElementById("checklistItemsContainer");
   const progressFill = document.getElementById("checklistProgressFill");
   const progressText = document.getElementById("checklistProgressText");
+  const openAddBtn = document.getElementById("openAddChecklistBtn");
   if (!container || !appState.checklist) return;
+
+  const isPastor = (currentRole === "pastor");
+  const currentUser = getCurrentUser();
+
+  // 전도사에게만 '새 체크리스트 추가' 버튼 노출
+  if (openAddBtn) {
+    openAddBtn.style.display = isPastor ? "" : "none";
+  }
 
   const items = appState.checklist.items;
   const total = items.length;
@@ -3474,17 +3533,73 @@ function renderChecklistSection() {
     if (item.checked) {
       colorClass = item.color === "yellow" ? "checked-yellow" : "checked-green";
     }
+
+    const isMyTask = isChecklistAssignee(item, currentUser);
+    const canCheck = isPastor || isMyTask;
+
     el.className = `checklist-item ${colorClass}`;
+    if (!canCheck) {
+      el.style.opacity = "0.78";
+    }
+
+    // Role badge
+    let badgeHtml = "";
+    if (!isPastor && isMyTask) {
+      badgeHtml = `<span style="font-size:10px; font-weight:800; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:6px; margin-left:6px; border:1px solid #bae6fd;">내 담당 🙋🏻</span>`;
+    } else if (!canCheck) {
+      badgeHtml = `<span style="font-size:10px; font-weight:700; color:#94a3b8; margin-left:4px;">🔒</span>`;
+    }
+
+    // 전도사 전용 수정/삭제 버튼
+    let pastorActionsHtml = "";
+    if (isPastor) {
+      pastorActionsHtml = `
+        <div class="chk-item-actions" style="display:flex; align-items:center; gap:4px; margin-left:auto; flex-shrink:0;">
+          <button type="button" class="chk-edit-btn" title="항목 수정" style="border:none; background:#f1f5f9; hover:background:#e2e8f0; color:#475569; width:28px; height:28px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; transition:all 150ms;">✏️</button>
+          <button type="button" class="chk-del-btn" title="항목 삭제" style="border:none; background:#fef2f2; hover:background:#fee2e2; color:#ef4444; width:28px; height:28px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; transition:all 150ms;">🗑️</button>
+        </div>
+      `;
+    }
 
     el.innerHTML = `
-      <div class="custom-checkbox">${item.checked ? "✓" : ""}</div>
-      <div class="checklist-text-wrap">
-        <div class="checklist-title">${item.title}</div>
+      <div class="custom-checkbox" style="${!canCheck ? 'opacity:0.6;' : ''}">${item.checked ? "✓" : ""}</div>
+      <div class="checklist-text-wrap" style="flex:1; min-width:0;">
+        <div class="checklist-title" style="display:flex; align-items:center; flex-wrap:wrap; gap:2px;">
+          <span>${item.title}</span>
+          ${badgeHtml}
+        </div>
       </div>
+      ${pastorActionsHtml}
     `;
 
+    // Action button events (전도사용)
+    if (isPastor) {
+      const editBtn = el.querySelector(".chk-edit-btn");
+      if (editBtn) {
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openEditChecklistModal(item);
+        });
+      }
+      const delBtn = el.querySelector(".chk-del-btn");
+      if (delBtn) {
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          deleteChecklistItem(item.id, item.title);
+        });
+      }
+    }
+
     // Toggle checklist item
-    el.addEventListener("click", () => {
+    el.addEventListener("click", (e) => {
+      // If clicked on action buttons, do not toggle
+      if (e.target.closest(".chk-item-actions")) return;
+
+      if (!canCheck) {
+        showToast("⚠️ 본인이 담당한 항목만 체크할 수 있습니다.", "warn");
+        return;
+      }
+
       item.checked = !item.checked;
       saveState();
       renderChecklistSection();
@@ -3502,6 +3617,7 @@ function initChecklistEvents() {
     openBtn.addEventListener("click", () => openModal("addChecklistModal"));
   }
 
+  // 추가 폼 리스너
   const form = document.getElementById("checklistForm");
   if (form) {
     form.addEventListener("submit", (e) => {
@@ -3523,6 +3639,39 @@ function initChecklistEvents() {
       closeModal("addChecklistModal");
       form.reset();
       showToast("새 행사 체크리스트 항목이 추가되었습니다! 📋");
+    });
+  }
+
+  // 전도사 수정 폼 리스너
+  const editForm = document.getElementById("editChecklistForm");
+  if (editForm) {
+    editForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const itemId = Number(document.getElementById("editChkIdInput").value);
+      const title = document.getElementById("editChkTitleInput").value.trim();
+      const manager = document.getElementById("editChkManagerInput").value;
+      const isChecked = document.getElementById("editChkCheckedInput").checked;
+
+      const target = appState.checklist.items.find(i => i.id === itemId);
+      if (target) {
+        target.title = `${title} (${manager})`;
+        target.manager = manager;
+        target.checked = isChecked;
+        saveState();
+        renderChecklistSection();
+        closeModal("editChecklistModal");
+        showToast("체크리스트 항목이 성공적으로 수정되었습니다! ✏️");
+      }
+    });
+  }
+
+  // 모달 내 삭제 버튼 리스너
+  const deleteModalBtn = document.getElementById("deleteChkModalBtn");
+  if (deleteModalBtn) {
+    deleteModalBtn.addEventListener("click", () => {
+      const itemId = Number(document.getElementById("editChkIdInput").value);
+      const title = document.getElementById("editChkTitleInput").value.trim();
+      deleteChecklistItem(itemId, title || "선택한 항목");
     });
   }
 }
