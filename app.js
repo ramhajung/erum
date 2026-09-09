@@ -1075,6 +1075,7 @@ function renderAttendanceSection() {
 
       <div class="teacher-memo-box">
         ${att.memo}
+        ${att.eta ? `<div style="margin-top:6px; font-weight:700; color:#d97706; font-size:12px; display:flex; align-items:center; gap:4px;"><span>⏰ 도착 예정:</span> <span>${att.eta}</span></div>` : ''}
       </div>
 
       ${extraRow}
@@ -1092,6 +1093,8 @@ function initAttendanceEvents() {
     }
     const memoInput = document.getElementById("absentMemoInput");
     if (memoInput) memoInput.value = "";
+    const etaInput = document.getElementById("absentEtaInput");
+    if (etaInput) etaInput.value = "";
     openModal("absentModal");
   });
 
@@ -1102,6 +1105,7 @@ function initAttendanceEvents() {
     const status = document.getElementById("absentStatusInput").value;
     const reason = document.getElementById("absentReasonCategory").value;
     const memo = document.getElementById("absentMemoInput").value;
+    const eta = document.getElementById("absentEtaInput")?.value?.trim() || "";
     const duty = currentUser ? (currentUser.duty || "") : "";
 
     const newAtt = {
@@ -1110,6 +1114,7 @@ function initAttendanceEvents() {
       role: reason,
       status: status,
       memo: memo,
+      eta: eta,
       duty: duty,
       avatar: currentUser?.avatar || "🧑🏻‍🏫"
     };
