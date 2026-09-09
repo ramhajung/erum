@@ -995,7 +995,17 @@ function initAgendaEvents() {
 
 function renderAttendanceSection() {
   const listEl = document.getElementById("attendanceList");
+  if (!listEl) return;
   listEl.innerHTML = "";
+
+  const currentUser = getCurrentUser();
+  const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
+
+  // 1. 이번 주 출석/사전결석/지각 통계 바: 전도사에게만 노출 (선생님들에게는 비노출)
+  const statsBar = document.getElementById("attendanceStatsBar");
+  if (statsBar) {
+    statsBar.style.display = isPastor ? "flex" : "none";
+  }
 
   let absentCount = 0;
   let lateCount = 0;
@@ -1003,7 +1013,39 @@ function renderAttendanceSection() {
   appState.attendance.forEach(att => {
     if (att.status === "사전 결석") absentCount++;
     if (att.status === "지각") lateCount++;
+  });
 
+  // Calculate stats
+  const statAbsentEl = document.getElementById("statAbsentCount");
+  const statLateEl = document.getElementById("statLateCount");
+  const statPresentEl = document.getElementById("statPresentCount");
+  if (statAbsentEl) statAbsentEl.textContent = absentCount;
+  if (statLateEl) statLateEl.textContent = lateCount;
+  if (statPresentEl) statPresentEl.textContent = Math.max(9 - absentCount - lateCount, 0);
+
+  // 2. 다른 선생님들이 보낸 출결 카드는 숨기고, 전도사는 전체 / 선생님은 본인 것만 표시
+  const filteredAttendance = isPastor
+    ? appState.attendance
+    : appState.attendance.filter(att => {
+        if (!currentUser) return false;
+        const cleanAttName = (att.name || "").replace(/선생님|집사님|전도사님|교사|T|쌤/gi, "").replace(/\s+/g, "");
+        const cleanUserName = (currentUser.name || "").replace(/선생님|집사님|전도사님|교사|T|쌤/gi, "").replace(/\s+/g, "");
+        return cleanAttName && cleanUserName && (cleanAttName === cleanUserName || cleanAttName.includes(cleanUserName) || cleanUserName.includes(cleanAttName));
+      });
+
+  if (filteredAttendance.length === 0) {
+    const emptyEl = document.createElement("div");
+    emptyEl.style.cssText = "padding: 36px 16px; text-align: center; background: #ffffff; border-radius: 16px; border: 1.5px dashed #f1ddd2; color: #94a3b8; margin: 12px 0;";
+    emptyEl.innerHTML = `
+      <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+      <div style="font-size: 14px; font-weight: 800; color: #475569; margin-bottom: 4px;">등록된 나의 예배 출결 내역이 없습니다</div>
+      <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">이번 주 주일 예배에 사전 결석 또는 지각 예정이실 경우<br>아래 버튼을 눌러 등록해주세요.</div>
+    `;
+    listEl.appendChild(emptyEl);
+    return;
+  }
+
+  filteredAttendance.forEach(att => {
     const isLate = att.status === "지각";
     const card = document.createElement("div");
     card.className = `teacher-att-card ${isLate ? "late-card" : ""}`;
@@ -1033,11 +1075,6 @@ function renderAttendanceSection() {
     `;
     listEl.appendChild(card);
   });
-
-  // Calculate stats
-  document.getElementById("statAbsentCount").textContent = absentCount;
-  document.getElementById("statLateCount").textContent = lateCount;
-  document.getElementById("statPresentCount").textContent = Math.max(9 - absentCount - lateCount, 0);
 }
 
 function initAttendanceEvents() {
@@ -2855,6 +2892,7 @@ function switchMasterRole(roleKey, notify = true) {
   renderHomeQuickActions();
   renderSchedulerSubTabsByRole();
   renderChecklistSection();
+  renderAttendanceSection();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
