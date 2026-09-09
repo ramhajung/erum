@@ -3226,13 +3226,26 @@ function openModal(modalId) {
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
-  modal.classList.remove("open");
-  modal.style.display = "";
-  modal.style.opacity = "";
+  const sheet = modal.querySelector(".bottom-sheet");
+  if (sheet) {
+    sheet.style.transition = "transform var(--duration-drawer) var(--ease-out)";
+    sheet.style.transform = "translateY(100%)";
+    setTimeout(() => {
+      modal.classList.remove("open");
+      modal.style.display = "";
+      modal.style.opacity = "";
+      sheet.style.transform = "";
+      sheet.style.transition = "";
+    }, 280);
+  } else {
+    modal.classList.remove("open");
+    modal.style.display = "";
+    modal.style.opacity = "";
+  }
 }
 
 function initModalClosers() {
-  // Close buttons with data-close attribute (kept for semantic/accessibility)
+  // Close buttons with data-close attribute
   document.querySelectorAll("[data-close]").forEach(btn => {
     btn.addEventListener("click", () => {
       const modalId = btn.dataset.close;
@@ -3242,7 +3255,7 @@ function initModalClosers() {
 
   // Click .sheet-handle (가운데 있는 ㅡ 가로 바) to close
   document.querySelectorAll(".sheet-handle").forEach(handle => {
-    handle.setAttribute("title", "누르면 닫힙니다");
+    handle.setAttribute("title", "누르거나 아래로 끌어내리면 닫힙니다");
     handle.addEventListener("click", (e) => {
       e.stopPropagation();
       const modalBackdrop = handle.closest(".modal-backdrop");
@@ -3259,6 +3272,79 @@ function initModalClosers() {
         closeModal(backdrop.id);
       }
     });
+  });
+
+  // Swipe / Drag down on bottom-sheet or handle to dismiss
+  initSheetDragToDismiss();
+}
+
+function initSheetDragToDismiss() {
+  const sheets = document.querySelectorAll(".bottom-sheet");
+
+  sheets.forEach(sheet => {
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+    let isHandleDrag = false;
+    const DISMISS_THRESHOLD = 80; // drag distance in px to dismiss
+
+    function onPointerDown(e) {
+      // Only drag if scrolled to top (scrollTop <= 0) or dragging directly from handle
+      const isHandle = e.target.closest(".sheet-handle");
+      if (!isHandle && sheet.scrollTop > 5) return;
+
+      startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      currentY = startY;
+      isDragging = true;
+      isHandleDrag = !!isHandle;
+      sheet.style.transition = "none"; // instant response during drag
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging) return;
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      const diffY = clientY - startY;
+
+      // Only allow downward drag
+      if (diffY > 0) {
+        if (e.cancelable) e.preventDefault();
+        currentY = clientY;
+        sheet.style.transform = `translateY(${diffY}px)`;
+      } else {
+        // Resistance when pulling up
+        if (isHandleDrag) {
+          sheet.style.transform = `translateY(${diffY * 0.15}px)`;
+        }
+      }
+    }
+
+    function onPointerUp() {
+      if (!isDragging) return;
+      isDragging = false;
+      const diffY = currentY - startY;
+      const modalBackdrop = sheet.closest(".modal-backdrop");
+
+      sheet.style.transition = "transform 0.24s cubic-bezier(0.32, 0.72, 0, 1)";
+
+      if (diffY > DISMISS_THRESHOLD && modalBackdrop && modalBackdrop.id) {
+        // Dismiss sheet
+        closeModal(modalBackdrop.id);
+      } else {
+        // Spring back to original position
+        sheet.style.transform = "translateY(0)";
+      }
+    }
+
+    // Touch events for smartphone
+    sheet.addEventListener("touchstart", onPointerDown, { passive: true });
+    sheet.addEventListener("touchmove", onPointerMove, { passive: false });
+    sheet.addEventListener("touchend", onPointerUp);
+    sheet.addEventListener("touchcancel", onPointerUp);
+
+    // Mouse drag support for desktop/mockup testing
+    sheet.addEventListener("mousedown", onPointerDown);
+    window.addEventListener("mousemove", onPointerMove);
+    window.addEventListener("mouseup", onPointerUp);
   });
 }
 
