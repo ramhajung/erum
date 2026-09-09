@@ -4156,8 +4156,9 @@ function initStaffBoxEvents() {
 }
 
 // --- Dynamic Calendar & Birthdays Engine (Real Month Navigation & Pastor CRUD) ---
-let currentCalendarYear = 2026;
-let currentCalendarMonth = 10; // 1-12
+const _initialCalDate = new Date();
+let currentCalendarYear = _initialCalDate.getFullYear() || 2026;
+let currentCalendarMonth = (_initialCalDate.getMonth() + 1) || 9; // Real-time month (1-12)
 let selectedCalendarItem = null; // currently viewed item in manage modal
 
 function renderCalendarSection() {
@@ -4412,18 +4413,22 @@ function openAddCalendarItemModal(year, month, day = 1, defaultType = "birthday"
   const form = document.getElementById("addCalendarItemForm");
   if (form) form.reset();
 
+  const safeYear = Number(year) || currentCalendarYear || new Date().getFullYear();
+  const safeMonth = Number(month) || currentCalendarMonth || (new Date().getMonth() + 1);
+  const safeDay = Number(day) || 1;
+
   const pad = (n) => String(n).padStart(2, "0");
   const dateInput = document.getElementById("calItemDateInput");
   if (dateInput) {
-    dateInput.value = `${year}-${pad(month)}-${pad(day)}`;
+    dateInput.value = `${safeYear}-${pad(safeMonth)}-${pad(safeDay)}`;
   }
 
   // Set default radio selection
   const radio = form ? form.querySelector(`input[name="calItemType"][value="${defaultType}"]`) : null;
   if (radio) {
     radio.checked = true;
-    toggleAddModalFields(defaultType);
   }
+  toggleAddModalFields(defaultType);
 
   openModal("addCalendarItemModal");
 }
@@ -4521,10 +4526,30 @@ function initCalendarEvents() {
   // 2. Open Add Modal Button in Header (Pastor)
   const openAddBtn = document.getElementById("openAddCalendarEventBtn");
   if (openAddBtn) {
-    openAddBtn.addEventListener("click", () => {
+    openAddBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1);
     });
   }
+
+  // Global delegated click handler for calendar action buttons
+  document.addEventListener("click", (e) => {
+    const addEvtBtn = e.target.closest("#openAddCalendarEventBtn");
+    if (addEvtBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1);
+      return;
+    }
+    const bdayQuickBtn = e.target.closest("#openAddBdayQuickBtn");
+    if (bdayQuickBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1, "birthday");
+      return;
+    }
+  });
 
   // 3. Add Modal Radio Switch (Birthday vs Event)
   document.querySelectorAll('input[name="calItemType"]').forEach(radio => {
