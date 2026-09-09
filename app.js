@@ -2834,6 +2834,7 @@ function switchMasterRole(roleKey, notify = true) {
   renderAgendaSection();
   renderStaffBoxSection();
   renderWorshipDutySection();
+  renderHomeQuickActions();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
@@ -3245,11 +3246,81 @@ function initWorshipDutyEvents() {
   }
 }
 
+// --- Home Quick Actions (Role-Adaptive: Pastor vs Teacher) ---
+function renderHomeQuickActions() {
+  const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
+  const isStudent = (currentRole === "student" || (getCurrentUser() && getCurrentUser().role === "student"));
+
+  const pastorActions = document.getElementById("pastorQuickActions");
+  const teacherBox = document.getElementById("teacherSuggestionBox");
+
+  if (pastorActions) {
+    pastorActions.style.display = isPastor ? "grid" : "none";
+  }
+
+  if (teacherBox) {
+    teacherBox.style.display = (!isPastor && !isStudent) ? "block" : "none";
+
+    const currentUser = getCurrentUser();
+    if (currentUser && appState.staffBox && appState.staffBox.items) {
+      const myItems = appState.staffBox.items.filter(item => isAgendaAuthor(item, currentUser));
+      const countEl = document.getElementById("mySuggestionCountText");
+      if (countEl) {
+        countEl.textContent = `${myItems.length}건`;
+      }
+    }
+  }
+}
+
 // --- Home Dashboard Interactivity ---
 function initHomeDashboardEvents() {
   const staffBoxBtn = document.getElementById("openStaffBoxBtn");
   if (staffBoxBtn) {
     staffBoxBtn.addEventListener("click", () => {
+      openModal("staffBoxModal");
+    });
+  }
+
+  // Teacher suggestion box events (선생님 사역자 건의칸)
+  const teacherBox = document.getElementById("teacherSuggestionBox");
+  const teacherSuggestBtn = document.getElementById("teacherOpenSuggestBtn");
+  const viewMySuggestionsLink = document.getElementById("viewMySuggestionsLink");
+
+  function openTeacherSuggestModal() {
+    const currentUser = getCurrentUser();
+    const authorSelect = document.getElementById("staffReqAuthorInput");
+    if (authorSelect && currentUser) {
+      let matchedOption = Array.from(authorSelect.options).find(opt => 
+        opt.value.includes(currentUser.name) || currentUser.name.includes(opt.value.replace("T", "").trim())
+      );
+      if (!matchedOption) {
+        const newOpt = new Option(currentUser.name, currentUser.name);
+        authorSelect.add(newOpt);
+        authorSelect.value = currentUser.name;
+      } else {
+        authorSelect.value = matchedOption.value;
+      }
+    }
+    openModal("addStaffRequestModal");
+  }
+
+  if (teacherSuggestBtn) {
+    teacherSuggestBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openTeacherSuggestModal();
+    });
+  }
+
+  if (teacherBox) {
+    teacherBox.addEventListener("click", (e) => {
+      if (e.target.closest("#viewMySuggestionsLink") || e.target.closest("#teacherOpenSuggestBtn")) return;
+      openTeacherSuggestModal();
+    });
+  }
+
+  if (viewMySuggestionsLink) {
+    viewMySuggestionsLink.addEventListener("click", (e) => {
+      e.stopPropagation();
       openModal("staffBoxModal");
     });
   }
@@ -3697,9 +3768,10 @@ function initStaffBoxEvents() {
       saveState();
       renderStaffBoxSection();
       updateStaffBoxHomeBadge();
+      renderHomeQuickActions();
       closeModal("addStaffRequestModal");
       form.reset();
-      showToast("소통함에 신규 요청/건의가 등록되었습니다! (회의 안건 연동 완료) 📬");
+      showToast("전도사님께 건의가 성공적으로 접수되었습니다! 📬");
     });
   }
 }
@@ -3977,6 +4049,7 @@ function renderAll() {
   renderChecklistSection();
   renderStaffBoxSection();
   renderWorshipDutySection();
+  renderHomeQuickActions();
   updateStaffBoxHomeBadge();
   updateMeetingNavBadge();
 }
