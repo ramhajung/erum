@@ -231,10 +231,10 @@ const INITIAL_DATA = {
   worshipDuty: {
     date: "10/18",
     subtitle: "정성된 마음으로 준비하는 예배",
+    prePrayer: { name: "교사 & 리더", role: "예배 10분 전 본당", badge: "예배전" },
     prayer: { name: "김예원", role: "고등부 2학년", badge: "학생회" },
-    offering: { name: "이유리 · 이지훈", role: "중등부 3학년", badge: "2인" },
-    praise: { name: "예랑 워십팀", role: "인도: 한성민 싱어", badge: "예배전" },
-    media: { name: "김대한 선생님", role: "미디어사역부", badge: "음향/자막" }
+    scripture: { name: "이유리 학생", role: "중등부 3학년", badge: "성경" },
+    announcement: { name: "정하람 전도사", role: "청소년부 담당", badge: "부서소식" }
   },
   users: [
     {
@@ -337,7 +337,7 @@ function loadState() {
       if (!parsed.staffBox) {
         parsed.staffBox = JSON.parse(JSON.stringify(INITIAL_DATA.staffBox));
       }
-      if (!parsed.worshipDuty) {
+      if (!parsed.worshipDuty || !parsed.worshipDuty.prePrayer) {
         parsed.worshipDuty = JSON.parse(JSON.stringify(INITIAL_DATA.worshipDuty));
       }
       // Ensure agendaId linkage between pending agendas and staffBox items
@@ -3120,6 +3120,15 @@ function renderWorshipDutySection() {
   if (dateEl) dateEl.textContent = duty.date || "10/18";
   if (subEl) subEl.textContent = duty.subtitle || "정성된 마음으로 준비하는 예배";
 
+  // 1) 예배 전 기도회
+  const preName = document.getElementById("dutyPrePrayerName");
+  const preRole = document.getElementById("dutyPrePrayerRole");
+  const preBadge = document.getElementById("dutyPrePrayerBadge");
+  if (preName && duty.prePrayer) preName.textContent = duty.prePrayer.name || "";
+  if (preRole && duty.prePrayer) preRole.textContent = duty.prePrayer.role || "";
+  if (preBadge && duty.prePrayer) preBadge.textContent = duty.prePrayer.badge || "예배전";
+
+  // 2) 대표기도
   const prayerName = document.getElementById("dutyPrayerName");
   const prayerRole = document.getElementById("dutyPrayerRole");
   const prayerBadge = document.getElementById("dutyPrayerBadge");
@@ -3127,26 +3136,21 @@ function renderWorshipDutySection() {
   if (prayerRole && duty.prayer) prayerRole.textContent = duty.prayer.role || "";
   if (prayerBadge && duty.prayer) prayerBadge.textContent = duty.prayer.badge || "학생회";
 
-  const offeringName = document.getElementById("dutyOfferingName");
-  const offeringRole = document.getElementById("dutyOfferingRole");
-  const offeringBadge = document.getElementById("dutyOfferingBadge");
-  if (offeringName && duty.offering) offeringName.textContent = duty.offering.name || "";
-  if (offeringRole && duty.offering) offeringRole.textContent = duty.offering.role || "";
-  if (offeringBadge && duty.offering) offeringBadge.textContent = duty.offering.badge || "2인";
+  // 3) 말씀봉독
+  const scripName = document.getElementById("dutyScriptureName");
+  const scripRole = document.getElementById("dutyScriptureRole");
+  const scripBadge = document.getElementById("dutyScriptureBadge");
+  if (scripName && duty.scripture) scripName.textContent = duty.scripture.name || "";
+  if (scripRole && duty.scripture) scripRole.textContent = duty.scripture.role || "";
+  if (scripBadge && duty.scripture) scripBadge.textContent = duty.scripture.badge || "성경";
 
-  const praiseName = document.getElementById("dutyPraiseName");
-  const praiseRole = document.getElementById("dutyPraiseRole");
-  const praiseBadge = document.getElementById("dutyPraiseBadge");
-  if (praiseName && duty.praise) praiseName.textContent = duty.praise.name || "";
-  if (praiseRole && duty.praise) praiseRole.textContent = duty.praise.role || "";
-  if (praiseBadge && duty.praise) praiseBadge.textContent = duty.praise.badge || "예배전";
-
-  const mediaName = document.getElementById("dutyMediaName");
-  const mediaRole = document.getElementById("dutyMediaRole");
-  const mediaBadge = document.getElementById("dutyMediaBadge");
-  if (mediaName && duty.media) mediaName.textContent = duty.media.name || "";
-  if (mediaRole && duty.media) mediaRole.textContent = duty.media.role || "";
-  if (mediaBadge && duty.media) mediaBadge.textContent = duty.media.badge || "음향/자막";
+  // 4) 광고
+  const annName = document.getElementById("dutyAnnouncementName");
+  const annRole = document.getElementById("dutyAnnouncementRole");
+  const annBadge = document.getElementById("dutyAnnouncementBadge");
+  if (annName && duty.announcement) annName.textContent = duty.announcement.name || "";
+  if (annRole && duty.announcement) annRole.textContent = duty.announcement.role || "";
+  if (annBadge && duty.announcement) annBadge.textContent = duty.announcement.badge || "부서소식";
 }
 
 function initWorshipDutyEvents() {
@@ -3155,24 +3159,24 @@ function initWorshipDutyEvents() {
     openBtn.addEventListener("click", () => {
       const duty = appState.worshipDuty || INITIAL_DATA.worshipDuty;
       const dateInput = document.getElementById("dutyDateInput");
+      const preNameInput = document.getElementById("dutyPrePrayerNameInput");
+      const preRoleInput = document.getElementById("dutyPrePrayerRoleInput");
       const pNameInput = document.getElementById("dutyPrayerNameInput");
       const pRoleInput = document.getElementById("dutyPrayerRoleInput");
-      const oNameInput = document.getElementById("dutyOfferingNameInput");
-      const oRoleInput = document.getElementById("dutyOfferingRoleInput");
-      const prNameInput = document.getElementById("dutyPraiseNameInput");
-      const prRoleInput = document.getElementById("dutyPraiseRoleInput");
-      const mNameInput = document.getElementById("dutyMediaNameInput");
-      const mRoleInput = document.getElementById("dutyMediaRoleInput");
+      const scripNameInput = document.getElementById("dutyScriptureNameInput");
+      const scripRoleInput = document.getElementById("dutyScriptureRoleInput");
+      const annNameInput = document.getElementById("dutyAnnouncementNameInput");
+      const annRoleInput = document.getElementById("dutyAnnouncementRoleInput");
 
       if (dateInput) dateInput.value = duty.date || "10/18";
+      if (preNameInput && duty.prePrayer) preNameInput.value = duty.prePrayer.name || "";
+      if (preRoleInput && duty.prePrayer) preRoleInput.value = duty.prePrayer.role || "";
       if (pNameInput && duty.prayer) pNameInput.value = duty.prayer.name || "";
       if (pRoleInput && duty.prayer) pRoleInput.value = duty.prayer.role || "";
-      if (oNameInput && duty.offering) oNameInput.value = duty.offering.name || "";
-      if (oRoleInput && duty.offering) oRoleInput.value = duty.offering.role || "";
-      if (prNameInput && duty.praise) prNameInput.value = duty.praise.name || "";
-      if (prRoleInput && duty.praise) prRoleInput.value = duty.praise.role || "";
-      if (mNameInput && duty.media) mNameInput.value = duty.media.name || "";
-      if (mRoleInput && duty.media) mRoleInput.value = duty.media.role || "";
+      if (scripNameInput && duty.scripture) scripNameInput.value = duty.scripture.name || "";
+      if (scripRoleInput && duty.scripture) scripRoleInput.value = duty.scripture.role || "";
+      if (annNameInput && duty.announcement) annNameInput.value = duty.announcement.name || "";
+      if (annRoleInput && duty.announcement) annRoleInput.value = duty.announcement.role || "";
 
       openModal("editWorshipDutyModal");
     });
@@ -3187,31 +3191,31 @@ function initWorshipDutyEvents() {
       }
 
       const date = document.getElementById("dutyDateInput").value.trim();
+      const preName = document.getElementById("dutyPrePrayerNameInput").value.trim();
+      const preRole = document.getElementById("dutyPrePrayerRoleInput").value.trim();
       const pName = document.getElementById("dutyPrayerNameInput").value.trim();
       const pRole = document.getElementById("dutyPrayerRoleInput").value.trim();
-      const oName = document.getElementById("dutyOfferingNameInput").value.trim();
-      const oRole = document.getElementById("dutyOfferingRoleInput").value.trim();
-      const prName = document.getElementById("dutyPraiseNameInput").value.trim();
-      const prRole = document.getElementById("dutyPraiseRoleInput").value.trim();
-      const mName = document.getElementById("dutyMediaNameInput").value.trim();
-      const mRole = document.getElementById("dutyMediaRoleInput").value.trim();
+      const scripName = document.getElementById("dutyScriptureNameInput").value.trim();
+      const scripRole = document.getElementById("dutyScriptureRoleInput").value.trim();
+      const annName = document.getElementById("dutyAnnouncementNameInput").value.trim();
+      const annRole = document.getElementById("dutyAnnouncementRoleInput").value.trim();
 
       appState.worshipDuty.date = date || "10/18";
+      if (!appState.worshipDuty.prePrayer) appState.worshipDuty.prePrayer = {};
+      appState.worshipDuty.prePrayer.name = preName;
+      appState.worshipDuty.prePrayer.role = preRole;
+
       if (!appState.worshipDuty.prayer) appState.worshipDuty.prayer = {};
       appState.worshipDuty.prayer.name = pName;
       appState.worshipDuty.prayer.role = pRole;
 
-      if (!appState.worshipDuty.offering) appState.worshipDuty.offering = {};
-      appState.worshipDuty.offering.name = oName;
-      appState.worshipDuty.offering.role = oRole;
+      if (!appState.worshipDuty.scripture) appState.worshipDuty.scripture = {};
+      appState.worshipDuty.scripture.name = scripName;
+      appState.worshipDuty.scripture.role = scripRole;
 
-      if (!appState.worshipDuty.praise) appState.worshipDuty.praise = {};
-      appState.worshipDuty.praise.name = prName;
-      appState.worshipDuty.praise.role = prRole;
-
-      if (!appState.worshipDuty.media) appState.worshipDuty.media = {};
-      appState.worshipDuty.media.name = mName;
-      appState.worshipDuty.media.role = mRole;
+      if (!appState.worshipDuty.announcement) appState.worshipDuty.announcement = {};
+      appState.worshipDuty.announcement.name = annName;
+      appState.worshipDuty.announcement.role = annRole;
 
       saveState();
       renderWorshipDutySection();
