@@ -2180,17 +2180,75 @@ button:active, .btn:active, .interactive-card:active {
 }
 
 /* ==========================================================================
-   NEW SCREENS: 사역 캘린더 & 생일 관리
+   NEW SCREENS: 사역 캘린더 & 생일 관리 (Dynamic Month & Pastor CRUD)
    ========================================================================== */
 
-.calendar-month-header {
-  font-size: 16px;
-  font-weight: 800;
-  color: #2a201b;
-  margin-bottom: 10px;
+.calendar-nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 12px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-month-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #fedbc5;
+  background: #fff8f2;
+  color: #c2410c;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.cal-nav-btn:hover {
+  background: #fedbc5;
+}
+
+.cal-nav-btn:active {
+  transform: scale(0.92);
+}
+
+.cal-current-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #2c201c;
+  letter-spacing: -0.3px;
+}
+
+.calendar-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary-mini {
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+
+.btn-primary-mini:hover {
+  opacity: 0.9;
 }
 
 .calendar-grid {
@@ -2227,6 +2285,28 @@ button:active, .btn:active, .interactive-card:active {
 .cal-cell:nth-child(7n) { border-right: none; }
 .cal-cell:hover { background: #fffcf8; }
 
+.cal-cell.other-month {
+  background: #fbf7f4;
+  opacity: 0.45;
+  cursor: default;
+}
+
+.cal-cell.is-today {
+  background: #fff8eb !important;
+}
+
+.cal-cell.is-today .cal-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+}
+
 .cal-num {
   font-size: 11.5px;
   font-weight: 700;
@@ -2244,6 +2324,11 @@ button:active, .btn:active, .interactive-card:active {
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;
+  transition: transform 120ms ease;
+}
+
+.cal-event-pill:hover {
+  transform: scale(1.02);
 }
 
 .pill-pink { background: #ffe4ec; color: #cb3d67; }

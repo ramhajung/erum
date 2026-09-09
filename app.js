@@ -236,6 +236,30 @@ const INITIAL_DATA = {
     scripture: { name: "이유리 학생", role: "중등부 3학년", badge: "성경" },
     announcement: { name: "정하람 전도사", role: "청소년부 담당", badge: "부서소식" }
   },
+  calendarEvents: [
+    // 10월
+    { id: "evt_1", date: "2026-10-25", title: "🎉 친구초청", type: "event", color: "orange" },
+    // 과거 일정 (8월, 9월)
+    { id: "evt_2", date: "2026-08-15", title: "🏕️ 여름수련회", type: "event", color: "mint" },
+    { id: "evt_3", date: "2026-09-06", title: "💻 스카준비", type: "event", color: "yellow" },
+    { id: "evt_4", date: "2026-09-20", title: "🍂 2학기 개강예배", type: "event", color: "orange" },
+    // 향후 일정 (11월, 12월)
+    { id: "evt_5", date: "2026-11-15", title: "🌾 추수감사주일", type: "event", color: "yellow" },
+    { id: "evt_6", date: "2026-12-25", title: "🎄 성탄축하예배", type: "event", color: "pink" }
+  ],
+  birthdays: [
+    // 10월 생일 주인공 5명
+    { id: "bday_1", month: 10, day: 1, name: "소예진T", roleDesc: "선생님", avatar: "👩🏻‍🏫" },
+    { id: "bday_2", month: 10, day: 13, name: "김예원", roleDesc: "학생", avatar: "👧🏻" },
+    { id: "bday_3", month: 10, day: 13, name: "김재원", roleDesc: "학생", avatar: "👦🏻" },
+    { id: "bday_4", month: 10, day: 15, name: "양형모", roleDesc: "학생", avatar: "👦🏻" },
+    { id: "bday_5", month: 10, day: 22, name: "김하람", roleDesc: "학생", avatar: "👧🏻" },
+    // 과거 및 다른 월 생일 주인공
+    { id: "bday_6", month: 8, day: 30, name: "김희순 집사", roleDesc: "부장집사님", avatar: "👔" },
+    { id: "bday_7", month: 9, day: 10, name: "김대한T", roleDesc: "선생님", avatar: "🧑🏻‍🏫" },
+    { id: "bday_8", month: 11, day: 7, name: "나하은T", roleDesc: "선생님(회계)", avatar: "💼" },
+    { id: "bday_9", month: 12, day: 19, name: "정하람 전도사", roleDesc: "전도사", avatar: "✝️" }
+  ],
   users: [
     {
       id: "u1",
@@ -339,6 +363,12 @@ function loadState() {
       }
       if (!parsed.worshipDuty || !parsed.worshipDuty.prePrayer) {
         parsed.worshipDuty = JSON.parse(JSON.stringify(INITIAL_DATA.worshipDuty));
+      }
+      if (!parsed.calendarEvents || parsed.calendarEvents.length === 0) {
+        parsed.calendarEvents = JSON.parse(JSON.stringify(INITIAL_DATA.calendarEvents));
+      }
+      if (!parsed.birthdays || parsed.birthdays.length === 0) {
+        parsed.birthdays = JSON.parse(JSON.stringify(INITIAL_DATA.birthdays));
       }
       // Ensure agendaId linkage between pending agendas and staffBox items
       if (parsed.agendas && parsed.agendas.pending && parsed.staffBox && parsed.staffBox.items) {
@@ -2967,6 +2997,7 @@ function switchMasterRole(roleKey, notify = true) {
   renderSchedulerSubTabsByRole();
   renderChecklistSection();
   renderAttendanceSection();
+  renderCalendarSection();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
@@ -4108,28 +4139,552 @@ function initStaffBoxEvents() {
   }
 }
 
-// --- Calendar & Birthdays Interactivity (New Image 3) ---
-function initCalendarEvents() {
-  // Birthday card click
-  document.querySelectorAll(".birthday-person-item").forEach(item => {
-    item.addEventListener("click", () => {
-      const name = item.dataset.bdayName || "선생님/학생";
-      showToast(`🎂 ${name}의 생일 축하 메시지를 보냈습니다! 🎉`);
-    });
+// --- Dynamic Calendar & Birthdays Engine (Real Month Navigation & Pastor CRUD) ---
+let currentCalendarYear = 2026;
+let currentCalendarMonth = 10; // 1-12
+let selectedCalendarItem = null; // currently viewed item in manage modal
+
+function renderCalendarSection() {
+  const isPastor = (currentRole === "pastor");
+  const yearTitleEl = document.getElementById("calYearDisplay");
+  const currentTitleEl = document.getElementById("calCurrentMonthTitle");
+  const addBtn = document.getElementById("openAddCalendarEventBtn");
+  const grid = document.getElementById("calendarGrid");
+  const showcase = document.getElementById("birthdayShowcaseCard");
+
+  if (!grid || !showcase) return;
+
+  // 1. Update Navigation Titles & Add Button Visibility (Pastor Only)
+  if (yearTitleEl) yearTitleEl.textContent = `${currentCalendarYear}년 ${currentCalendarMonth}월`;
+  if (currentTitleEl) currentTitleEl.textContent = `📅 ${currentCalendarMonth}월 사역 & 생일`;
+  if (addBtn) {
+    addBtn.style.display = isPastor ? "inline-flex" : "none";
+  }
+
+  // 2. Build Calendar Day Names Header
+  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+  let gridHtml = dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join("");
+
+  // 3. Calculate Real Calendar Days for currentCalendarYear, currentCalendarMonth
+  const firstDayOfWeek = new Date(currentCalendarYear, currentCalendarMonth - 1, 1).getDay();
+  const lastDate = new Date(currentCalendarYear, currentCalendarMonth, 0).getDate();
+  const prevMonthLastDate = new Date(currentCalendarYear, currentCalendarMonth - 1, 0).getDate();
+
+  // Today marker (2026-09-09 or local real today)
+  const now = new Date();
+  const isCurrentRealMonth = (now.getFullYear() === currentCalendarYear && (now.getMonth() + 1) === currentCalendarMonth);
+  const realTodayDate = now.getDate();
+
+  // Current month's birthdays & events
+  const curBirthdays = (appState.birthdays || []).filter(b => b.month === currentCalendarMonth);
+  const curEvents = (appState.calendarEvents || []).filter(e => {
+    if (!e.date) return false;
+    const parts = e.date.split("-");
+    return parseInt(parts[0], 10) === currentCalendarYear && parseInt(parts[1], 10) === currentCalendarMonth;
   });
 
-  // Calendar cell click
-  document.querySelectorAll(".cal-cell").forEach(cell => {
-    cell.addEventListener("click", () => {
-      const num = cell.querySelector(".cal-num");
-      const eventPill = cell.querySelector(".cal-event-pill");
-      if (num && num.textContent.trim()) {
-        const day = num.textContent.trim();
-        const eventText = eventPill ? eventPill.textContent.trim() : "일반 사역 일정";
-        showToast(`📅 10월 ${day}일: ${eventText}`, "info");
+  // Previous Month Leading Cells (Padding)
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    const prevDate = prevMonthLastDate - firstDayOfWeek + i + 1;
+    gridHtml += `<div class="cal-cell other-month"><span class="cal-num">${prevDate}</span></div>`;
+  }
+
+  // Current Month Cells
+  for (let d = 1; d <= lastDate; d++) {
+    const isToday = isCurrentRealMonth && (d === realTodayDate);
+    const dayBirthdays = curBirthdays.filter(b => b.day === d);
+    const dayEvents = curEvents.filter(e => {
+      const dayPart = parseInt(e.date.split("-")[2], 10);
+      return dayPart === d;
+    });
+
+    let pillsHtml = "";
+
+    // Render Birthday Pills
+    dayBirthdays.forEach(b => {
+      const pillColor = (b.roleDesc === "선생님" || b.roleDesc === "전도사") ? "pill-pink" : "pill-mint";
+      pillsHtml += `<span class="cal-event-pill ${pillColor}" data-item-type="birthday" data-item-id="${b.id}">🎂 ${b.name}</span>`;
+    });
+
+    // Render Event Pills
+    dayEvents.forEach(e => {
+      const pillColor = e.color ? `pill-${e.color}` : "pill-orange";
+      pillsHtml += `<span class="cal-event-pill ${pillColor}" data-item-type="event" data-item-id="${e.id}">${e.title}</span>`;
+    });
+
+    gridHtml += `
+      <div class="cal-cell ${isToday ? 'is-today' : ''}" data-day="${d}">
+        <span class="cal-num">${d}</span>
+        ${pillsHtml}
+      </div>
+    `;
+  }
+
+  // Next Month Trailing Cells to complete 7-column grid
+  const totalCells = firstDayOfWeek + lastDate;
+  const trailingCells = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= trailingCells; i++) {
+    gridHtml += `<div class="cal-cell other-month"><span class="cal-num">${i}</span></div>`;
+  }
+
+  grid.innerHTML = gridHtml;
+
+  // 4. Render Dynamic Birthday Showcase Card for Current Month
+  let bdayCardHtml = `
+    <div class="birthday-title" style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span>🎂</span> <span>${currentCalendarMonth}월 생일 주인공 (${curBirthdays.length}명)</span>
+      </div>
+      ${isPastor ? `<button type="button" class="btn-primary-mini" id="openAddBdayQuickBtn" style="padding:3px 8px; font-size:11px; border-radius:6px; background:#e11d48;">+ 생일자 추가</button>` : ''}
+    </div>
+  `;
+
+  if (curBirthdays.length === 0) {
+    bdayCardHtml += `
+      <div style="text-align:center; padding:18px 0; color:#888; font-size:12.5px;">
+        <span>🎈</span> ${currentCalendarMonth}월 생일 주인공이 없습니다.
+      </div>
+    `;
+  } else {
+    bdayCardHtml += `<div class="birthday-grid">`;
+    curBirthdays.forEach(b => {
+      bdayCardHtml += `
+        <div class="birthday-person-item" data-item-type="birthday" data-item-id="${b.id}" data-bday-name="${b.name}">
+          <div class="birthday-avatar-wrap">
+            ${b.avatar || "🎂"} <span class="birthday-badge-mini">🎂</span>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div class="birthday-date">${currentCalendarYear}.${currentCalendarMonth}.${b.day}</div>
+            <div class="birthday-name" style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${b.name}</span>
+              ${isPastor ? '<span style="font-size:10px; color:#e11d48; margin-left:4px;">관리⚙️</span>' : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    bdayCardHtml += `</div>`;
+  }
+
+  showcase.innerHTML = bdayCardHtml;
+
+  // 5. Attach Click Events to Interactive Elements
+  bindCalendarDynamicEvents();
+}
+
+function bindCalendarDynamicEvents() {
+  const isPastor = (currentRole === "pastor");
+
+  // A. Birthday Person Item Click (opens modal)
+  document.querySelectorAll(".birthday-person-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const bdayId = item.dataset.itemId;
+      const bday = (appState.birthdays || []).find(b => b.id === bdayId);
+      if (bday) {
+        openManageCalendarItemModal("birthday", bday);
       }
     });
   });
+
+  // B. Event / Birthday Pill Click inside Calendar Grid
+  document.querySelectorAll(".cal-event-pill").forEach(pill => {
+    pill.addEventListener("click", (e) => {
+      e.stopPropagation(); // prevent triggering parent cell click
+      const itemType = pill.dataset.itemType;
+      const itemId = pill.dataset.itemId;
+      if (itemType === "birthday") {
+        const bday = (appState.birthdays || []).find(b => b.id === itemId);
+        if (bday) openManageCalendarItemModal("birthday", bday);
+      } else if (itemType === "event") {
+        const evt = (appState.calendarEvents || []).find(ev => ev.id === itemId);
+        if (evt) openManageCalendarItemModal("event", evt);
+      }
+    });
+  });
+
+  // C. Empty Calendar Cell Click
+  document.querySelectorAll(".cal-cell:not(.other-month)").forEach(cell => {
+    cell.addEventListener("click", () => {
+      const day = cell.dataset.day;
+      if (!day) return;
+      if (isPastor) {
+        // 전도사는 해당 날짜를 기본값으로 하여 일정/생일 등록 모달 오픈
+        openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, parseInt(day, 10));
+      } else {
+        showToast(`📅 ${currentCalendarMonth}월 ${day}일 사역 캘린더`, "info");
+      }
+    });
+  });
+
+  // D. Quick Add Birthday Button in showcase card
+  const quickAddBtn = document.getElementById("openAddBdayQuickBtn");
+  if (quickAddBtn) {
+    quickAddBtn.addEventListener("click", () => {
+      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1, "birthday");
+    });
+  }
+}
+
+function openManageCalendarItemModal(kind, item) {
+  selectedCalendarItem = { kind, data: item };
+  const isPastor = (currentRole === "pastor");
+
+  const modalTitle = document.getElementById("manageCalModalTitle");
+  const modalSub = document.getElementById("manageCalModalSubtitle");
+  const contentEl = document.getElementById("manageCalDetailContent");
+  const pastorActions = document.getElementById("manageCalPastorActions");
+  const generalActions = document.getElementById("manageCalGeneralActions");
+
+  if (kind === "birthday") {
+    if (modalTitle) modalTitle.textContent = `🎂 ${item.name} 생일`;
+    if (modalSub) modalSub.textContent = `${item.roleDesc || "예랑 지체"} · ${currentCalendarYear}년 ${item.month}월 ${item.day}일`;
+    if (contentEl) {
+      contentEl.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="font-size:36px; width:52px; height:52px; border-radius:50%; background:#fff0f4; border:2px solid #fecdd3; display:flex; align-items:center; justify-content:center;">
+            ${item.avatar || "🎂"}
+          </div>
+          <div>
+            <div style="font-size:16px; font-weight:800; color:#1e293b;">${item.name} (${item.roleDesc || "지체"})</div>
+            <div style="font-size:13px; color:#be123c; font-weight:700; margin-top:3px;">🎂 ${item.month}월 ${item.day}일 생일</div>
+          </div>
+        </div>
+        <div style="margin-top:14px; padding:10px 12px; background:#fff1f2; border-radius:10px; font-size:12px; color:#9f1239; line-height:1.4;">
+          예랑 청소년부 공동체에서 함께 사랑과 축복의 마음을 담아 축하합니다! 🎉
+        </div>
+      `;
+    }
+  } else {
+    // Event
+    const dateParts = item.date.split("-");
+    const formattedDate = `${dateParts[0]}년 ${parseInt(dateParts[1], 10)}월 ${parseInt(dateParts[2], 10)}일`;
+    if (modalTitle) modalTitle.textContent = `📅 ${item.title}`;
+    if (modalSub) modalSub.textContent = `사역 일정 · ${formattedDate}`;
+    if (contentEl) {
+      contentEl.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="font-size:32px; width:52px; height:52px; border-radius:12px; background:#fff7ed; border:2px solid #fed7aa; display:flex; align-items:center; justify-content:center;">
+            📅
+          </div>
+          <div>
+            <div style="font-size:16px; font-weight:800; color:#1e293b;">${item.title}</div>
+            <div style="font-size:13px; color:#c2410c; font-weight:700; margin-top:3px;">일시: ${formattedDate}</div>
+          </div>
+        </div>
+        <div style="margin-top:14px; padding:10px 12px; background:#fff7ed; border-radius:10px; font-size:12px; color:#9a3412; line-height:1.4;">
+          이룸교회 청소년부 공식 사역 행사 일정입니다.
+        </div>
+      `;
+    }
+  }
+
+  // Pastor management buttons vs general user celebration
+  if (pastorActions) {
+    pastorActions.style.display = isPastor ? "flex" : "none";
+  }
+  if (generalActions) {
+    generalActions.style.display = isPastor ? "none" : "block";
+  }
+
+  openModal("manageCalendarItemModal");
+}
+
+function openAddCalendarItemModal(year, month, day = 1, defaultType = "birthday") {
+  const form = document.getElementById("addCalendarItemForm");
+  if (form) form.reset();
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const dateInput = document.getElementById("calItemDateInput");
+  if (dateInput) {
+    dateInput.value = `${year}-${pad(month)}-${pad(day)}`;
+  }
+
+  // Set default radio selection
+  const radio = form ? form.querySelector(`input[name="calItemType"][value="${defaultType}"]`) : null;
+  if (radio) {
+    radio.checked = true;
+    toggleAddModalFields(defaultType);
+  }
+
+  openModal("addCalendarItemModal");
+}
+
+function toggleAddModalFields(type) {
+  const bdayGroup = document.getElementById("calBirthdayFieldsGroup");
+  const eventGroup = document.getElementById("calEventFieldsGroup");
+  const nameInput = document.getElementById("calBdayNameInput");
+  const eventTitleInput = document.getElementById("calEventTitleInput");
+
+  if (type === "birthday") {
+    if (bdayGroup) bdayGroup.style.display = "block";
+    if (eventGroup) eventGroup.style.display = "none";
+    if (nameInput) nameInput.required = true;
+    if (eventTitleInput) eventTitleInput.required = false;
+  } else {
+    if (bdayGroup) bdayGroup.style.display = "none";
+    if (eventGroup) eventGroup.style.display = "block";
+    if (nameInput) nameInput.required = false;
+    if (eventTitleInput) eventTitleInput.required = true;
+  }
+}
+
+function openEditCalendarItemModal(kind, item) {
+  const form = document.getElementById("editCalendarItemForm");
+  if (!form) return;
+
+  const idInput = document.getElementById("editCalItemId");
+  const kindInput = document.getElementById("editCalItemKind");
+  const titleInput = document.getElementById("editCalTitleInput");
+  const dateInput = document.getElementById("editCalDateInput");
+  const nameLabel = document.getElementById("editCalNameLabel");
+  const bdayFields = document.getElementById("editCalBdayFieldsGroup");
+  const eventFields = document.getElementById("editCalEventFieldsGroup");
+
+  if (idInput) idInput.value = item.id;
+  if (kindInput) kindInput.value = kind;
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  if (kind === "birthday") {
+    if (nameLabel) nameLabel.textContent = "주인공 이름";
+    if (titleInput) titleInput.value = item.name;
+    if (dateInput) dateInput.value = `${currentCalendarYear}-${pad(item.month)}-${pad(item.day)}`;
+    if (bdayFields) bdayFields.style.display = "block";
+    if (eventFields) eventFields.style.display = "none";
+
+    const roleSelect = document.getElementById("editCalRoleSelect");
+    const avatarSelect = document.getElementById("editCalAvatarSelect");
+    if (roleSelect && item.roleDesc) roleSelect.value = item.roleDesc;
+    if (avatarSelect && item.avatar) avatarSelect.value = item.avatar;
+  } else {
+    // Event
+    if (nameLabel) nameLabel.textContent = "행사/사역명";
+    if (titleInput) titleInput.value = item.title;
+    if (dateInput) dateInput.value = item.date;
+    if (bdayFields) bdayFields.style.display = "none";
+    if (eventFields) eventFields.style.display = "block";
+
+    const colorSelect = document.getElementById("editCalColorSelect");
+    if (colorSelect && item.color) colorSelect.value = item.color;
+  }
+
+  closeModal("manageCalendarItemModal");
+  openModal("editCalendarItemModal");
+}
+
+function initCalendarEvents() {
+  // 1. Prev & Next Month Navigation Buttons
+  const prevBtn = document.getElementById("calPrevMonthBtn");
+  const nextBtn = document.getElementById("calNextMonthBtn");
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      currentCalendarMonth--;
+      if (currentCalendarMonth < 1) {
+        currentCalendarMonth = 12;
+        currentCalendarYear--;
+      }
+      renderCalendarSection();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      currentCalendarMonth++;
+      if (currentCalendarMonth > 12) {
+        currentCalendarMonth = 1;
+        currentCalendarYear++;
+      }
+      renderCalendarSection();
+    });
+  }
+
+  // 2. Open Add Modal Button in Header (Pastor)
+  const openAddBtn = document.getElementById("openAddCalendarEventBtn");
+  if (openAddBtn) {
+    openAddBtn.addEventListener("click", () => {
+      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1);
+    });
+  }
+
+  // 3. Add Modal Radio Switch (Birthday vs Event)
+  document.querySelectorAll('input[name="calItemType"]').forEach(radio => {
+    radio.addEventListener("change", (e) => {
+      toggleAddModalFields(e.target.value);
+    });
+  });
+
+  // 4. Add Calendar Item Form Submit
+  const addForm = document.getElementById("addCalendarItemForm");
+  if (addForm) {
+    addForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const type = addForm.querySelector('input[name="calItemType"]:checked').value;
+      const dateVal = document.getElementById("calItemDateInput").value;
+      if (!dateVal) {
+        showToast("⚠️ 날짜를 선택해주세요.", "warn");
+        return;
+      }
+
+      const [y, m, d] = dateVal.split("-").map(n => parseInt(n, 10));
+
+      if (type === "birthday") {
+        const name = document.getElementById("calBdayNameInput").value.trim();
+        const roleDesc = document.getElementById("calBdayRoleSelect").value;
+        const avatar = document.getElementById("calBdayAvatarSelect").value;
+
+        if (!name) {
+          showToast("⚠️ 이름을 입력해주세요.", "warn");
+          return;
+        }
+
+        const newBday = {
+          id: `bday_${Date.now()}`,
+          month: m,
+          day: d,
+          name,
+          roleDesc,
+          avatar
+        };
+
+        if (!appState.birthdays) appState.birthdays = [];
+        appState.birthdays.push(newBday);
+        saveState();
+
+        currentCalendarYear = y;
+        currentCalendarMonth = m;
+        renderCalendarSection();
+        closeModal("addCalendarItemModal");
+        addForm.reset();
+        showToast(`🎉 ${name}님의 생일(${m}월 ${d}일)이 등록되었습니다!`);
+      } else {
+        // Event
+        const title = document.getElementById("calEventTitleInput").value.trim();
+        const color = document.getElementById("calEventColorSelect").value;
+
+        if (!title) {
+          showToast("⚠️ 행사명을 입력해주세요.", "warn");
+          return;
+        }
+
+        const newEvent = {
+          id: `evt_${Date.now()}`,
+          date: dateVal,
+          title,
+          type: "event",
+          color
+        };
+
+        if (!appState.calendarEvents) appState.calendarEvents = [];
+        appState.calendarEvents.push(newEvent);
+        saveState();
+
+        currentCalendarYear = y;
+        currentCalendarMonth = m;
+        renderCalendarSection();
+        closeModal("addCalendarItemModal");
+        addForm.reset();
+        showToast(`📅 '${title}' 사역 일정이 등록되었습니다!`);
+      }
+    });
+  }
+
+  // 5. Manage Modal - Edit Button Click (Pastor)
+  const editCalItemBtn = document.getElementById("editCalItemBtn");
+  if (editCalItemBtn) {
+    editCalItemBtn.addEventListener("click", () => {
+      if (!selectedCalendarItem) return;
+      openEditCalendarItemModal(selectedCalendarItem.kind, selectedCalendarItem.data);
+    });
+  }
+
+  // 6. Manage Modal - Delete Button Click (Pastor)
+  const deleteCalItemBtn = document.getElementById("deleteCalItemBtn");
+  if (deleteCalItemBtn) {
+    deleteCalItemBtn.addEventListener("click", () => {
+      if (!selectedCalendarItem) return;
+      const { kind, data } = selectedCalendarItem;
+
+      if (kind === "birthday") {
+        appState.birthdays = (appState.birthdays || []).filter(b => b.id !== data.id);
+        saveState();
+        renderCalendarSection();
+        closeModal("manageCalendarItemModal");
+        showToast(`🗑️ ${data.name}님의 생일이 삭제되었습니다.`, "info");
+      } else {
+        appState.calendarEvents = (appState.calendarEvents || []).filter(e => e.id !== data.id);
+        saveState();
+        renderCalendarSection();
+        closeModal("manageCalendarItemModal");
+        showToast(`🗑️ '${data.title}' 일정이 삭제되었습니다.`, "info");
+      }
+      selectedCalendarItem = null;
+    });
+  }
+
+  // 7. Manage Modal - Celebrate Button Click (General User)
+  const celebrateBtn = document.getElementById("celebrateCalItemBtn");
+  if (celebrateBtn) {
+    celebrateBtn.addEventListener("click", () => {
+      if (!selectedCalendarItem) return;
+      const { kind, data } = selectedCalendarItem;
+      closeModal("manageCalendarItemModal");
+      if (kind === "birthday") {
+        showToast(`🎉 ${data.name}님에게 따뜻한 생일 축하 메시지를 전했습니다! 🎂`);
+      } else {
+        showToast(`📅 '${data.title}' 일정을 확인했습니다!`, "info");
+      }
+    });
+  }
+
+  // 8. Edit Modal Form Submit (Pastor)
+  const editForm = document.getElementById("editCalendarItemForm");
+  if (editForm) {
+    editForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const id = document.getElementById("editCalItemId").value;
+      const kind = document.getElementById("editCalItemKind").value;
+      const titleVal = document.getElementById("editCalTitleInput").value.trim();
+      const dateVal = document.getElementById("editCalDateInput").value;
+
+      if (!dateVal || !titleVal) {
+        showToast("⚠️ 필수 정보를 모두 입력해주세요.", "warn");
+        return;
+      }
+
+      const [y, m, d] = dateVal.split("-").map(n => parseInt(n, 10));
+
+      if (kind === "birthday") {
+        const roleDesc = document.getElementById("editCalRoleSelect").value;
+        const avatar = document.getElementById("editCalAvatarSelect").value;
+        const target = (appState.birthdays || []).find(b => b.id === id);
+        if (target) {
+          target.name = titleVal;
+          target.month = m;
+          target.day = d;
+          target.roleDesc = roleDesc;
+          target.avatar = avatar;
+          saveState();
+          showToast(`✨ ${target.name}님의 생일 정보가 수정되었습니다!`);
+        }
+      } else {
+        const color = document.getElementById("editCalColorSelect").value;
+        const target = (appState.calendarEvents || []).find(e => e.id === id);
+        if (target) {
+          target.title = titleVal;
+          target.date = dateVal;
+          target.color = color;
+          saveState();
+          showToast(`✨ '${target.title}' 일정이 수정되었습니다!`);
+        }
+      }
+
+      currentCalendarYear = y;
+      currentCalendarMonth = m;
+      renderCalendarSection();
+      closeModal("editCalendarItemModal");
+    });
+  }
 }
 
 // =============================================================================
@@ -4384,6 +4939,7 @@ function renderAll() {
   renderWorshipDutySection();
   renderHomeQuickActions();
   renderSchedulerSubTabsByRole();
+  renderCalendarSection();
   updateStaffBoxHomeBadge();
   updateMeetingNavBadge();
 }

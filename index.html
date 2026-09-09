@@ -780,151 +780,33 @@
           <button class="sub-nav-btn" id="subTabAttendance">예배 출결</button>
         </div>
 
-        <!-- Sub-View 1: 사역 캘린더 & 생일 관리 (New Image 3) -->
+        <!-- Sub-View 1: 사역 캘린더 & 생일 관리 (Dynamic Month Navigation & Pastor CRUD) -->
         <div id="subViewCalendar">
-          <div class="calendar-month-header">
-            <span>📅 10월 사역 & 생일 캘린더</span>
-            <span style="font-size:12px; color:var(--text-muted);">2026년 10월</span>
-          </div>
-
-          <!-- Calendar Grid -->
-          <div class="calendar-grid">
-            <div class="cal-day-name">일</div>
-            <div class="cal-day-name">월</div>
-            <div class="cal-day-name">화</div>
-            <div class="cal-day-name">수</div>
-            <div class="cal-day-name">목</div>
-            <div class="cal-day-name">금</div>
-            <div class="cal-day-name">토</div>
-
-            <!-- Week 1 -->
-            <div class="cal-cell"><span class="cal-num"></span></div>
-            <div class="cal-cell"><span class="cal-num"></span></div>
-            <div class="cal-cell"><span class="cal-num"></span></div>
-            <div class="cal-cell">
-              <span class="cal-num">1</span>
-              <span class="cal-event-pill pill-pink">🎂 소예진T</span>
+          <!-- 월별 이동 내비게이션 및 전도사 등록 버튼 -->
+          <div class="calendar-nav-bar">
+            <div class="calendar-month-selector">
+              <button class="cal-nav-btn" id="calPrevMonthBtn" title="이전 달">◀</button>
+              <span class="cal-current-title" id="calCurrentMonthTitle">📅 10월 사역 & 생일</span>
+              <button class="cal-nav-btn" id="calNextMonthBtn" title="다음 달">▶</button>
             </div>
-            <div class="cal-cell">
-              <span class="cal-num">2</span>
-            </div>
-            <div class="cal-cell">
-              <span class="cal-num">3</span>
-              <span class="cal-event-pill pill-mint">🎂 김예원</span>
-            </div>
-            <div class="cal-cell"><span class="cal-num">4</span></div>
-
-            <!-- Week 2 -->
-            <div class="cal-cell"><span class="cal-num">5</span></div>
-            <div class="cal-cell">
-              <span class="cal-num">6</span>
-              <span class="cal-event-pill pill-yellow">🎂 김재원</span>
-            </div>
-            <div class="cal-cell"><span class="cal-num">7</span></div>
-            <div class="cal-cell"><span class="cal-num">8</span></div>
-            <div class="cal-cell"><span class="cal-num">9</span></div>
-            <div class="cal-cell">
-              <span class="cal-num">10</span>
-            </div>
-            <div class="cal-cell">
-              <span class="cal-num">11</span>
-              <span class="cal-event-pill pill-yellow">🎂 김재원</span>
-            </div>
-
-            <!-- Week 3 -->
-            <div class="cal-cell"><span class="cal-num">12</span></div>
-            <div class="cal-cell">
-              <span class="cal-num">13</span>
-            </div>
-            <div class="cal-cell">
-              <span class="cal-num">14</span>
-            </div>
-            <div class="cal-cell">
-              <span class="cal-num">15</span>
-              <span class="cal-event-pill pill-pink">🎂 양형모</span>
-            </div>
-            <div class="cal-cell"><span class="cal-num">16</span></div>
-            <div class="cal-cell"><span class="cal-num">17</span></div>
-            <div class="cal-cell"><span class="cal-num">18</span></div>
-
-            <!-- Week 4 -->
-            <div class="cal-cell"><span class="cal-num">19</span></div>
-            <div class="cal-cell"><span class="cal-num">20</span></div>
-            <div class="cal-cell"><span class="cal-num">21</span></div>
-            <div class="cal-cell">
-              <span class="cal-num">22</span>
-              <span class="cal-event-pill pill-mint">🎂 김하람</span>
-            </div>
-            <div class="cal-cell"><span class="cal-num">23</span></div>
-            <div class="cal-cell"><span class="cal-num">24</span></div>
-            <div class="cal-cell">
-              <span class="cal-num">25</span>
-              <span class="cal-event-pill pill-orange">🎉 친구초청</span>
-            </div>
-
-            <!-- Week 5 -->
-            <div class="cal-cell"><span class="cal-num">26</span></div>
-            <div class="cal-cell"><span class="cal-num">27</span></div>
-            <div class="cal-cell"><span class="cal-num">28</span></div>
-            <div class="cal-cell"><span class="cal-num">29</span></div>
-            <div class="cal-cell"><span class="cal-num">30</span></div>
-            <div class="cal-cell"><span class="cal-num">31</span></div>
-            <div class="cal-cell"><span class="cal-num"></span></div>
-          </div>
-
-          <!-- 10월 생일 주인공 카드 (5명) -->
-          <div class="birthday-showcase-card">
-            <div class="birthday-title">
-              <span>🎂</span> <span>10월 생일 주인공 (5명)</span>
-            </div>
-            <div class="birthday-grid">
-              <div class="birthday-person-item" data-bday-name="소예진 선생님">
-                <div class="birthday-avatar-wrap">
-                  👩🏻‍🏫 <span class="birthday-badge-mini">🎂</span>
-                </div>
-                <div>
-                  <div class="birthday-date">2026.10.1</div>
-                  <div class="birthday-name">소예진T</div>
-                </div>
-              </div>
-              <div class="birthday-person-item" data-bday-name="김예원 학생">
-                <div class="birthday-avatar-wrap">
-                  👧🏻 <span class="birthday-badge-mini">🎂</span>
-                </div>
-                <div>
-                  <div class="birthday-date">2026.10.13</div>
-                  <div class="birthday-name">김예원</div>
-                </div>
-              </div>
-              <div class="birthday-person-item" data-bday-name="김재원 학생">
-                <div class="birthday-avatar-wrap">
-                  👦🏻 <span class="birthday-badge-mini">🎂</span>
-                </div>
-                <div>
-                  <div class="birthday-date">2026.10.13</div>
-                  <div class="birthday-name">김재원</div>
-                </div>
-              </div>
-              <div class="birthday-person-item" data-bday-name="양형모 학생">
-                <div class="birthday-avatar-wrap">
-                  👦🏻 <span class="birthday-badge-mini">🎂</span>
-                </div>
-                <div>
-                  <div class="birthday-date">2026.10.15</div>
-                  <div class="birthday-name">양형모</div>
-                </div>
-              </div>
-              <div class="birthday-person-item" data-bday-name="김하람 학생">
-                <div class="birthday-avatar-wrap">
-                  👧🏻 <span class="birthday-badge-mini">🎂</span>
-                </div>
-                <div>
-                  <div class="birthday-date">2026.10.22</div>
-                  <div class="birthday-name">김하람</div>
-                </div>
-              </div>
+            <div class="calendar-header-actions">
+              <button class="btn-primary-mini" id="openAddCalendarEventBtn" style="display:none; padding:5px 10px; font-size:11.5px; border-radius:8px;">
+                <span>+ 일정/생일 등록</span>
+              </button>
+              <span id="calYearDisplay" style="font-size:12px; color:var(--text-muted); font-weight:700;">2026년 10월</span>
             </div>
           </div>
+
+          <!-- Dynamic Calendar Grid -->
+          <div class="calendar-grid" id="calendarGrid">
+            <!-- Day headers & Day cells rendered dynamically by renderCalendarSection() -->
+          </div>
+
+          <!-- Dynamic Birthday Showcase Card -->
+          <div class="birthday-showcase-card" id="birthdayShowcaseCard">
+            <!-- Rendered dynamically by renderCalendarSection() -->
+          </div>
+
           <!-- 하단 탭바에 가려지지 않도록 충분한 여백 공간 -->
           <div class="subview-bottom-spacer" style="height: 60px;"></div>
         </div>
@@ -2116,6 +1998,207 @@
             <button id="deleteUserConfirmBtn" style="flex:1; padding:12px; background:#ef4444; color:white; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer;">삭제하기</button>
           </div>
         </div>
+      </div>
+    <!-- Modal: 일정/생일 등록 모달 (전도사 전용) -->
+    <div class="modal-backdrop" id="addCalendarItemModal">
+      <div class="bottom-sheet" style="max-height: 90%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">📅 일정 & 생일 등록</h3>
+            <p style="font-size:11px; color:var(--primary); font-weight:700;">사역 캘린더 및 생일자 추가 (전도사용)</p>
+          </div>
+          <button class="sheet-close-btn" data-close="addCalendarItemModal">✕</button>
+        </div>
+
+        <form id="addCalendarItemForm" style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:800; color:#2d261e;">항목 구분</label>
+            <div style="display:flex; gap:10px; margin-top:4px;">
+              <label style="flex:1; display:flex; align-items:center; gap:6px; background:#fff5f7; border:1.5px solid #fed2dc; padding:10px; border-radius:10px; cursor:pointer; font-weight:700; font-size:13px; color:#9f3150;">
+                <input type="radio" name="calItemType" value="birthday" checked>
+                <span>🎂 생일자 등록</span>
+              </label>
+              <label style="flex:1; display:flex; align-items:center; gap:6px; background:#fff7ed; border:1.5px solid #fed7aa; padding:10px; border-radius:10px; cursor:pointer; font-weight:700; font-size:13px; color:#c2410c;">
+                <input type="radio" name="calItemType" value="event">
+                <span>🎉 행사/사역 등록</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 생일 등록 전용 필드 -->
+          <div id="calBirthdayFieldsGroup">
+            <div class="form-group" style="margin-bottom:10px;">
+              <label style="font-size:12px; font-weight:800; color:#2d261e;">주인공 이름</label>
+              <input type="text" id="calBdayNameInput" class="field-input" placeholder="예: 김하람 학생, 소예진 선생님" style="width:100%; margin-top:4px;">
+            </div>
+            <div class="form-row-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+              <div class="form-group">
+                <label style="font-size:12px; font-weight:800; color:#2d261e;">직분/역할</label>
+                <select id="calBdayRoleSelect" class="field-input" style="width:100%; margin-top:4px;">
+                  <option value="학생">학생</option>
+                  <option value="선생님">선생님</option>
+                  <option value="부장집사님">부장집사님</option>
+                  <option value="회계">선생님(회계)</option>
+                  <option value="전도사">전도사</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label style="font-size:12px; font-weight:800; color:#2d261e;">프로필 아이콘</label>
+                <select id="calBdayAvatarSelect" class="field-input" style="width:100%; margin-top:4px;">
+                  <option value="👧🏻">👧🏻 여학생</option>
+                  <option value="👦🏻">👦🏻 남학생</option>
+                  <option value="👩🏻‍🏫">👩🏻‍🏫 여선생님</option>
+                  <option value="🧑🏻‍🏫">🧑🏻‍🏫 남선생님</option>
+                  <option value="👔">👔 부장집사님</option>
+                  <option value="💼">💼 회계쌤</option>
+                  <option value="✝️">✝️ 전도사</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 행사/사역 등록 전용 필드 -->
+          <div id="calEventFieldsGroup" style="display:none;">
+            <div class="form-group" style="margin-bottom:10px;">
+              <label style="font-size:12px; font-weight:800; color:#2d261e;">행사명</label>
+              <input type="text" id="calEventTitleInput" class="field-input" placeholder="예: 친구초청주일, 야외예배" style="width:100%; margin-top:4px;">
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+              <label style="font-size:12px; font-weight:800; color:#2d261e;">뱃지 색상</label>
+              <select id="calEventColorSelect" class="field-input" style="width:100%; margin-top:4px;">
+                <option value="orange">주황 (행사/축제)</option>
+                <option value="pink">분홍 (모임/교제)</option>
+                <option value="mint">민트 (심방/찬양)</option>
+                <option value="yellow">노랑 (예배/기도)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 공통 날짜 필드 -->
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:800; color:#2d261e;">날짜 선택</label>
+            <input type="date" id="calItemDateInput" class="field-input" style="width:100%; margin-top:4px;" required>
+          </div>
+
+          <button type="submit" class="btn-orange" style="margin-top:10px; width:100%; padding:14px; font-size:14px; font-weight:800;">
+            <span>✨ 캘린더에 등록하기</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: 생일/행사 상세 & 전도사용 관리(수정/삭제) 모달 -->
+    <div class="modal-backdrop" id="manageCalendarItemModal">
+      <div class="bottom-sheet" style="max-height: 85%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title" id="manageCalModalTitle">🎂 일정 상세</h3>
+            <p style="font-size:11px; color:var(--text-muted); font-weight:700;" id="manageCalModalSubtitle">일정 안내</p>
+          </div>
+          <button class="sheet-close-btn" data-close="manageCalendarItemModal">✕</button>
+        </div>
+
+        <div style="padding:10px 0 16px;">
+          <div id="manageCalDetailContent" style="background:#fffcf9; border:1px solid #f3e5d8; border-radius:12px; padding:16px; margin-bottom:16px;">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- 전도사 관리 버튼 (전도사일 때만 노출) -->
+          <div id="manageCalPastorActions" style="display:none; flex-direction:column; gap:10px;">
+            <div style="font-size:12px; font-weight:800; color:#9a3412; margin-bottom:2px;">👑 전도사 관리자 권한</div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-secondary" id="editCalItemBtn" style="flex:1; padding:12px; font-weight:800; font-size:13px; color:#2563eb; border-color:#bfdbfe; background:#eff6ff;">
+                ✏️ 수정하기
+              </button>
+              <button id="deleteCalItemBtn" style="flex:1; padding:12px; background:#fff1f2; color:#e11d48; border:1.5px solid #fecdd3; border-radius:12px; font-size:13px; font-weight:800; cursor:pointer;">
+                🗑️ 삭제하기
+              </button>
+            </div>
+          </div>
+
+          <!-- 일반 사용자 축하/확인 버튼 -->
+          <div id="manageCalGeneralActions" style="margin-top:10px;">
+            <button class="btn-orange" id="celebrateCalItemBtn" style="width:100%; padding:14px; font-size:14px; font-weight:800;">
+              🎉 축하 메시지 보내기
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: 생일/행사 수정 모달 (전도사 전용) -->
+    <div class="modal-backdrop" id="editCalendarItemModal">
+      <div class="bottom-sheet" style="max-height: 90%;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">✏️ 일정 & 생일 수정</h3>
+            <p style="font-size:11px; color:var(--primary); font-weight:700;">정보를 변경합니다 (전도사용)</p>
+          </div>
+          <button class="sheet-close-btn" data-close="editCalendarItemModal">✕</button>
+        </div>
+
+        <form id="editCalendarItemForm" style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+          <input type="hidden" id="editCalItemId">
+          <input type="hidden" id="editCalItemKind"> <!-- 'birthday' or 'event' -->
+
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:800; color:#2d261e;" id="editCalNameLabel">이름 / 행사명</label>
+            <input type="text" id="editCalTitleInput" class="field-input" style="width:100%; margin-top:4px;" required>
+          </div>
+
+          <!-- 생일 수정 시 전용 필드 -->
+          <div id="editCalBdayFieldsGroup">
+            <div class="form-row-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+              <div class="form-group">
+                <label style="font-size:12px; font-weight:800; color:#2d261e;">직분/역할</label>
+                <select id="editCalRoleSelect" class="field-input" style="width:100%; margin-top:4px;">
+                  <option value="학생">학생</option>
+                  <option value="선생님">선생님</option>
+                  <option value="부장집사님">부장집사님</option>
+                  <option value="회계">선생님(회계)</option>
+                  <option value="전도사">전도사</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label style="font-size:12px; font-weight:800; color:#2d261e;">아이콘</label>
+                <select id="editCalAvatarSelect" class="field-input" style="width:100%; margin-top:4px;">
+                  <option value="👧🏻">👧🏻 여학생</option>
+                  <option value="👦🏻">👦🏻 남학생</option>
+                  <option value="👩🏻‍🏫">👩🏻‍🏫 여선생님</option>
+                  <option value="🧑🏻‍🏫">🧑🏻‍🏫 남선생님</option>
+                  <option value="👔">👔 부장집사님</option>
+                  <option value="💼">💼 회계쌤</option>
+                  <option value="✝️">✝️ 전도사</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 행사 수정 시 전용 필드 -->
+          <div id="editCalEventFieldsGroup" style="display:none;">
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:800; color:#2d261e;">뱃지 색상</label>
+              <select id="editCalColorSelect" class="field-input" style="width:100%; margin-top:4px;">
+                <option value="orange">주황 (행사/축제)</option>
+                <option value="pink">분홍 (모임/교제)</option>
+                <option value="mint">민트 (심방/찬양)</option>
+                <option value="yellow">노랑 (예배/기도)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:800; color:#2d261e;">날짜 변경</label>
+            <input type="date" id="editCalDateInput" class="field-input" style="width:100%; margin-top:4px;" required>
+          </div>
+
+          <button type="submit" class="btn-orange" style="margin-top:10px; width:100%; padding:14px; font-size:14px; font-weight:800;">
+            <span>💾 수정사항 저장하기</span>
+          </button>
+        </form>
       </div>
     </div>
 
