@@ -470,9 +470,10 @@ function initNavigation() {
         syncFromGoogleSheet(false);
       }
 
-      // 스케줄 서브탭 권한 갱신
-      if (targetId === "view-scheduler" && typeof renderSchedulerSubTabsByRole === "function") {
-        renderSchedulerSubTabsByRole();
+      // 스케줄 서브탭 권한 및 캘린더 화면 갱신
+      if (targetId === "view-scheduler") {
+        if (typeof renderSchedulerSubTabsByRole === "function") renderSchedulerSubTabsByRole();
+        if (typeof renderCalendarSection === "function") renderCalendarSection();
       }
 
       // Scroll top
@@ -2399,7 +2400,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2417,7 +2418,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2435,7 +2436,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2453,7 +2454,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2510,6 +2511,11 @@ const DEFAULT_AVATARS = {
 };
 
 let currentRole = "pastor";
+
+function isCurrentRolePastor() {
+  const currentUser = getCurrentUser();
+  return currentRole === "pastor" || (currentUser && currentUser.role === "pastor");
+}
 
 function getCurrentUser() {
   if (!appState.users || appState.users.length === 0) {
@@ -3079,6 +3085,12 @@ function renderRoleTabBar(roleConfig) {
         syncFromGoogleSheet(false);
       }
 
+      // 스케줄 서브탭 권한 및 캘린더 화면 갱신
+      if (tab.target === "view-scheduler") {
+        if (typeof renderSchedulerSubTabsByRole === "function") renderSchedulerSubTabsByRole();
+        if (typeof renderCalendarSection === "function") renderCalendarSection();
+      }
+
       const container = document.getElementById("screensContainer");
       if (container) container.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -3543,6 +3555,10 @@ function switchSchedulerSubTab(activeSubTabId) {
       view.style.display = "none";
     }
   });
+
+  if (activeSubTabId === "subTabCalendar" && typeof renderCalendarSection === "function") {
+    renderCalendarSection();
+  }
 }
 
 // --- Scheduler Sub-Tabs Role Permissions ---
@@ -4145,7 +4161,7 @@ let currentCalendarMonth = 10; // 1-12
 let selectedCalendarItem = null; // currently viewed item in manage modal
 
 function renderCalendarSection() {
-  const isPastor = (currentRole === "pastor");
+  const isPastor = isCurrentRolePastor();
   const yearTitleEl = document.getElementById("calYearDisplay");
   const currentTitleEl = document.getElementById("calCurrentMonthTitle");
   const addBtn = document.getElementById("openAddCalendarEventBtn");
@@ -4175,12 +4191,15 @@ function renderCalendarSection() {
   const isCurrentRealMonth = (now.getFullYear() === currentCalendarYear && (now.getMonth() + 1) === currentCalendarMonth);
   const realTodayDate = now.getDate();
 
-  // Current month's birthdays & events
-  const curBirthdays = (appState.birthdays || []).filter(b => b.month === currentCalendarMonth);
-  const curEvents = (appState.calendarEvents || []).filter(e => {
+  // Current month's birthdays & events (fallback to INITIAL_DATA if appState is empty)
+  const allBirthdays = (appState.birthdays && appState.birthdays.length > 0) ? appState.birthdays : INITIAL_DATA.birthdays;
+  const allEvents = (appState.calendarEvents && appState.calendarEvents.length > 0) ? appState.calendarEvents : INITIAL_DATA.calendarEvents;
+
+  const curBirthdays = allBirthdays.filter(b => Number(b.month) === Number(currentCalendarMonth));
+  const curEvents = allEvents.filter(e => {
     if (!e.date) return false;
     const parts = e.date.split("-");
-    return parseInt(parts[0], 10) === currentCalendarYear && parseInt(parts[1], 10) === currentCalendarMonth;
+    return Number(parts[0]) === Number(currentCalendarYear) && Number(parts[1]) === Number(currentCalendarMonth);
   });
 
   // Previous Month Leading Cells (Padding)
@@ -4192,7 +4211,7 @@ function renderCalendarSection() {
   // Current Month Cells
   for (let d = 1; d <= lastDate; d++) {
     const isToday = isCurrentRealMonth && (d === realTodayDate);
-    const dayBirthdays = curBirthdays.filter(b => b.day === d);
+    const dayBirthdays = curBirthdays.filter(b => Number(b.day) === d);
     const dayEvents = curEvents.filter(e => {
       const dayPart = parseInt(e.date.split("-")[2], 10);
       return dayPart === d;
@@ -4273,7 +4292,7 @@ function renderCalendarSection() {
 }
 
 function bindCalendarDynamicEvents() {
-  const isPastor = (currentRole === "pastor");
+  const isPastor = isCurrentRolePastor();
 
   // A. Birthday Person Item Click (opens modal)
   document.querySelectorAll(".birthday-person-item").forEach(item => {
@@ -4327,7 +4346,7 @@ function bindCalendarDynamicEvents() {
 
 function openManageCalendarItemModal(kind, item) {
   selectedCalendarItem = { kind, data: item };
-  const isPastor = (currentRole === "pastor");
+  const isPastor = isCurrentRolePastor();
 
   const modalTitle = document.getElementById("manageCalModalTitle");
   const modalSub = document.getElementById("manageCalModalSubtitle");
@@ -4606,13 +4625,19 @@ function initCalendarEvents() {
       const { kind, data } = selectedCalendarItem;
 
       if (kind === "birthday") {
-        appState.birthdays = (appState.birthdays || []).filter(b => b.id !== data.id);
+        if (!appState.birthdays || appState.birthdays.length === 0) {
+          appState.birthdays = JSON.parse(JSON.stringify(INITIAL_DATA.birthdays));
+        }
+        appState.birthdays = appState.birthdays.filter(b => b.id !== data.id);
         saveState();
         renderCalendarSection();
         closeModal("manageCalendarItemModal");
         showToast(`🗑️ ${data.name}님의 생일이 삭제되었습니다.`, "info");
       } else {
-        appState.calendarEvents = (appState.calendarEvents || []).filter(e => e.id !== data.id);
+        if (!appState.calendarEvents || appState.calendarEvents.length === 0) {
+          appState.calendarEvents = JSON.parse(JSON.stringify(INITIAL_DATA.calendarEvents));
+        }
+        appState.calendarEvents = appState.calendarEvents.filter(e => e.id !== data.id);
         saveState();
         renderCalendarSection();
         closeModal("manageCalendarItemModal");
