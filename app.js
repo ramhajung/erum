@@ -1033,7 +1033,7 @@ function renderAttendanceSection() {
         return cleanAttName && cleanUserName && (cleanAttName === cleanUserName || cleanAttName.includes(cleanUserName) || cleanUserName.includes(cleanAttName));
       });
 
-  // 3. 나의 예배 불참/지각 등록 버튼: 전도사에게는 비노출 (선생님들에게만 노출)
+  // 3. 나의 예배 불참/지각 등록 버튼: 전도사에게만 비노출 (선생님+학생 모두 노출)
   const openAbsentBtn = document.getElementById("openAbsentModalBtn");
   if (openAbsentBtn) {
     openAbsentBtn.style.display = isPastor ? "none" : "";
@@ -1086,9 +1086,15 @@ function renderAttendanceSection() {
 function initAttendanceEvents() {
   document.getElementById("openAbsentModalBtn").addEventListener("click", () => {
     const currentUser = getCurrentUser();
+    const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
     const nameInput = document.getElementById("absentTeacherInput");
     if (nameInput) {
-      nameInput.value = currentUser ? currentUser.name : "선생님";
+      nameInput.value = currentUser ? currentUser.name : (isStudent ? "학생" : "선생님");
+    }
+    // 라벨 동적 변경: 학생이면 '이름', 선생님/집사이면 '성함'
+    const nameLabel = document.getElementById("absentNameLabel");
+    if (nameLabel) {
+      nameLabel.textContent = isStudent ? "이름" : "성함";
     }
     const memoInput = document.getElementById("absentMemoInput");
     if (memoInput) memoInput.value = "";
@@ -1115,7 +1121,7 @@ function initAttendanceEvents() {
       memo: memo,
       eta: eta,
       duty: duty,
-      avatar: currentUser?.avatar || "🧑🏻‍🏫"
+      avatar: currentUser?.avatar || (currentRole === "student" ? "👦🏻" : "🧑🏻‍🏫")
     };
 
     appState.attendance.unshift(newAtt);
@@ -2434,7 +2440,7 @@ const ROLES = {
     activeClass: "active-student",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "주일 섬김이 · D-Day · 공지사항" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스케줄", subtitle: "행사 D-Day · 생일 · 공지사항" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 예배 출결 등록" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
     ],
     defaultTab: "view-home",
@@ -3518,13 +3524,12 @@ function switchSchedulerSubTab(activeSubTabId) {
 }
 
 // --- Scheduler Sub-Tabs Role Permissions ---
-// 예배 출결: 전도사 및 선생님(교사), 회계쌤에게 활성화 (학생에게만 숨김)
+// 예배 출결: 전도사, 선생님, 학생 모두 활성화
 // 행사 체크리스트: 전도사 및 선생님에게 활성화 (학생에게만 숨김)
 function renderSchedulerSubTabsByRole() {
   const currentUser = getCurrentUser();
   const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
   const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
-  const canViewAttendance = !isStudent; // 전도사 및 선생님 모두 활성화
 
   const tabCal = document.getElementById("subTabCalendar");
   const tabChk = document.getElementById("subTabChecklist");
@@ -3536,13 +3541,8 @@ function renderSchedulerSubTabsByRole() {
 
   if (!tabCal || !tabChk || !tabAtt) return;
 
-  // 1. 예배 출결: 전도사 및 선생님 모두 활성화 (학생만 숨김)
-  if (canViewAttendance) {
-    tabAtt.style.display = "";
-  } else {
-    tabAtt.style.display = "none";
-    if (viewAtt) viewAtt.style.display = "none";
-  }
+  // 1. 예배 출결: 전도사, 선생님, 학생 모두 활성화
+  tabAtt.style.display = "";
 
   // 2. 행사 체크리스트: 전도사 및 선생님 열람 가능 (학생에게는 숨김)
   if (isStudent) {
@@ -3556,9 +3556,7 @@ function renderSchedulerSubTabsByRole() {
   tabCal.style.display = "";
 
   // 4. 현재 활성화된 서브탭이 비노출 대상인 경우 '사역 캘린더 & 생일'로 안전 전환
-  if (!canViewAttendance && tabAtt.classList.contains("active")) {
-    switchSchedulerSubTab("subTabCalendar");
-  } else if (isStudent && tabChk.classList.contains("active")) {
+  if (isStudent && tabChk.classList.contains("active")) {
     switchSchedulerSubTab("subTabCalendar");
   }
 }
