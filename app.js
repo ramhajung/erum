@@ -1060,15 +1060,6 @@ function renderAttendanceSection() {
     const card = document.createElement("div");
     card.className = `teacher-att-card ${isLate ? "late-card" : ""}`;
 
-    const dutyHtml = att.duty ? `<div>담당: <b>${att.duty}</b></div>` : "";
-    const subHtml = att.substitute ? `<div>대타: <span class="substitute-badge">${att.substitute}</span></div>` : "";
-    const extraRow = (dutyHtml || subHtml) ? `
-      <div class="substitute-row">
-        ${dutyHtml}
-        ${subHtml}
-      </div>
-    ` : "";
-
     card.innerHTML = `
       <div class="teacher-card-top">
         <div class="teacher-profile">
@@ -1087,8 +1078,6 @@ function renderAttendanceSection() {
         ${att.memo}
         ${att.eta ? `<div style="margin-top:6px; font-weight:700; color:#d97706; font-size:12px; display:flex; align-items:center; gap:4px;"><span>⏰ 도착 예정:</span> <span>${att.eta}</span></div>` : ''}
       </div>
-
-      ${extraRow}
     `;
     listEl.appendChild(card);
   });
@@ -2374,7 +2363,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2392,7 +2381,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2410,7 +2399,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2428,7 +2417,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
