@@ -3339,14 +3339,25 @@ function renderWorshipDutySection() {
   if (annRole && duty.announcement) annRole.textContent = duty.announcement.role || "";
   if (annBadge && duty.announcement) annBadge.textContent = duty.announcement.badge || "부서소식";
 
-  // 수정 버튼: 항상 보이도록 유지하되 권한에 따라 처리
+  // 수정 버튼: 전도사에게만 보이도록 권한 제어
   const openBtn = document.getElementById("openEditWorshipDutyBtn");
+  const isPastor = isCurrentRolePastor();
   if (openBtn) {
-    openBtn.style.display = "";
+    openBtn.style.display = isPastor ? "inline-flex" : "none";
   }
 }
 
 window.openEditWorshipDutyModalDirect = function() {
+  const isPastor = isCurrentRolePastor();
+  if (!isPastor) {
+    if (typeof showToast === "function") {
+      showToast("⚠️ '이번 주 예배 섬김' 수정은 전도사님만 가능합니다.", "warning");
+    } else {
+      alert("⚠️ '이번 주 예배 섬김' 수정은 전도사님만 가능합니다.");
+    }
+    return;
+  }
+
   const duty = appState.worshipDuty || (typeof INITIAL_DATA !== 'undefined' ? INITIAL_DATA.worshipDuty : {}) || {};
   const dateInput = document.getElementById("dutyDateInput");
   const preNameInput = document.getElementById("dutyPrePrayerNameInput");
