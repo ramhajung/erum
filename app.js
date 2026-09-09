@@ -3214,14 +3214,21 @@ function initRoleEvents() {
 
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
-  if (!modal) return;
+  if (!modal) {
+    console.warn("[openModal] Modal not found:", modalId);
+    return;
+  }
   modal.classList.add("open");
+  modal.style.display = "flex";
+  modal.style.opacity = "1";
 }
 
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
   modal.classList.remove("open");
+  modal.style.display = "";
+  modal.style.opacity = "";
 }
 
 function initModalClosers() {
@@ -4432,6 +4439,7 @@ function openAddCalendarItemModal(year, month, day = 1, defaultType = "birthday"
 
   openModal("addCalendarItemModal");
 }
+window.openAddCalendarItemModal = openAddCalendarItemModal;
 
 function toggleAddModalFields(type) {
   const bdayGroup = document.getElementById("calBirthdayFieldsGroup");
