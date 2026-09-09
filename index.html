@@ -137,7 +137,7 @@
 <body>
 
   <!-- Main Mobile Web Application Shell (Stitch Container) -->
-  <div class="app-wrapper w-full max-w-container-max min-h-screen bg-surface-canvas flex flex-col relative pb-28 shadow-2xl overflow-hidden mx-auto" id="appWrapper">
+  <div class="app-wrapper w-full max-w-container-max min-h-screen bg-surface-canvas flex flex-col relative shadow-2xl overflow-hidden mx-auto" id="appWrapper">
 
     <!-- Ambient Glow Orbs in Background -->
     <div class="absolute -top-12 -left-12 w-64 h-64 rounded-full bg-gradient-to-br from-primary/12 via-[#ffb5a0]/15 to-transparent blur-3xl pointer-events-none -z-0"></div>
@@ -317,7 +317,7 @@
     <!-- ===================================================================
          MAIN APP SHELL (Header + Screens + Bottom Tab Bar)
          =================================================================== -->
-    <div id="mainAppShell" class="flex-1 flex flex-col relative">
+    <div id="mainAppShell" class="flex-1 min-h-0 flex flex-col relative overflow-hidden">
 
     <!-- Top Status Bar & Header Anchor (Stitch Glassmorphism Header) -->
     <header class="app-unified-header bg-surface/90 backdrop-blur-xl docked full-width top-0 sticky z-40 border-b border-outline-variant/20 shadow-[0_4px_24px_rgba(150,67,43,0.04)] transition-transform duration-150">
@@ -368,7 +368,7 @@
     <div class="sonner-toast-container" id="sonnerContainer"></div>
 
     <!-- Screens / Views Container -->
-    <main class="screens-container flex-1 px-gutter-screen pt-4 space-y-6 relative z-10" id="screensContainer">
+    <main class="screens-container flex-1 min-h-0 px-gutter-screen pt-4 space-y-6 relative z-10" id="screensContainer">
 
       <!-- ===================================================================
            TAB 0: 홈 대시보드 (Stitch Master Design)
