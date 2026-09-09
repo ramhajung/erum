@@ -2350,7 +2350,7 @@ const ROLES = {
       { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" }
     ],
-    defaultTab: "view-accounting",
+    defaultTab: "view-home",
     showAccountingAdmin: true
   },
   teacher: {
@@ -2368,7 +2368,7 @@ const ROLES = {
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
-    defaultTab: "view-teacher-class",
+    defaultTab: "view-home",
     showAccountingAdmin: false
   },
   student: {
@@ -4113,6 +4113,7 @@ function loginUser(userId) {
   saveState();
 
   switchMasterRole(user.role, false);
+  switchToTab("view-home");
   renderAll();
 
   // Hide Auth Screen & Reveal Main Shell with smooth transition
