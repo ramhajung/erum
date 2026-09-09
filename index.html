@@ -580,14 +580,14 @@
             <div class="grid grid-cols-2 gap-2.5" id="worshipDutyGrid">
               <!-- 1) 예배 전 기도회 -->
               <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-secondary/40 hover:bg-white transition-all group">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-6 h-6 rounded-lg bg-teal-50 text-secondary flex items-center justify-center">
+                <div class="flex items-center justify-between gap-1">
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <div class="w-6 h-6 rounded-lg bg-teal-50 text-secondary flex items-center justify-center shrink-0">
                       <span class="material-symbols-outlined text-[14px]">diversity_1</span>
                     </div>
-                    <span class="text-label-sm font-bold text-text-secondary">예배 전 기도회</span>
+                    <span class="text-[12px] font-bold text-text-secondary whitespace-nowrap">예배 전 기도회</span>
                   </div>
-                  <span id="dutyPrePrayerBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-secondary border border-secondary/20 shadow-2xs">예배전</span>
+                  <span id="dutyPrePrayerBadge" class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-md bg-white text-secondary border border-secondary/20 shadow-2xs shrink-0">예배전</span>
                 </div>
                 <div>
                   <p id="dutyPrePrayerName" class="text-title-md font-extrabold text-text-primary group-hover:text-secondary transition-colors">교사 & 리더</p>
@@ -646,23 +646,6 @@
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        <!-- Bible Verse of the Week Card (Emotional & Cohesive Quote Design) -->
-        <section aria-label="이번 주 말씀 암송" class="relative overflow-hidden rounded-3xl p-5 bg-gradient-to-br from-[#FCF8EE] via-[#FAF3E0] to-[#F5ECE0] border border-accent-butter-text/25 shadow-[0_6px_20px_rgba(143,115,42,0.07)] text-center">
-          <div class="absolute -left-2 -top-2 text-accent-butter-text/15 pointer-events-none select-none">
-            <span class="material-symbols-outlined text-[64px]">format_quote</span>
-          </div>
-          <div class="relative z-10 space-y-2">
-            <div class="inline-flex items-center justify-center gap-1.5 bg-white/70 backdrop-blur-sm px-3 py-1 rounded-full border border-accent-butter-text/20 text-accent-butter-text text-label-sm font-bold">
-              <span class="material-symbols-outlined text-[15px]">menu_book</span>
-              <span>금주의 말씀 · 디모데전서 4:12</span>
-            </div>
-            <blockquote class="text-verse-quote font-verse-quote text-[#3D352E] px-3 py-1 font-medium leading-relaxed tracking-tight">
-              “누구든지 네 연소함을 업신여기지 못하게 하고 오직 말과 행실과 사랑과 믿음과 정절에 있어서 믿는 자에게 본이 되어”
-            </blockquote>
-            <p class="text-[11px] font-semibold text-accent-butter-text/80 tracking-wide">— 이룸교회 예랑 2026 주제 구절 —</p>
           </div>
         </section>
 

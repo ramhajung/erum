@@ -2833,6 +2833,7 @@ function switchMasterRole(roleKey, notify = true) {
   // 역할에 따른 안건/소통함 및 배지 상태 즉시 갱신
   renderAgendaSection();
   renderStaffBoxSection();
+  renderWorshipDutySection();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
@@ -3151,12 +3152,25 @@ function renderWorshipDutySection() {
   if (annName && duty.announcement) annName.textContent = duty.announcement.name || "";
   if (annRole && duty.announcement) annRole.textContent = duty.announcement.role || "";
   if (annBadge && duty.announcement) annBadge.textContent = duty.announcement.badge || "부서소식";
+
+  // 수정 버튼: 전도사에게만 노출 (다른 직분/학생은 수정 불가)
+  const openBtn = document.getElementById("openEditWorshipDutyBtn");
+  const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
+  if (openBtn) {
+    openBtn.style.display = isPastor ? "" : "none";
+  }
 }
 
 function initWorshipDutyEvents() {
   const openBtn = document.getElementById("openEditWorshipDutyBtn");
   if (openBtn) {
     openBtn.addEventListener("click", () => {
+      const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
+      if (!isPastor) {
+        showToast("⚠️ '이번 주 예배 섬김' 수정은 전도사님만 가능합니다.", "warning");
+        return;
+      }
+
       const duty = appState.worshipDuty || INITIAL_DATA.worshipDuty;
       const dateInput = document.getElementById("dutyDateInput");
       const preNameInput = document.getElementById("dutyPrePrayerNameInput");
@@ -3186,6 +3200,12 @@ function initWorshipDutyEvents() {
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
+      if (!isPastor) {
+        showToast("⚠️ '이번 주 예배 섬김' 수정 권한이 없습니다 (전도사 전용).", "warning");
+        return;
+      }
+
       if (!appState.worshipDuty) {
         appState.worshipDuty = JSON.parse(JSON.stringify(INITIAL_DATA.worshipDuty));
       }
