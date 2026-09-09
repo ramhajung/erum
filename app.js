@@ -3378,12 +3378,10 @@ function initHomeDashboardEvents() {
 
 // --- Scheduler Sub-Tabs Management ---
 function switchSchedulerSubTab(activeSubTabId) {
-  const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
-  const isStudent = (currentRole === "student" || (getCurrentUser() && getCurrentUser().role === "student"));
+  const currentUser = getCurrentUser();
+  const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
 
-  if (!isPastor && activeSubTabId === "subTabAttendance") {
-    activeSubTabId = "subTabCalendar";
-  }
+  // 학생만 행사 체크리스트 및 예배 출결 접근 차단 (교사/전도사는 모두 열람 가능)
   if (isStudent && (activeSubTabId === "subTabChecklist" || activeSubTabId === "subTabAttendance")) {
     activeSubTabId = "subTabCalendar";
   }
