@@ -3232,7 +3232,7 @@ function closeModal(modalId) {
 }
 
 function initModalClosers() {
-  // Close buttons with data-close attribute
+  // Close buttons with data-close attribute (kept for semantic/accessibility)
   document.querySelectorAll("[data-close]").forEach(btn => {
     btn.addEventListener("click", () => {
       const modalId = btn.dataset.close;
@@ -3240,11 +3240,23 @@ function initModalClosers() {
     });
   });
 
-  // Click backdrop to close
+  // Click .sheet-handle (가운데 있는 ㅡ 가로 바) to close
+  document.querySelectorAll(".sheet-handle").forEach(handle => {
+    handle.setAttribute("title", "누르면 닫힙니다");
+    handle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const modalBackdrop = handle.closest(".modal-backdrop");
+      if (modalBackdrop && modalBackdrop.id) {
+        closeModal(modalBackdrop.id);
+      }
+    });
+  });
+
+  // Click backdrop (윗쪽 흐릿한 배경 부분) to close
   document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) {
-        backdrop.classList.remove("open");
+        closeModal(backdrop.id);
       }
     });
   });
