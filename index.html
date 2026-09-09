@@ -1736,12 +1736,15 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label style="font-size:11px; color:#64748b;">인도/담당</label>
-                <input type="text" id="dutyPrePrayerNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <label style="font-size:11px; color:#64748b;">인도/담당 선택</label>
+                <select id="dutyPrePrayerNameSelect" class="field-select" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
+                  <!-- Options injected dynamically from registered users -->
+                </select>
+                <input type="text" id="dutyPrePrayerNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; margin-top:4px; display:none;" placeholder="직접 입력">
               </div>
               <div>
-                <label style="font-size:11px; color:#64748b;">장소/시간</label>
-                <input type="text" id="dutyPrePrayerRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <label style="font-size:11px; color:#64748b;">장소/시간/소속</label>
+                <input type="text" id="dutyPrePrayerRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" placeholder="예: 예배 10분 전 본당">
               </div>
             </div>
           </div>
@@ -1753,12 +1756,15 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label style="font-size:11px; color:#64748b;">담당자/이름</label>
-                <input type="text" id="dutyPrayerNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <label style="font-size:11px; color:#64748b;">담당자 선택</label>
+                <select id="dutyPrayerNameSelect" class="field-select" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
+                  <!-- Options injected dynamically -->
+                </select>
+                <input type="text" id="dutyPrayerNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; margin-top:4px; display:none;" placeholder="직접 입력">
               </div>
               <div>
                 <label style="font-size:11px; color:#64748b;">소속/학년</label>
-                <input type="text" id="dutyPrayerRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <input type="text" id="dutyPrayerRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" placeholder="예: 고등부 2학년">
               </div>
             </div>
           </div>
@@ -1770,12 +1776,15 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label style="font-size:11px; color:#64748b;">담당자/이름</label>
-                <input type="text" id="dutyScriptureNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <label style="font-size:11px; color:#64748b;">담당자 선택</label>
+                <select id="dutyScriptureNameSelect" class="field-select" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
+                  <!-- Options injected dynamically -->
+                </select>
+                <input type="text" id="dutyScriptureNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; margin-top:4px; display:none;" placeholder="직접 입력">
               </div>
               <div>
                 <label style="font-size:11px; color:#64748b;">소속/학년</label>
-                <input type="text" id="dutyScriptureRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <input type="text" id="dutyScriptureRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" placeholder="예: 중등부 3학년">
               </div>
             </div>
           </div>
@@ -1787,12 +1796,15 @@
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label style="font-size:11px; color:#64748b;">담당자</label>
-                <input type="text" id="dutyAnnouncementNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <label style="font-size:11px; color:#64748b;">담당자 선택</label>
+                <select id="dutyAnnouncementNameSelect" class="field-select" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
+                  <!-- Options injected dynamically -->
+                </select>
+                <input type="text" id="dutyAnnouncementNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; margin-top:4px; display:none;" placeholder="직접 입력">
               </div>
               <div>
                 <label style="font-size:11px; color:#64748b;">역할/부서</label>
-                <input type="text" id="dutyAnnouncementRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <input type="text" id="dutyAnnouncementRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" placeholder="예: 청소년부 담당">
               </div>
             </div>
           </div>
@@ -2205,7 +2217,7 @@
 
   </div>
 
-  <script src="app.js?v=20260909_cal8"></script>
+  <script src="app.js?v=20260909_cal9"></script>
 </body>
 </html>
 

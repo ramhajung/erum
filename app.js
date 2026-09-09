@@ -3359,25 +3359,159 @@ window.openEditWorshipDutyModalDirect = function() {
   }
 
   const duty = appState.worshipDuty || (typeof INITIAL_DATA !== 'undefined' ? INITIAL_DATA.worshipDuty : {}) || {};
-  const dateInput = document.getElementById("dutyDateInput");
-  const preNameInput = document.getElementById("dutyPrePrayerNameInput");
-  const preRoleInput = document.getElementById("dutyPrePrayerRoleInput");
-  const pNameInput = document.getElementById("dutyPrayerNameInput");
-  const pRoleInput = document.getElementById("dutyPrayerRoleInput");
-  const scripNameInput = document.getElementById("dutyScriptureNameInput");
-  const scripRoleInput = document.getElementById("dutyScriptureRoleInput");
-  const annNameInput = document.getElementById("dutyAnnouncementNameInput");
-  const annRoleInput = document.getElementById("dutyAnnouncementRoleInput");
+  const activeUsers = (appState.users || []).filter(u => !u.isPending);
 
+  // Helper to build options for select dropdown
+  function buildOptions(selectEl, customInputEl, roleInputEl, currentName, currentRoleText, defaultRoleHint) {
+    if (!selectEl) return;
+    selectEl.innerHTML = "";
+
+    // 1. Placeholder / default option
+    const defOpt = document.createElement("option");
+    defOpt.value = "";
+    defOpt.textContent = "== 선택해주세요 ==";
+    selectEl.appendChild(defOpt);
+
+    // Group users into Teachers/Leaders and Students
+    const teachers = activeUsers.filter(u => u.role !== "student");
+    const students = activeUsers.filter(u => u.role === "student");
+
+    if (teachers.length > 0) {
+      const optGroupT = document.createElement("optgroup");
+      optGroupT.label = "🧑🏻‍🏫 교사 및 교역자";
+      teachers.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.name;
+        opt.dataset.role = u.duty || ROLE_NAMES[u.role] || "교사";
+        opt.textContent = `${u.name} (${opt.dataset.role})`;
+        optGroupT.appendChild(opt);
+      });
+      selectEl.appendChild(optGroupT);
+    }
+
+    if (students.length > 0) {
+      const optGroupS = document.createElement("optgroup");
+      optGroupS.label = "👦🏻 학생";
+      students.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.name;
+        opt.dataset.role = u.duty || "학생";
+        opt.textContent = `${u.name} (${opt.dataset.role})`;
+        optGroupS.appendChild(opt);
+      });
+      selectEl.appendChild(optGroupS);
+    }
+
+    // Common group presets (e.g. "교사 & 리더", "전체")
+    const optGroupEtc = document.createElement("optgroup");
+    optGroupEtc.label = "📌 기타 / 그룹";
+    const groupPresets = ["교사 & 리더", "예랑 찬양팀", "임원단", "새친구반 섬김이"];
+    groupPresets.forEach(preset => {
+      const opt = document.createElement("option");
+      opt.value = preset;
+      opt.dataset.role = defaultRoleHint || "본당";
+      opt.textContent = preset;
+      optGroupEtc.appendChild(opt);
+    });
+    selectEl.appendChild(optGroupEtc);
+
+    // Custom input option
+    const optCustom = document.createElement("option");
+    optCustom.value = "__custom__";
+    optCustom.textContent = "✏️ 직접 입력하기...";
+    selectEl.appendChild(optCustom);
+
+    // Set initial selection
+    let matched = false;
+    for (let i = 0; i < selectEl.options.length; i++) {
+      if (selectEl.options[i].value === currentName) {
+        selectEl.selectedIndex = i;
+        matched = true;
+        break;
+      }
+    }
+
+    if (!matched && currentName) {
+      selectEl.value = "__custom__";
+      if (customInputEl) {
+        customInputEl.style.display = "block";
+        customInputEl.value = currentName;
+      }
+    } else {
+      if (customInputEl) {
+        customInputEl.style.display = "none";
+        customInputEl.value = currentName || "";
+      }
+    }
+
+    // Role text
+    if (roleInputEl) {
+      roleInputEl.value = currentRoleText || "";
+    }
+
+    // Change listener
+    selectEl.onchange = function() {
+      if (selectEl.value === "__custom__") {
+        if (customInputEl) {
+          customInputEl.style.display = "block";
+          customInputEl.value = "";
+          customInputEl.focus();
+        }
+      } else {
+        if (customInputEl) {
+          customInputEl.style.display = "none";
+          customInputEl.value = selectEl.value;
+        }
+        const selectedOpt = selectEl.options[selectEl.selectedIndex];
+        if (selectedOpt && selectedOpt.dataset.role && roleInputEl) {
+          roleInputEl.value = selectedOpt.dataset.role;
+        }
+      }
+    };
+  }
+
+  const dateInput = document.getElementById("dutyDateInput");
   if (dateInput) dateInput.value = duty.date || "10/18";
-  if (preNameInput && duty.prePrayer) preNameInput.value = duty.prePrayer.name || "";
-  if (preRoleInput && duty.prePrayer) preRoleInput.value = duty.prePrayer.role || "";
-  if (pNameInput && duty.prayer) pNameInput.value = duty.prayer.name || "";
-  if (pRoleInput && duty.prayer) pRoleInput.value = duty.prayer.role || "";
-  if (scripNameInput && duty.scripture) scripNameInput.value = duty.scripture.name || "";
-  if (scripRoleInput && duty.scripture) scripRoleInput.value = duty.scripture.role || "";
-  if (annNameInput && duty.announcement) annNameInput.value = duty.announcement.name || "";
-  if (annRoleInput && duty.announcement) annRoleInput.value = duty.announcement.role || "";
+
+  // 1) 예배 전 기도회
+  buildOptions(
+    document.getElementById("dutyPrePrayerNameSelect"),
+    document.getElementById("dutyPrePrayerNameInput"),
+    document.getElementById("dutyPrePrayerRoleInput"),
+    duty.prePrayer ? duty.prePrayer.name : "교사 & 리더",
+    duty.prePrayer ? duty.prePrayer.role : "예배 10분 전 본당",
+    "예배 10분 전 본당"
+  );
+
+  // 2) 대표기도
+  buildOptions(
+    document.getElementById("dutyPrayerNameSelect"),
+    document.getElementById("dutyPrayerNameInput"),
+    document.getElementById("dutyPrayerRoleInput"),
+    duty.prayer ? duty.prayer.name : "",
+    duty.prayer ? duty.prayer.role : "",
+    "학생"
+  );
+
+  // 3) 말씀봉독
+  buildOptions(
+    document.getElementById("dutyScriptureNameSelect"),
+    document.getElementById("dutyScriptureNameInput"),
+    document.getElementById("dutyScriptureRoleInput"),
+    duty.scripture ? duty.scripture.name : "",
+    duty.scripture ? duty.scripture.role : "",
+    "학생"
+  );
+
+  // 4) 광고
+  buildOptions(
+    document.getElementById("dutyAnnouncementNameSelect"),
+    document.getElementById("dutyAnnouncementNameInput"),
+    document.getElementById("dutyAnnouncementRoleInput"),
+    duty.announcement ? duty.announcement.name : "",
+    duty.announcement ? duty.announcement.role : "",
+    "청소년부 담당"
+  );
 
   if (typeof openModal === "function") {
     openModal("editWorshipDutyModal");
@@ -3409,14 +3543,23 @@ function initWorshipDutyEvents() {
         appState.worshipDuty = JSON.parse(JSON.stringify(INITIAL_DATA.worshipDuty));
       }
 
+      function resolveName(selectId, inputId) {
+        const select = document.getElementById(selectId);
+        const input = document.getElementById(inputId);
+        if (select && select.value && select.value !== "__custom__") {
+          return select.value.trim();
+        }
+        return input ? input.value.trim() : "";
+      }
+
       const date = document.getElementById("dutyDateInput").value.trim();
-      const preName = document.getElementById("dutyPrePrayerNameInput").value.trim();
+      const preName = resolveName("dutyPrePrayerNameSelect", "dutyPrePrayerNameInput");
       const preRole = document.getElementById("dutyPrePrayerRoleInput").value.trim();
-      const pName = document.getElementById("dutyPrayerNameInput").value.trim();
+      const pName = resolveName("dutyPrayerNameSelect", "dutyPrayerNameInput");
       const pRole = document.getElementById("dutyPrayerRoleInput").value.trim();
-      const scripName = document.getElementById("dutyScriptureNameInput").value.trim();
+      const scripName = resolveName("dutyScriptureNameSelect", "dutyScriptureNameInput");
       const scripRole = document.getElementById("dutyScriptureRoleInput").value.trim();
-      const annName = document.getElementById("dutyAnnouncementNameInput").value.trim();
+      const annName = resolveName("dutyAnnouncementNameSelect", "dutyAnnouncementNameInput");
       const annRole = document.getElementById("dutyAnnouncementRoleInput").value.trim();
 
       appState.worshipDuty.date = date || "10/18";
