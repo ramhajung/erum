@@ -440,6 +440,11 @@ function initNavigation() {
         syncFromGoogleSheet(false);
       }
 
+      // 스케줄 서브탭 권한 갱신
+      if (targetId === "view-scheduler" && typeof renderSchedulerSubTabsByRole === "function") {
+        renderSchedulerSubTabsByRole();
+      }
+
       // Scroll top
       const container = document.getElementById("screensContainer");
       if (container) container.scrollTo({ top: 0, behavior: "smooth" });
@@ -2835,6 +2840,7 @@ function switchMasterRole(roleKey, notify = true) {
   renderStaffBoxSection();
   renderWorshipDutySection();
   renderHomeQuickActions();
+  renderSchedulerSubTabsByRole();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
@@ -3358,6 +3364,16 @@ function initHomeDashboardEvents() {
 
 // --- Scheduler Sub-Tabs Management ---
 function switchSchedulerSubTab(activeSubTabId) {
+  const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
+  const isStudent = (currentRole === "student" || (getCurrentUser() && getCurrentUser().role === "student"));
+
+  if (!isPastor && activeSubTabId === "subTabAttendance") {
+    activeSubTabId = "subTabCalendar";
+  }
+  if (isStudent && (activeSubTabId === "subTabChecklist" || activeSubTabId === "subTabAttendance")) {
+    activeSubTabId = "subTabCalendar";
+  }
+
   const subTabs = ["subTabCalendar", "subTabChecklist", "subTabAttendance"];
   const subViews = {
     subTabCalendar: "subViewCalendar",
@@ -3380,6 +3396,50 @@ function switchSchedulerSubTab(activeSubTabId) {
   });
 }
 
+// --- Scheduler Sub-Tabs Role Permissions ---
+// 전도사 외에 선생님은 '주일 사전 출결' 숨김
+// 학생은 '행사 체크리스트', '주일 사전 출결' 둘 다 숨김
+function renderSchedulerSubTabsByRole() {
+  const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
+  const isStudent = (currentRole === "student" || (getCurrentUser() && getCurrentUser().role === "student"));
+
+  const tabCal = document.getElementById("subTabCalendar");
+  const tabChk = document.getElementById("subTabChecklist");
+  const tabAtt = document.getElementById("subTabAttendance");
+
+  const viewCal = document.getElementById("subViewCalendar");
+  const viewChk = document.getElementById("subViewChecklist");
+  const viewAtt = document.getElementById("subViewAttendance");
+
+  if (!tabCal || !tabChk || !tabAtt) return;
+
+  // 1. 주일 사전 출결: 전도사만 열람 가능 (선생님, 회계, 학생 숨김)
+  if (isPastor) {
+    tabAtt.style.display = "";
+  } else {
+    tabAtt.style.display = "none";
+    if (viewAtt) viewAtt.style.display = "none";
+  }
+
+  // 2. 행사 체크리스트: 학생에게는 숨김 (전도사, 선생님 열람 가능)
+  if (isStudent) {
+    tabChk.style.display = "none";
+    if (viewChk) viewChk.style.display = "none";
+  } else {
+    tabChk.style.display = "";
+  }
+
+  // 3. 사역 캘린더 & 생일: 모두에게 노출
+  tabCal.style.display = "";
+
+  // 4. 현재 활성화된 서브탭이 비노출 대상인 경우 '사역 캘린더 & 생일'로 안전 전환
+  if (!isPastor && tabAtt.classList.contains("active")) {
+    switchSchedulerSubTab("subTabCalendar");
+  } else if (isStudent && tabChk.classList.contains("active")) {
+    switchSchedulerSubTab("subTabCalendar");
+  }
+}
+
 function initSchedulerSubTabs() {
   ["subTabCalendar", "subTabChecklist", "subTabAttendance"].forEach(id => {
     const btn = document.getElementById(id);
@@ -3387,6 +3447,7 @@ function initSchedulerSubTabs() {
       btn.addEventListener("click", () => switchSchedulerSubTab(id));
     }
   });
+  renderSchedulerSubTabsByRole();
 }
 
 // --- Event Checklist (New Image 4: 예랑 스카 D-12) ---
@@ -4050,6 +4111,7 @@ function renderAll() {
   renderStaffBoxSection();
   renderWorshipDutySection();
   renderHomeQuickActions();
+  renderSchedulerSubTabsByRole();
   updateStaffBoxHomeBadge();
   updateMeetingNavBadge();
 }
