@@ -1626,9 +1626,11 @@ button:active, .btn:active, .interactive-card:active {
 .modal-backdrop.open {
   display: flex !important;
   align-items: flex-end;
+  justify-content: center;
   opacity: 1 !important;
   pointer-events: auto !important;
   visibility: visible !important;
+  z-index: 400 !important;
 }
 
 .bottom-sheet {
@@ -1644,12 +1646,12 @@ button:active, .btn:active, .interactive-card:active {
   transition: transform var(--duration-drawer) var(--ease-out);
   max-height: 85vh;
   overflow-y: auto;
-  z-index: 310;
+  z-index: 410;
   pointer-events: auto;
 }
 
 .modal-backdrop.open .bottom-sheet {
-  transform: translateY(0);
+  transform: translateY(0) !important;
 }
 
 /* Calendar Header Actions & Add Button Clickability */
@@ -1657,7 +1659,16 @@ button:active, .btn:active, .interactive-card:active {
   cursor: pointer !important;
   pointer-events: auto !important;
   position: relative;
-  z-index: 25;
+  z-index: 50;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 120ms ease, opacity 120ms ease, background-color 120ms ease;
+}
+
+#openAddCalendarEventBtn:active {
+  transform: scale(0.93) !important;
+  opacity: 0.85 !important;
 }
 
 .sheet-handle {
@@ -2258,11 +2269,19 @@ button:active, .btn:active, .interactive-card:active {
   border: none;
   font-weight: 800;
   cursor: pointer;
-  transition: opacity 150ms ease;
+  transition: opacity 150ms ease, transform 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 }
 
 .btn-primary-mini:hover {
   opacity: 0.9;
+}
+
+.btn-primary-mini:active {
+  transform: scale(0.94);
+  opacity: 0.85;
 }
 
 .calendar-grid {

@@ -3218,15 +3218,20 @@ function openModal(modalId) {
     console.warn("[openModal] Modal not found:", modalId);
     return;
   }
-  // If modal is trapped inside another modal-backdrop, move directly to body
-  if (modal.parentElement && modal.parentElement !== document.body && modal.parentElement.classList.contains("modal-backdrop")) {
-    document.body.appendChild(modal);
+  const appWrapper = document.getElementById("appWrapper") || document.body;
+  if (modal.parentElement && modal.parentElement.classList.contains("modal-backdrop")) {
+    appWrapper.appendChild(modal);
   }
   modal.style.display = "flex";
   modal.style.alignItems = "flex-end";
+  modal.style.justifyContent = "center";
   modal.style.pointerEvents = "auto";
-  modal.style.zIndex = "350";
+  modal.style.zIndex = "400";
   modal.classList.add("open");
+  const sheet = modal.querySelector(".bottom-sheet");
+  if (sheet) {
+    sheet.style.transform = "translateY(0)";
+  }
   requestAnimationFrame(() => {
     modal.style.opacity = "1";
   });
@@ -3238,12 +3243,19 @@ function closeModal(modalId) {
   modal.classList.remove("open");
   modal.style.opacity = "0";
   modal.style.pointerEvents = "none";
+  const sheet = modal.querySelector(".bottom-sheet");
+  if (sheet) {
+    sheet.style.transform = "translateY(100%)";
+  }
   setTimeout(() => {
     if (!modal.classList.contains("open")) {
       modal.style.display = "none";
     }
   }, 200);
 }
+
+window.openModal = openModal;
+window.closeModal = closeModal;
 
 function initModalClosers() {
   // Close buttons with data-close attribute
@@ -4463,9 +4475,10 @@ function openAddCalendarItemModal(year, month, day = 1, defaultType = "birthday"
     return;
   }
 
-  // Ensure modal is attached directly to document.body (prevents being trapped in nested/hidden parent modals)
-  if (modal.parentElement && modal.parentElement !== document.body) {
-    document.body.appendChild(modal);
+  // If trapped inside another modal-backdrop, move to appWrapper
+  const appWrapper = document.getElementById("appWrapper") || document.body;
+  if (modal.parentElement && modal.parentElement.classList.contains("modal-backdrop")) {
+    appWrapper.appendChild(modal);
   }
 
   const form = document.getElementById("addCalendarItemForm");
@@ -4509,6 +4522,8 @@ function openAddCalendarItemModal(year, month, day = 1, defaultType = "birthday"
 
   openModal("addCalendarItemModal");
 }
+
+window.openAddCalendarItemModal = openAddCalendarItemModal;
 
 function toggleAddModalFields(type) {
   const bdayGroup = document.getElementById("calBirthdayFieldsGroup");
