@@ -777,7 +777,7 @@
         <div class="sub-nav-tabs">
           <button class="sub-nav-btn active" id="subTabCalendar">사역 캘린더 & 생일</button>
           <button class="sub-nav-btn" id="subTabChecklist">행사 체크리스트</button>
-          <button class="sub-nav-btn" id="subTabAttendance">주일 사전 출결</button>
+          <button class="sub-nav-btn" id="subTabAttendance">예배 출결</button>
         </div>
 
         <!-- Sub-View 1: 사역 캘린더 & 생일 관리 (New Image 3) -->
@@ -949,10 +949,10 @@
           </button>
         </div>
 
-        <!-- Sub-View 3: 주일 사전 출결 & 대타 관리 (Image 3 from prompt 1) -->
+        <!-- Sub-View 3: 예배 출결 & 대타 관리 (Image 3 from prompt 1) -->
         <div id="subViewAttendance" style="display:none;">
           <div style="font-size: 11px; font-weight:700; color:var(--text-muted); margin-bottom: 6px;">
-            이룸교회 중고등부 예랑 · 주일 사전 출결 & 공백 관리 (2026.09.20 주일)
+            이룸교회 중고등부 예랑 · 예배 출결 & 공백 관리 (2026.09.20 주일)
           </div>
 
           <!-- Stats Summary Bar -->
@@ -971,7 +971,7 @@
 
           <!-- Action Button -->
           <button class="btn-orange" id="openAbsentModalBtn" style="background: linear-gradient(135deg, #f98967 0%, #ee6444 100%);">
-            <span>＋</span> <span>나의 주일 불참/지각 사전 등록</span>
+            <span>＋</span> <span>나의 예배 불참/지각 사전 등록</span>
           </button>
         </div>
 
@@ -1459,7 +1459,7 @@
         <span class="text-[11px] font-bold tracking-tight">홈</span>
       </button>
       <!-- 2: 스케줄 -->
-      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-scheduler" data-title="예랑 스마트 스케줄러" data-subtitle="사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" type="button">
+      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-scheduler" data-title="예랑 스마트 스케줄러" data-subtitle="사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" type="button">
         <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center">
           <span class="material-symbols-outlined text-[23px]">calendar_today</span>
         </div>
@@ -1596,7 +1596,7 @@
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
-          <h3 class="sheet-title">나의 주일 사전 출결 등록</h3>
+          <h3 class="sheet-title">나의 예배 출결 등록</h3>
           <button class="sheet-close-btn" data-close="absentModal">✕</button>
         </div>
         <form id="absentForm">

@@ -1042,6 +1042,19 @@ function renderAttendanceSection() {
 
 function initAttendanceEvents() {
   document.getElementById("openAbsentModalBtn").addEventListener("click", () => {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      const selectEl = document.getElementById("absentTeacherInput");
+      if (selectEl) {
+        for (let i = 0; i < selectEl.options.length; i++) {
+          const optVal = selectEl.options[i].value.replace(/선생님|집사님|전도사님/g, "").trim();
+          if (currentUser.name.includes(optVal) || selectEl.options[i].value.includes(currentUser.name)) {
+            selectEl.selectedIndex = i;
+            break;
+          }
+        }
+      }
+    }
     openModal("absentModal");
   });
 
@@ -1069,7 +1082,7 @@ function initAttendanceEvents() {
     saveState();
     renderAttendanceSection();
     closeModal("absentModal");
-    showToast(`주일 ${status} 등록 완료! 대타(${substitute})가 배정되었습니다. ✅`);
+    showToast(`예배 ${status} 등록 완료! 대타(${substitute})가 배정되었습니다. ✅`);
   });
 }
 
@@ -2273,7 +2286,7 @@ const ROLES = {
     activeClass: "active-pastor",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "이룸교회 중고등부 예랑", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
       { target: "view-students", icon: "groups", label: "학생부", title: "학생 심방 & 기도제목", subtitle: "청소년부 학생 돌봄 & 신앙 관리" },
       { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
       { target: "view-accounting", icon: "account_balance_wallet", label: "재정", title: "부서 재정 및 회계 장부", subtitle: "실시간 실잔액 및 전체 교사 영수증 감독" }
@@ -2293,7 +2306,7 @@ const ROLES = {
       { target: "view-home", icon: "home", label: "홈", title: "회계 & 행정 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-accounting", icon: "account_balance_wallet", label: "회계장부", title: "부서 전체 실잔액 & 장부", subtitle: "영수증 정산 승인 및 구글 시트 연동" },
       { target: "view-receipt", icon: "photo_camera", label: "영수증", title: "AI 영수증 자동 등록", subtitle: "영수증 OCR 분석 및 구글 시트 연동" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 사전 출결" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" }
     ],
     defaultTab: "view-accounting",
@@ -2310,7 +2323,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "주일 사전 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -3398,12 +3411,13 @@ function switchSchedulerSubTab(activeSubTabId) {
 }
 
 // --- Scheduler Sub-Tabs Role Permissions ---
-// 전도사 외에 선생님은 '주일 사전 출결' 숨김
-// 학생은 '행사 체크리스트', '주일 사전 출결' 둘 다 숨김
+// 예배 출결: 전도사 및 선생님(교사), 회계쌤에게 활성화 (학생에게만 숨김)
+// 행사 체크리스트: 전도사 및 선생님에게 활성화 (학생에게만 숨김)
 function renderSchedulerSubTabsByRole() {
   const currentUser = getCurrentUser();
   const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
   const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
+  const canViewAttendance = !isStudent; // 전도사 및 선생님 모두 활성화
 
   const tabCal = document.getElementById("subTabCalendar");
   const tabChk = document.getElementById("subTabChecklist");
@@ -3415,15 +3429,15 @@ function renderSchedulerSubTabsByRole() {
 
   if (!tabCal || !tabChk || !tabAtt) return;
 
-  // 1. 주일 사전 출결: 전도사만 열람 가능 (선생님, 회계, 학생 숨김)
-  if (isPastor) {
+  // 1. 예배 출결: 전도사 및 선생님 모두 활성화 (학생만 숨김)
+  if (canViewAttendance) {
     tabAtt.style.display = "";
   } else {
     tabAtt.style.display = "none";
     if (viewAtt) viewAtt.style.display = "none";
   }
 
-  // 2. 행사 체크리스트: 학생에게는 숨김 (전도사, 선생님 열람 가능)
+  // 2. 행사 체크리스트: 전도사 및 선생님 열람 가능 (학생에게는 숨김)
   if (isStudent) {
     tabChk.style.display = "none";
     if (viewChk) viewChk.style.display = "none";
@@ -3435,7 +3449,7 @@ function renderSchedulerSubTabsByRole() {
   tabCal.style.display = "";
 
   // 4. 현재 활성화된 서브탭이 비노출 대상인 경우 '사역 캘린더 & 생일'로 안전 전환
-  if (!isPastor && tabAtt.classList.contains("active")) {
+  if (!canViewAttendance && tabAtt.classList.contains("active")) {
     switchSchedulerSubTab("subTabCalendar");
   } else if (isStudent && tabChk.classList.contains("active")) {
     switchSchedulerSubTab("subTabCalendar");
