@@ -1050,6 +1050,15 @@ function renderAttendanceSection() {
     const card = document.createElement("div");
     card.className = `teacher-att-card ${isLate ? "late-card" : ""}`;
 
+    const dutyHtml = att.duty ? `<div>담당: <b>${att.duty}</b></div>` : "";
+    const subHtml = att.substitute ? `<div>대타: <span class="substitute-badge">${att.substitute}</span></div>` : "";
+    const extraRow = (dutyHtml || subHtml) ? `
+      <div class="substitute-row">
+        ${dutyHtml}
+        ${subHtml}
+      </div>
+    ` : "";
+
     card.innerHTML = `
       <div class="teacher-card-top">
         <div class="teacher-profile">
@@ -1068,10 +1077,7 @@ function renderAttendanceSection() {
         ${att.memo}
       </div>
 
-      <div class="substitute-row">
-        <div>담당: <b>${att.duty}</b></div>
-        <div>대타: <span class="substitute-badge">${att.substitute}</span></div>
-      </div>
+      ${extraRow}
     `;
     listEl.appendChild(card);
   });
@@ -1080,29 +1086,23 @@ function renderAttendanceSection() {
 function initAttendanceEvents() {
   document.getElementById("openAbsentModalBtn").addEventListener("click", () => {
     const currentUser = getCurrentUser();
-    if (currentUser) {
-      const selectEl = document.getElementById("absentTeacherInput");
-      if (selectEl) {
-        for (let i = 0; i < selectEl.options.length; i++) {
-          const optVal = selectEl.options[i].value.replace(/선생님|집사님|전도사님/g, "").trim();
-          if (currentUser.name.includes(optVal) || selectEl.options[i].value.includes(currentUser.name)) {
-            selectEl.selectedIndex = i;
-            break;
-          }
-        }
-      }
+    const nameInput = document.getElementById("absentTeacherInput");
+    if (nameInput) {
+      nameInput.value = currentUser ? currentUser.name : "선생님";
     }
+    const memoInput = document.getElementById("absentMemoInput");
+    if (memoInput) memoInput.value = "";
     openModal("absentModal");
   });
 
   document.getElementById("absentForm").addEventListener("submit", (e) => {
     e.preventDefault();
-    const name = document.getElementById("absentTeacherInput").value;
+    const currentUser = getCurrentUser();
+    const name = (currentUser ? currentUser.name : document.getElementById("absentTeacherInput")?.value) || "선생님";
     const status = document.getElementById("absentStatusInput").value;
     const reason = document.getElementById("absentReasonCategory").value;
     const memo = document.getElementById("absentMemoInput").value;
-    const duty = document.getElementById("absentRoleInput").value;
-    const substitute = document.getElementById("substituteTeacherInput").value;
+    const duty = currentUser ? (currentUser.duty || "") : "";
 
     const newAtt = {
       id: Date.now(),
@@ -1110,16 +1110,15 @@ function initAttendanceEvents() {
       role: reason,
       status: status,
       memo: memo,
-      duty: duty || "분반 공과",
-      substitute: substitute,
-      avatar: "🧑🏻‍🏫"
+      duty: duty,
+      avatar: currentUser?.avatar || "🧑🏻‍🏫"
     };
 
     appState.attendance.unshift(newAtt);
     saveState();
     renderAttendanceSection();
     closeModal("absentModal");
-    showToast(`예배 ${status} 등록 완료! 대타(${substitute})가 배정되었습니다. ✅`);
+    showToast(`예배 ${status} 등록이 완료되었습니다! ✅`);
   });
 }
 
