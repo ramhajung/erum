@@ -2575,8 +2575,8 @@ function renderUserManagerSection() {
         ` : ''}
         <select class="role-select-dropdown" data-user-id="${user.id}" style="flex:1;">
           <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사</option>
-          <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 선생님(회계)</option>
           <option value="deacon" ${user.role === "deacon" ? "selected" : ""}>👔 부장집사님</option>
+          <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 선생님(회계)</option>
           <option value="teacher_grade" ${(user.role === "teacher_grade" || user.role === "teacher") ? "selected" : ""}>🧑🏻‍🏫 선생님(공과반)</option>
           <option value="teacher_new" ${user.role === "teacher_new" ? "selected" : ""}>🌱 선생님(새친구반)</option>
           <option value="student" ${user.role === "student" ? "selected" : ""}>👦🏻 학생</option>
