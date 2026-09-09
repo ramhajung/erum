@@ -3214,14 +3214,35 @@ function initRoleEvents() {
 
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
-  if (!modal) return;
+  if (!modal) {
+    console.warn("[openModal] Modal not found:", modalId);
+    return;
+  }
+  // If modal is trapped inside another modal-backdrop, move directly to body
+  if (modal.parentElement && modal.parentElement !== document.body && modal.parentElement.classList.contains("modal-backdrop")) {
+    document.body.appendChild(modal);
+  }
+  modal.style.display = "flex";
+  modal.style.alignItems = "flex-end";
+  modal.style.pointerEvents = "auto";
+  modal.style.zIndex = "350";
   modal.classList.add("open");
+  requestAnimationFrame(() => {
+    modal.style.opacity = "1";
+  });
 }
 
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
   modal.classList.remove("open");
+  modal.style.opacity = "0";
+  modal.style.pointerEvents = "none";
+  setTimeout(() => {
+    if (!modal.classList.contains("open")) {
+      modal.style.display = "none";
+    }
+  }, 200);
 }
 
 function initModalClosers() {
@@ -4175,7 +4196,17 @@ function renderCalendarSection() {
   if (yearTitleEl) yearTitleEl.textContent = `${currentCalendarYear}년 ${currentCalendarMonth}월`;
   if (currentTitleEl) currentTitleEl.textContent = `📅 ${currentCalendarMonth}월 사역 & 생일`;
   if (addBtn) {
-    addBtn.style.display = isPastor ? "inline-flex" : "none";
+    addBtn.style.display = "inline-flex";
+    addBtn.removeAttribute("disabled");
+    addBtn.disabled = false;
+    addBtn.style.pointerEvents = "auto";
+    addBtn.style.cursor = "pointer";
+    addBtn.style.zIndex = "25";
+    addBtn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1);
+    };
   }
 
   // 2. Build Calendar Day Names Header
@@ -4343,6 +4374,22 @@ function bindCalendarDynamicEvents() {
       openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1, "birthday");
     });
   }
+
+  // E. Header Add Calendar Event Button
+  const addBtn = document.getElementById("openAddCalendarEventBtn");
+  if (addBtn) {
+    addBtn.style.display = "inline-flex";
+    addBtn.removeAttribute("disabled");
+    addBtn.disabled = false;
+    addBtn.style.pointerEvents = "auto";
+    addBtn.style.cursor = "pointer";
+    addBtn.style.zIndex = "25";
+    addBtn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1);
+    };
+  }
 }
 
 function openManageCalendarItemModal(kind, item) {
@@ -4410,8 +4457,27 @@ function openManageCalendarItemModal(kind, item) {
 }
 
 function openAddCalendarItemModal(year, month, day = 1, defaultType = "birthday") {
+  let modal = document.getElementById("addCalendarItemModal");
+  if (!modal) {
+    console.warn("[openAddCalendarItemModal] addCalendarItemModal element not found");
+    return;
+  }
+
+  // Ensure modal is attached directly to document.body (prevents being trapped in nested/hidden parent modals)
+  if (modal.parentElement && modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
+
   const form = document.getElementById("addCalendarItemForm");
-  if (form) form.reset();
+  if (form) {
+    form.reset();
+
+    // Ensure radio change listeners are active
+    const radios = form.querySelectorAll('input[name="calItemType"]');
+    radios.forEach(r => {
+      r.onchange = (e) => toggleAddModalFields(e.target.value);
+    });
+  }
 
   const safeYear = Number(year) || currentCalendarYear || new Date().getFullYear();
   const safeMonth = Number(month) || currentCalendarMonth || (new Date().getMonth() + 1);
@@ -4424,10 +4490,21 @@ function openAddCalendarItemModal(year, month, day = 1, defaultType = "birthday"
   }
 
   // Set default radio selection
-  const radio = form ? form.querySelector(`input[name="calItemType"][value="${defaultType}"]`) : null;
-  if (radio) {
-    radio.checked = true;
+  if (form) {
+    const radio = form.querySelector(`input[name="calItemType"][value="${defaultType}"]`);
+    if (radio) {
+      radio.checked = true;
+    }
   }
+
+  // Wire close buttons inside modal
+  modal.querySelectorAll('[data-close="addCalendarItemModal"]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      closeModal("addCalendarItemModal");
+    };
+  });
+
   toggleAddModalFields(defaultType);
 
   openModal("addCalendarItemModal");
