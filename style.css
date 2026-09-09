@@ -2572,6 +2572,7 @@ button:active, .btn:active, .interactive-card:active {
 .tag-pastor { background: #ffe9dd; color: #ba4a00; }
 .tag-accountant { background: #d4efdf; color: #196f3d; }
 .tag-teacher { background: #fdebd0; color: #b9770e; }
+.tag-deacon { background: #e0e7ff; color: #3730a3; }
 .tag-student { background: #ebf5fb; color: #2471a3; }
 
 /* Student Portal: Study Cafe Seat Map */

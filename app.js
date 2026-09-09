@@ -2338,9 +2338,9 @@ const ROLES = {
   accountant: {
     id: "accountant",
     name: "나하은 선생님",
-    title: "부서 재정 & 회계 마스터",
-    subtitle: "나하은 선생님 · 재정 및 정산 권한",
-    badge: "💼 회계쌤 모드",
+    title: "선생님(회계) · 재정 관리",
+    subtitle: "선생님(회계) · 재정 및 정산 권한",
+    badge: "💼 선생님(회계)",
     tagClass: "tag-accountant",
     activeClass: "active-accountant",
     tabs: [
@@ -2353,12 +2353,66 @@ const ROLES = {
     defaultTab: "view-home",
     showAccountingAdmin: true
   },
+  deacon: {
+    id: "deacon",
+    name: "부장집사님",
+    title: "중고등부 부장 지도",
+    subtitle: "부장집사님 · 사역 협력 및 지도 권한",
+    badge: "👔 부장집사님",
+    tagClass: "tag-deacon",
+    activeClass: "active-teacher",
+    tabs: [
+      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "분반 지도 및 새친구 4주 체크리스트" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
+      { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
+    ],
+    defaultTab: "view-home",
+    showAccountingAdmin: false
+  },
+  teacher_grade: {
+    id: "teacher_grade",
+    name: "김대한 선생님",
+    title: "공과반 목양 지도",
+    subtitle: "선생님(공과반) · 분반 지도 권한",
+    badge: "🧑🏻‍🏫 선생님(공과반)",
+    tagClass: "tag-teacher",
+    activeClass: "active-teacher",
+    tabs: [
+      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
+      { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
+    ],
+    defaultTab: "view-home",
+    showAccountingAdmin: false
+  },
+  teacher_new: {
+    id: "teacher_new",
+    name: "소예진 선생님",
+    title: "새친구반 목양 지도",
+    subtitle: "선생님(새친구반) · 새친구 지도 권한",
+    badge: "🌱 선생님(새친구반)",
+    tagClass: "tag-teacher",
+    activeClass: "active-teacher",
+    tabs: [
+      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
+      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결 & 대타", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
+      { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
+    ],
+    defaultTab: "view-home",
+    showAccountingAdmin: false
+  },
   teacher: {
     id: "teacher",
-    name: "김대한 선생님",
-    title: "고3반 & 새친구반 목양",
-    subtitle: "김대한 선생님 · 분반 지도 권한",
-    badge: "🧑🏻‍🏫 선생님 모드",
+    name: "선생님",
+    title: "교사 목양 대시보드",
+    subtitle: "선생님 · 분반 지도 권한",
+    badge: "🧑🏻‍🏫 선생님(공과반)",
     tagClass: "tag-teacher",
     activeClass: "active-teacher",
     tabs: [
@@ -2391,22 +2445,31 @@ const ROLES = {
 
 // Role definitions and labels
 const ROLE_NAMES = {
-  pastor: "전도사 (총괄 관리자)",
-  accountant: "회계선생님 (재정/장부)",
-  teacher: "선생님 (공과/새친구반)",
-  student: "학생 (청소년부 포털)"
+  pastor: "전도사",
+  accountant: "선생님(회계)",
+  deacon: "부장집사님",
+  teacher_grade: "선생님(공과반)",
+  teacher_new: "선생님(새친구반)",
+  teacher: "선생님(공과반)",
+  student: "학생"
 };
 
 const ROLE_BADGES = {
   pastor: '<span class="role-identity-tag tag-pastor" style="font-size:10px; padding:2px 6px;">✝️ 전도사</span>',
-  accountant: '<span class="role-identity-tag tag-accountant" style="font-size:10px; padding:2px 6px;">💼 회계쌤</span>',
-  teacher: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님</span>',
+  accountant: '<span class="role-identity-tag tag-accountant" style="font-size:10px; padding:2px 6px;">💼 선생님(회계)</span>',
+  deacon: '<span class="role-identity-tag tag-deacon" style="font-size:10px; padding:2px 6px;">👔 부장집사님</span>',
+  teacher_grade: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님(공과반)</span>',
+  teacher_new: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🌱 선생님(새친구반)</span>',
+  teacher: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님(공과반)</span>',
   student: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>'
 };
 
 const DEFAULT_AVATARS = {
   pastor: "✝️",
   accountant: "💼",
+  deacon: "👔",
+  teacher_grade: "🧑🏻‍🏫",
+  teacher_new: "🌱",
   teacher: "🧑🏻‍🏫",
   student: "👦🏻"
 };
@@ -2511,9 +2574,11 @@ function renderUserManagerSection() {
           </button>
         ` : ''}
         <select class="role-select-dropdown" data-user-id="${user.id}" style="flex:1;">
-          <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사 (관리자)</option>
-          <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 회계선생님</option>
-          <option value="teacher" ${user.role === "teacher" ? "selected" : ""}>🧑🏻‍🏫 선생님 (공과/새친구)</option>
+          <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사</option>
+          <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 선생님(회계)</option>
+          <option value="deacon" ${user.role === "deacon" ? "selected" : ""}>👔 부장집사님</option>
+          <option value="teacher_grade" ${(user.role === "teacher_grade" || user.role === "teacher") ? "selected" : ""}>🧑🏻‍🏫 선생님(공과반)</option>
+          <option value="teacher_new" ${user.role === "teacher_new" ? "selected" : ""}>🌱 선생님(새친구반)</option>
           <option value="student" ${user.role === "student" ? "selected" : ""}>👦🏻 학생</option>
         </select>
         <button type="button" class="edit-user-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:12px; font-weight:700; background:#f5efff; color:#6c35c4; border-radius:8px; border:1.5px solid #e0c8ff; cursor:pointer; display:flex; align-items:center; gap:3px; white-space:nowrap;" title="계정 정보 수정">
@@ -2902,10 +2967,13 @@ function switchMasterRole(roleKey, notify = true) {
   // 7. Sonner Toast Feedback
   if (notify) {
     const toastMsgMap = {
-      pastor: "✝️ 정하람 전도사 모드로 전환되었습니다. (사역 총괄 권한)",
-      accountant: "💼 나하은 회계선생님 모드로 전환되었습니다. (재정 마스터 권한)",
-      teacher: "🧑🏻‍🏫 김대한 선생님 모드로 전환되었습니다. (공과 & 새친구반 권한)",
-      student: "👦🏻 양형모 학생 모드로 전환되었습니다. (예랑 청소년부 포털)"
+      pastor: "✝️ 전도사 모드로 전환되었습니다. (사역 총괄 권한)",
+      accountant: "💼 선생님(회계) 모드로 전환되었습니다. (재정 마스터 권한)",
+      deacon: "👔 부장집사님 모드로 전환되었습니다. (청소년부 부장 지도)",
+      teacher_grade: "🧑🏻‍🏫 선생님(공과반) 모드로 전환되었습니다. (분반 지도 권한)",
+      teacher_new: "🌱 선생님(새친구반) 모드로 전환되었습니다. (새친구 전담 지도)",
+      teacher: "🧑🏻‍🏫 선생님 모드로 전환되었습니다. (교사 지도 권한)",
+      student: "👦🏻 학생 모드로 전환되었습니다. (예랑 청소년부 포털)"
     };
     showToast(toastMsgMap[roleKey] || "역할이 변경되었습니다.");
   }
