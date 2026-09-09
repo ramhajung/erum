@@ -2332,7 +2332,7 @@ const ROLES = {
     activeClass: "active-pastor",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "이룸교회 중고등부 예랑", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
       { target: "view-students", icon: "groups", label: "학생부", title: "학생 심방 & 기도제목", subtitle: "청소년부 학생 돌봄 & 신앙 관리" },
       { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
       { target: "view-accounting", icon: "account_balance_wallet", label: "재정", title: "부서 재정 및 회계 장부", subtitle: "실시간 실잔액 및 전체 교사 영수증 감독" }
@@ -2352,7 +2352,7 @@ const ROLES = {
       { target: "view-home", icon: "home", label: "홈", title: "회계 & 행정 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-accounting", icon: "account_balance_wallet", label: "회계장부", title: "부서 전체 실잔액 & 장부", subtitle: "영수증 정산 승인 및 구글 시트 연동" },
       { target: "view-receipt", icon: "photo_camera", label: "영수증", title: "AI 영수증 자동 등록", subtitle: "영수증 OCR 분석 및 구글 시트 연동" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" }
     ],
     defaultTab: "view-home",
@@ -2369,7 +2369,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2387,7 +2387,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2405,7 +2405,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2423,7 +2423,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
       { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예배 출결", subtitle: "나의 주일 결석/지각 사전 등록" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -2440,7 +2440,7 @@ const ROLES = {
     activeClass: "active-student",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "주일 섬김이 · D-Day · 공지사항" },
-      { target: "view-scheduler", icon: "calendar_today", label: "스케줄", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 예배 출결 등록" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 예배 출결 등록" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
     ],
     defaultTab: "view-home",
