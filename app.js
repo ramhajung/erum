@@ -3423,18 +3423,9 @@ function initHomeDashboardEvents() {
 
   function openTeacherSuggestModal() {
     const currentUser = getCurrentUser();
-    const authorSelect = document.getElementById("staffReqAuthorInput");
-    if (authorSelect && currentUser) {
-      let matchedOption = Array.from(authorSelect.options).find(opt => 
-        opt.value.includes(currentUser.name) || currentUser.name.includes(opt.value.replace("T", "").trim())
-      );
-      if (!matchedOption) {
-        const newOpt = new Option(currentUser.name, currentUser.name);
-        authorSelect.add(newOpt);
-        authorSelect.value = currentUser.name;
-      } else {
-        authorSelect.value = matchedOption.value;
-      }
+    const authorInput = document.getElementById("staffReqAuthorInput");
+    if (authorInput && currentUser) {
+      authorInput.value = currentUser.name;
     }
     openModal("addStaffRequestModal");
   }
@@ -3496,8 +3487,8 @@ function switchSchedulerSubTab(activeSubTabId) {
   const currentUser = getCurrentUser();
   const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
 
-  // 학생만 행사 체크리스트 및 예배 출결 접근 차단 (교사/전도사는 모두 열람 가능)
-  if (isStudent && (activeSubTabId === "subTabChecklist" || activeSubTabId === "subTabAttendance")) {
+  // 학생만 행사 체크리스트 접근 차단 (교사/전도사 및 학생 모두 예배 출결 열람 가능)
+  if (isStudent && activeSubTabId === "subTabChecklist") {
     activeSubTabId = "subTabCalendar";
   }
 
@@ -3818,8 +3809,8 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
 
   container.innerHTML = "";
   const filtered = appState.staffBox.items.filter(item => {
-    // 제안한 안건 및 검토중인 건의는 전도사와 제안자 외에는 보이지 않게 보안 필터링!
-    if (!isPastor && item.status === "검토중") {
+    // 전도사: 전체 열람 / 선생님·학생: 본인이 작성한 건의만 표시
+    if (!isPastor) {
       if (!isAgendaAuthor(item, currentUser)) return false;
     }
     if (filter === "all") return true;
@@ -3832,7 +3823,7 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
     container.innerHTML = `
       <div style="text-align:center; padding:32px 0; color:#94a3b8;">
         <span style="font-size:32px;">📭</span>
-        <div style="font-size:13px; font-weight:700; color:#64748b; margin-top:6px;">해당 상태의 소통함 항목이 없습니다.</div>
+        <div style="font-size:13px; font-weight:700; color:#64748b; margin-top:6px;">${isPastor ? "해당 상태의 소통함 항목이 없습니다." : "아직 등록한 건의/요청 내역이 없습니다."}</div>
       </div>
     `;
     return;
@@ -4038,7 +4029,14 @@ function initStaffBoxEvents() {
   // Open Add Staff Request Modal
   const openAddBtn = document.getElementById("openAddStaffRequestBtn");
   if (openAddBtn) {
-    openAddBtn.addEventListener("click", () => openModal("addStaffRequestModal"));
+    openAddBtn.addEventListener("click", () => {
+      const currentUser = getCurrentUser();
+      const authorInput = document.getElementById("staffReqAuthorInput");
+      if (authorInput && currentUser) {
+        authorInput.value = currentUser.name;
+      }
+      openModal("addStaffRequestModal");
+    });
   }
 
   // Submit Staff Request Form
