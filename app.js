@@ -3339,46 +3339,48 @@ function renderWorshipDutySection() {
   if (annRole && duty.announcement) annRole.textContent = duty.announcement.role || "";
   if (annBadge && duty.announcement) annBadge.textContent = duty.announcement.badge || "부서소식";
 
-  // 수정 버튼: 전도사에게만 노출 (다른 직분/학생은 수정 불가)
+  // 수정 버튼: 항상 보이도록 유지하되 권한에 따라 처리
   const openBtn = document.getElementById("openEditWorshipDutyBtn");
-  const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
   if (openBtn) {
-    openBtn.style.display = isPastor ? "" : "none";
+    openBtn.style.display = "";
   }
 }
+
+window.openEditWorshipDutyModalDirect = function() {
+  const duty = appState.worshipDuty || (typeof INITIAL_DATA !== 'undefined' ? INITIAL_DATA.worshipDuty : {}) || {};
+  const dateInput = document.getElementById("dutyDateInput");
+  const preNameInput = document.getElementById("dutyPrePrayerNameInput");
+  const preRoleInput = document.getElementById("dutyPrePrayerRoleInput");
+  const pNameInput = document.getElementById("dutyPrayerNameInput");
+  const pRoleInput = document.getElementById("dutyPrayerRoleInput");
+  const scripNameInput = document.getElementById("dutyScriptureNameInput");
+  const scripRoleInput = document.getElementById("dutyScriptureRoleInput");
+  const annNameInput = document.getElementById("dutyAnnouncementNameInput");
+  const annRoleInput = document.getElementById("dutyAnnouncementRoleInput");
+
+  if (dateInput) dateInput.value = duty.date || "10/18";
+  if (preNameInput && duty.prePrayer) preNameInput.value = duty.prePrayer.name || "";
+  if (preRoleInput && duty.prePrayer) preRoleInput.value = duty.prePrayer.role || "";
+  if (pNameInput && duty.prayer) pNameInput.value = duty.prayer.name || "";
+  if (pRoleInput && duty.prayer) pRoleInput.value = duty.prayer.role || "";
+  if (scripNameInput && duty.scripture) scripNameInput.value = duty.scripture.name || "";
+  if (scripRoleInput && duty.scripture) scripRoleInput.value = duty.scripture.role || "";
+  if (annNameInput && duty.announcement) annNameInput.value = duty.announcement.name || "";
+  if (annRoleInput && duty.announcement) annRoleInput.value = duty.announcement.role || "";
+
+  if (typeof openModal === "function") {
+    openModal("editWorshipDutyModal");
+  } else {
+    const modal = document.getElementById("editWorshipDutyModal");
+    if (modal) modal.classList.remove("hidden");
+  }
+};
 
 function initWorshipDutyEvents() {
   const openBtn = document.getElementById("openEditWorshipDutyBtn");
   if (openBtn) {
     openBtn.addEventListener("click", () => {
-      const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
-      if (!isPastor) {
-        showToast("⚠️ '이번 주 예배 섬김' 수정은 전도사님만 가능합니다.", "warning");
-        return;
-      }
-
-      const duty = appState.worshipDuty || INITIAL_DATA.worshipDuty;
-      const dateInput = document.getElementById("dutyDateInput");
-      const preNameInput = document.getElementById("dutyPrePrayerNameInput");
-      const preRoleInput = document.getElementById("dutyPrePrayerRoleInput");
-      const pNameInput = document.getElementById("dutyPrayerNameInput");
-      const pRoleInput = document.getElementById("dutyPrayerRoleInput");
-      const scripNameInput = document.getElementById("dutyScriptureNameInput");
-      const scripRoleInput = document.getElementById("dutyScriptureRoleInput");
-      const annNameInput = document.getElementById("dutyAnnouncementNameInput");
-      const annRoleInput = document.getElementById("dutyAnnouncementRoleInput");
-
-      if (dateInput) dateInput.value = duty.date || "10/18";
-      if (preNameInput && duty.prePrayer) preNameInput.value = duty.prePrayer.name || "";
-      if (preRoleInput && duty.prePrayer) preRoleInput.value = duty.prePrayer.role || "";
-      if (pNameInput && duty.prayer) pNameInput.value = duty.prayer.name || "";
-      if (pRoleInput && duty.prayer) pRoleInput.value = duty.prayer.role || "";
-      if (scripNameInput && duty.scripture) scripNameInput.value = duty.scripture.name || "";
-      if (scripRoleInput && duty.scripture) scripRoleInput.value = duty.scripture.role || "";
-      if (annNameInput && duty.announcement) annNameInput.value = duty.announcement.name || "";
-      if (annRoleInput && duty.announcement) annRoleInput.value = duty.announcement.role || "";
-
-      openModal("editWorshipDutyModal");
+      window.openEditWorshipDutyModalDirect();
     });
   }
 
