@@ -552,6 +552,19 @@ function initStudentEvents() {
   });
 }
 
+function isAgendaAuthor(item, user) {
+  if (!item || !user) return false;
+  if (item.authorId && item.authorId === user.id) return true;
+  const rawAuthor = (item.author || "").replace(/^제안자:\s*/, "").replace(/^작성:\s*/, "").replace(/^제안:\s*/, "").trim();
+  const userName = (user.name || "").trim();
+  if (!rawAuthor || !userName) return false;
+  if (rawAuthor === userName) return true;
+  const cleanAuthor = rawAuthor.replace(/선생님|전도사|집사|T/g, "").trim();
+  const cleanUser = userName.replace(/선생님|전도사|집사|T/g, "").trim();
+  if (cleanAuthor && cleanUser && cleanAuthor === cleanUser) return true;
+  return rawAuthor.includes(cleanUser) || userName.includes(cleanAuthor);
+}
+
 // =============================================================================
 // 5. Screen 2: 이번 주 교사 회의 안건 Rendering & Events
 // =============================================================================
@@ -564,6 +577,7 @@ function renderAgendaSection() {
   const openModalBtn = document.getElementById("openAddAgendaModalBtn");
 
   const isPastor = (currentRole === "pastor");
+  const currentUser = getCurrentUser();
 
   // 버튼 문구 동적 변경 (전도사: 바로 회의 안건 추가 / 선생님: 안건 제안하기)
   if (openModalBtn) {
@@ -578,17 +592,18 @@ function renderAgendaSection() {
   pendingList.innerHTML = "";
 
   // Render Confirmed
-  appState.agendas.confirmed.forEach((agenda, idx) => {
+  appState.agendas.confirmed.forEach(agenda => {
     const card = document.createElement("div");
-    card.className = "agenda-card";
+    card.className = "agenda-card default-border";
     if (agenda.type === "cyan") card.classList.add("cyan-border");
     if (agenda.type === "yellow") card.classList.add("yellow-border");
 
-    const badgeHtml = agenda.statusBadge 
-      ? `<span class="approval-badge">${agenda.statusBadge}</span>` 
-      : "";
+    let badgeHtml = "";
+    if (agenda.statusBadge) {
+      badgeHtml = `<span class="approval-badge">${agenda.statusBadge}</span>`;
+    }
 
-    // 전도사일 경우 수정(✏️) 및 삭제(🗑️) 버튼 노출
+    // 전도사(pastor)인 경우 확정 안건 수정 및 삭제 버튼 제공
     let actionButtonsHtml = "";
     if (isPastor) {
       actionButtonsHtml = `
@@ -645,10 +660,38 @@ function renderAgendaSection() {
     confirmedList.appendChild(card);
   });
 
-  // Render Pending
-  appState.agendas.pending.forEach(agenda => {
+  // Render Pending: 전도사와 제안자 본인 외에는 보이지 않게 보안 필터링!
+  const visiblePending = isPastor 
+    ? appState.agendas.pending 
+    : appState.agendas.pending.filter(agenda => isAgendaAuthor(agenda, currentUser));
+
+  visiblePending.forEach(agenda => {
     const card = document.createElement("div");
     card.className = "agenda-card waiting-border";
+
+    let actionsHtml = "";
+    if (isPastor) {
+      actionsHtml = `
+        <div class="waiting-actions">
+          <button class="btn-approve" data-approve-id="${agenda.id}">
+            <span>✓</span> <span>승인</span>
+          </button>
+          <button class="btn-reject" data-reject-id="${agenda.id}">
+            <span>✕</span> <span>반려</span>
+          </button>
+        </div>
+      `;
+    } else {
+      actionsHtml = `
+        <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; padding-top:8px; border-top:1px dashed #fed7aa;">
+          <span style="font-size:11.5px; color:#ea580c; font-weight:700;">🔒 전도사님 승인 대기 중 (제안자만 열람 가능)</span>
+          <button type="button" class="btn-withdraw-agenda" data-agenda-id="${agenda.id}" style="padding:4px 9px; font-size:11px; font-weight:700; background:#fff1f2; color:#e11d48; border-radius:6px; border:1px solid #fecdd3; cursor:pointer;" title="제안 취소">
+            제안 취소 ✕
+          </button>
+        </div>
+      `;
+    }
+
     card.innerHTML = `
       <div class="agenda-title">${agenda.title}</div>
       <div class="agenda-author">
@@ -656,39 +699,51 @@ function renderAgendaSection() {
         <span style="color:#d96a24; font-weight:700; font-size:11px;">승인 대기</span>
       </div>
       ${agenda.desc ? `<p style="font-size:12px; color:var(--text-muted); margin-top:6px;">${agenda.desc}</p>` : ""}
-      <div class="waiting-actions">
-        <button class="btn-approve" data-approve-id="${agenda.id}">
-          <span>✓</span> <span>승인</span>
-        </button>
-        <button class="btn-reject" data-reject-id="${agenda.id}">
-          <span>✕</span> <span>반려</span>
-        </button>
-      </div>
+      ${actionsHtml}
     `;
 
-    // Approve Button Event
-    card.querySelector(".btn-approve").addEventListener("click", () => {
-      approveAgenda(agenda.id);
-    });
-
-    // Reject Button Event
-    card.querySelector(".btn-reject").addEventListener("click", () => {
-      rejectAgenda(agenda.id);
-    });
+    if (isPastor) {
+      card.querySelector(".btn-approve").addEventListener("click", () => {
+        approveAgenda(agenda.id);
+      });
+      card.querySelector(".btn-reject").addEventListener("click", () => {
+        rejectAgenda(agenda.id);
+      });
+    } else {
+      const withdrawBtn = card.querySelector(".btn-withdraw-agenda");
+      if (withdrawBtn) {
+        withdrawBtn.addEventListener("click", () => {
+          if (confirm(`'${agenda.title}' 제안을 취소하시겠습니까?`)) {
+            appState.agendas.pending = appState.agendas.pending.filter(a => a.id !== agenda.id);
+            if (appState.staffBox && appState.staffBox.items) {
+              appState.staffBox.items = appState.staffBox.items.filter(s => s.agendaId !== agenda.id && s.id !== agenda.id);
+            }
+            saveState();
+            renderAgendaSection();
+            renderStaffBoxSection();
+            updateStaffBoxHomeBadge();
+            showToast("제안하신 안건이 취소되었습니다.", "info");
+          }
+        });
+      }
+    }
 
     pendingList.appendChild(card);
   });
 
-  if (appState.agendas.pending.length === 0) {
+  if (visiblePending.length === 0) {
+    const emptyMsg = isPastor 
+      ? "현재 승인 대기 중인 교사 제안 안건이 없습니다. 👍"
+      : "내가 제안하여 승인 대기 중인 안건이 없습니다. 👍";
     pendingList.innerHTML = `
       <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:13px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
-        현재 승인 대기 중인 교사 제안 안건이 없습니다. 👍
+        ${emptyMsg}
       </div>
     `;
   }
 
   confirmedCountEl.textContent = appState.agendas.confirmed.length;
-  pendingCountEl.textContent = appState.agendas.pending.length;
+  pendingCountEl.textContent = visiblePending.length;
 
   updateMeetingNavBadge();
 }
@@ -772,7 +827,7 @@ function initAgendaEvents() {
   const openModalBtn = document.getElementById("openAddAgendaModalBtn");
   if (openModalBtn) {
     openModalBtn.addEventListener("click", () => {
-      // 전도사일 때는 작성자 기본값을 '정하람 전도사'로 설정
+      const currentUser = getCurrentUser();
       const authorSelect = document.getElementById("agendaAuthorInput");
       const modalTitle = document.querySelector("#agendaModal .sheet-title");
       const submitBtn = document.querySelector("#agendaModal button[type='submit']");
@@ -780,9 +835,18 @@ function initAgendaEvents() {
       if (currentRole === "pastor") {
         if (modalTitle) modalTitle.textContent = "회의 안건 즉시 등록 (전도사)";
         if (submitBtn) submitBtn.textContent = "확정 안건으로 바로 추가 ✓";
+        if (authorSelect) authorSelect.value = "정하람 전도사";
       } else {
         if (modalTitle) modalTitle.textContent = "교사 회의 안건 제안";
         if (submitBtn) submitBtn.textContent = "안건 제안 제출 (승인 대기 등록)";
+        if (authorSelect && currentUser) {
+          for (let opt of authorSelect.options) {
+            if (opt.value.includes(currentUser.name) || currentUser.name.includes(opt.value)) {
+              opt.selected = true;
+              break;
+            }
+          }
+        }
       }
 
       openModal("agendaModal");
@@ -793,6 +857,7 @@ function initAgendaEvents() {
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      const currentUser = getCurrentUser();
       const author = document.getElementById("agendaAuthorInput").value;
       const title = document.getElementById("agendaTitleInput").value;
       const desc = document.getElementById("agendaDescInput").value;
@@ -803,6 +868,7 @@ function initAgendaEvents() {
         const nextNum = appState.agendas.confirmed.length + 1;
         const newConfirmed = {
           id: newId,
+          authorId: currentUser ? currentUser.id : "u1",
           title: `[안건 ${nextNum}] ${title}`,
           author: `작성: ${author}`,
           statusBadge: "전도사 직속 안건 📌",
@@ -815,6 +881,7 @@ function initAgendaEvents() {
           appState.staffBox.items.unshift({
             id: newId,
             agendaId: newId,
+            authorId: currentUser ? currentUser.id : "u1",
             type: "회의안건",
             title: title,
             author: author,
@@ -835,6 +902,7 @@ function initAgendaEvents() {
         // 교사는 승인 대기로 등록
         const newAgenda = {
           id: newId,
+          authorId: currentUser ? currentUser.id : null,
           title: `[제안] ${title}`,
           author: `제안자: ${author}`,
           desc: desc
@@ -846,6 +914,7 @@ function initAgendaEvents() {
           appState.staffBox.items.unshift({
             id: newId,
             agendaId: newId,
+            authorId: currentUser ? currentUser.id : null,
             type: "회의안건",
             title: title,
             author: author,
@@ -2586,7 +2655,11 @@ function updatePendingCountBadge() {
 }
 
 function updateMeetingNavBadge() {
-  const pendingCount = (appState.agendas && appState.agendas.pending) ? appState.agendas.pending.length : 0;
+  const isPastor = (currentRole === "pastor");
+  const currentUser = getCurrentUser();
+  const pendingCount = (appState.agendas && appState.agendas.pending)
+    ? (isPastor ? appState.agendas.pending.length : appState.agendas.pending.filter(a => isAgendaAuthor(a, currentUser)).length)
+    : 0;
   
   const badges = document.querySelectorAll(".meeting-nav-badge, #meetingNavBadgeStatic");
   badges.forEach(badge => {
@@ -2609,8 +2682,16 @@ function updateStaffBoxHomeBadge() {
   const filterBadge = document.getElementById("staffFilterReviewBadge");
   if (!appState.staffBox) return;
 
-  // 검토중인 안건/요청 개수 계산
-  const reviewCount = appState.staffBox.items.filter(i => i.status === "검토중").length;
+  const isPastor = (currentRole === "pastor");
+  const currentUser = getCurrentUser();
+
+  // 검토중인 안건/요청 개수 계산: 전도사는 전체, 교사는 본인 건의만
+  const reviewCount = appState.staffBox.items.filter(i => {
+    if (i.status !== "검토중") return false;
+    if (!isPastor && !isAgendaAuthor(i, currentUser)) return false;
+    return true;
+  }).length;
+
   if (countText) {
     if (reviewCount > 0) {
       countText.textContent = `${reviewCount}건 검토 대기중 ⏳`;
@@ -3180,6 +3261,7 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
   if (!container || !appState.staffBox) return;
 
   const isPastor = (currentRole === "pastor");
+  const currentUser = getCurrentUser();
 
   // 전도사에게는 '새 요청/건의 등록' 버튼 숨김 (교사/회계쌤에게만 노출)
   const addBtn = document.getElementById("openAddStaffRequestBtn");
@@ -3189,6 +3271,10 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
 
   container.innerHTML = "";
   const filtered = appState.staffBox.items.filter(item => {
+    // 제안한 안건 및 검토중인 건의는 전도사와 제안자 외에는 보이지 않게 보안 필터링!
+    if (!isPastor && item.status === "검토중") {
+      if (!isAgendaAuthor(item, currentUser)) return false;
+    }
     if (filter === "all") return true;
     if (filter === "검토중") return item.status === "검토중";
     if (filter === "승인완료") return item.status === "승인완료";
