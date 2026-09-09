@@ -1033,10 +1033,20 @@ function renderAttendanceSection() {
         return cleanAttName && cleanUserName && (cleanAttName === cleanUserName || cleanAttName.includes(cleanUserName) || cleanUserName.includes(cleanAttName));
       });
 
+  // 3. 나의 예배 불참/지각 등록 버튼: 전도사에게는 비노출 (선생님들에게만 노출)
+  const openAbsentBtn = document.getElementById("openAbsentModalBtn");
+  if (openAbsentBtn) {
+    openAbsentBtn.style.display = isPastor ? "none" : "";
+  }
+
   if (filteredAttendance.length === 0) {
     const emptyEl = document.createElement("div");
     emptyEl.style.cssText = "padding: 36px 16px; text-align: center; background: #ffffff; border-radius: 16px; border: 1.5px dashed #f1ddd2; color: #94a3b8; margin: 12px 0;";
-    emptyEl.innerHTML = `
+    emptyEl.innerHTML = isPastor ? `
+      <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+      <div style="font-size: 14px; font-weight: 800; color: #475569; margin-bottom: 4px;">등록된 교사 출결 특이사항이 없습니다</div>
+      <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">이번 주 모든 선생님이 정상 출석 예정입니다. 🌤️</div>
+    ` : `
       <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
       <div style="font-size: 14px; font-weight: 800; color: #475569; margin-bottom: 4px;">등록된 나의 예배 출결 내역이 없습니다</div>
       <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">이번 주 주일 예배에 사전 결석 또는 지각 예정이실 경우<br>아래 버튼을 눌러 등록해주세요.</div>
