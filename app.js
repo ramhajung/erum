@@ -2841,6 +2841,7 @@ function switchMasterRole(roleKey, notify = true) {
   renderWorshipDutySection();
   renderHomeQuickActions();
   renderSchedulerSubTabsByRole();
+  renderChecklistSection();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
@@ -3400,8 +3401,9 @@ function switchSchedulerSubTab(activeSubTabId) {
 // 전도사 외에 선생님은 '주일 사전 출결' 숨김
 // 학생은 '행사 체크리스트', '주일 사전 출결' 둘 다 숨김
 function renderSchedulerSubTabsByRole() {
-  const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
-  const isStudent = (currentRole === "student" || (getCurrentUser() && getCurrentUser().role === "student"));
+  const currentUser = getCurrentUser();
+  const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
+  const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
 
   const tabCal = document.getElementById("subTabCalendar");
   const tabChk = document.getElementById("subTabChecklist");
@@ -3462,8 +3464,8 @@ function isChecklistAssignee(item, user) {
   const userName = (user.name || "").trim();
   if (!managerName || !userName) return false;
 
-  const cleanManager = managerName.replace(/선생님|전도사|목사|집사|교사|T/g, "").replace(/\s+/g, "");
-  const cleanUser = userName.replace(/선생님|전도사|목사|집사|교사|T/g, "").replace(/\s+/g, "");
+  const cleanManager = managerName.replace(/선생님|전도사|목사|집사|교사|T|쌤|간사/gi, "").replace(/\s+/g, "");
+  const cleanUser = userName.replace(/선생님|전도사|목사|집사|교사|T|쌤|간사/gi, "").replace(/\s+/g, "");
 
   if (cleanManager && cleanUser && (cleanManager === cleanUser || cleanManager.includes(cleanUser) || cleanUser.includes(cleanManager))) {
     return true;
@@ -3508,8 +3510,8 @@ function renderChecklistSection() {
   const openAddBtn = document.getElementById("openAddChecklistBtn");
   if (!container || !appState.checklist) return;
 
-  const isPastor = (currentRole === "pastor");
   const currentUser = getCurrentUser();
+  const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
 
   // 전도사에게만 '새 체크리스트 추가' 버튼 노출
   if (openAddBtn) {
@@ -3539,18 +3541,21 @@ function renderChecklistSection() {
 
     el.className = `checklist-item ${colorClass}`;
     if (!canCheck) {
-      el.style.opacity = "0.78";
+      el.style.opacity = "0.7";
+      el.style.cursor = "not-allowed";
+    } else {
+      el.style.cursor = "pointer";
     }
 
     // Role badge
     let badgeHtml = "";
     if (!isPastor && isMyTask) {
       badgeHtml = `<span style="font-size:10px; font-weight:800; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:6px; margin-left:6px; border:1px solid #bae6fd;">내 담당 🙋🏻</span>`;
-    } else if (!canCheck) {
-      badgeHtml = `<span style="font-size:10px; font-weight:700; color:#94a3b8; margin-left:4px;">🔒</span>`;
+    } else if (!isPastor && !canCheck) {
+      badgeHtml = `<span style="font-size:10px; font-weight:700; color:#94a3b8; margin-left:4px;" title="담당자 전용">🔒</span>`;
     }
 
-    // 전도사 전용 수정/삭제 버튼
+    // 전도사 전용 수정/삭제 버튼 (선생님 및 타 역할에는 완전히 비노출)
     let pastorActionsHtml = "";
     if (isPastor) {
       pastorActionsHtml = `
@@ -3562,10 +3567,10 @@ function renderChecklistSection() {
     }
 
     el.innerHTML = `
-      <div class="custom-checkbox" style="${!canCheck ? 'opacity:0.6;' : ''}">${item.checked ? "✓" : ""}</div>
+      <div class="custom-checkbox" style="${!canCheck ? 'opacity:0.45; cursor:not-allowed;' : 'cursor:pointer;'}">${item.checked ? "✓" : ""}</div>
       <div class="checklist-text-wrap" style="flex:1; min-width:0;">
         <div class="checklist-title" style="display:flex; align-items:center; flex-wrap:wrap; gap:2px;">
-          <span>${item.title}</span>
+          <span style="${!canCheck ? 'color:#64748b;' : ''}">${item.title}</span>
           ${badgeHtml}
         </div>
       </div>
