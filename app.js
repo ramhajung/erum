@@ -3214,48 +3214,15 @@ function initRoleEvents() {
 
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
-  if (!modal) {
-    console.warn("[openModal] Modal not found:", modalId);
-    return;
-  }
-  const appWrapper = document.getElementById("appWrapper") || document.body;
-  if (modal.parentElement && modal.parentElement.classList.contains("modal-backdrop")) {
-    appWrapper.appendChild(modal);
-  }
-  modal.style.display = "flex";
-  modal.style.alignItems = "flex-end";
-  modal.style.justifyContent = "center";
-  modal.style.pointerEvents = "auto";
-  modal.style.zIndex = "400";
+  if (!modal) return;
   modal.classList.add("open");
-  const sheet = modal.querySelector(".bottom-sheet");
-  if (sheet) {
-    sheet.style.transform = "translateY(0)";
-  }
-  requestAnimationFrame(() => {
-    modal.style.opacity = "1";
-  });
 }
 
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
   modal.classList.remove("open");
-  modal.style.opacity = "0";
-  modal.style.pointerEvents = "none";
-  const sheet = modal.querySelector(".bottom-sheet");
-  if (sheet) {
-    sheet.style.transform = "translateY(100%)";
-  }
-  setTimeout(() => {
-    if (!modal.classList.contains("open")) {
-      modal.style.display = "none";
-    }
-  }, 200);
 }
-
-window.openModal = openModal;
-window.closeModal = closeModal;
 
 function initModalClosers() {
   // Close buttons with data-close attribute
@@ -4208,17 +4175,7 @@ function renderCalendarSection() {
   if (yearTitleEl) yearTitleEl.textContent = `${currentCalendarYear}년 ${currentCalendarMonth}월`;
   if (currentTitleEl) currentTitleEl.textContent = `📅 ${currentCalendarMonth}월 사역 & 생일`;
   if (addBtn) {
-    addBtn.style.display = "inline-flex";
-    addBtn.removeAttribute("disabled");
-    addBtn.disabled = false;
-    addBtn.style.pointerEvents = "auto";
-    addBtn.style.cursor = "pointer";
-    addBtn.style.zIndex = "25";
-    addBtn.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1);
-    };
+    addBtn.style.display = isPastor ? "inline-flex" : "none";
   }
 
   // 2. Build Calendar Day Names Header
@@ -4386,22 +4343,6 @@ function bindCalendarDynamicEvents() {
       openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1, "birthday");
     });
   }
-
-  // E. Header Add Calendar Event Button
-  const addBtn = document.getElementById("openAddCalendarEventBtn");
-  if (addBtn) {
-    addBtn.style.display = "inline-flex";
-    addBtn.removeAttribute("disabled");
-    addBtn.disabled = false;
-    addBtn.style.pointerEvents = "auto";
-    addBtn.style.cursor = "pointer";
-    addBtn.style.zIndex = "25";
-    addBtn.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1);
-    };
-  }
 }
 
 function openManageCalendarItemModal(kind, item) {
@@ -4469,28 +4410,8 @@ function openManageCalendarItemModal(kind, item) {
 }
 
 function openAddCalendarItemModal(year, month, day = 1, defaultType = "birthday") {
-  let modal = document.getElementById("addCalendarItemModal");
-  if (!modal) {
-    console.warn("[openAddCalendarItemModal] addCalendarItemModal element not found");
-    return;
-  }
-
-  // If trapped inside another modal-backdrop, move to appWrapper
-  const appWrapper = document.getElementById("appWrapper") || document.body;
-  if (modal.parentElement && modal.parentElement.classList.contains("modal-backdrop")) {
-    appWrapper.appendChild(modal);
-  }
-
   const form = document.getElementById("addCalendarItemForm");
-  if (form) {
-    form.reset();
-
-    // Ensure radio change listeners are active
-    const radios = form.querySelectorAll('input[name="calItemType"]');
-    radios.forEach(r => {
-      r.onchange = (e) => toggleAddModalFields(e.target.value);
-    });
-  }
+  if (form) form.reset();
 
   const safeYear = Number(year) || currentCalendarYear || new Date().getFullYear();
   const safeMonth = Number(month) || currentCalendarMonth || (new Date().getMonth() + 1);
@@ -4503,27 +4424,14 @@ function openAddCalendarItemModal(year, month, day = 1, defaultType = "birthday"
   }
 
   // Set default radio selection
-  if (form) {
-    const radio = form.querySelector(`input[name="calItemType"][value="${defaultType}"]`);
-    if (radio) {
-      radio.checked = true;
-    }
+  const radio = form ? form.querySelector(`input[name="calItemType"][value="${defaultType}"]`) : null;
+  if (radio) {
+    radio.checked = true;
   }
-
-  // Wire close buttons inside modal
-  modal.querySelectorAll('[data-close="addCalendarItemModal"]').forEach(btn => {
-    btn.onclick = (e) => {
-      e.preventDefault();
-      closeModal("addCalendarItemModal");
-    };
-  });
-
   toggleAddModalFields(defaultType);
 
   openModal("addCalendarItemModal");
 }
-
-window.openAddCalendarItemModal = openAddCalendarItemModal;
 
 function toggleAddModalFields(type) {
   const bdayGroup = document.getElementById("calBirthdayFieldsGroup");

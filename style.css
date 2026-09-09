@@ -1611,64 +1611,39 @@ button:active, .btn:active, .interactive-card:active {
    ========================================================================== */
 
 .modal-backdrop {
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(30, 20, 15, 0.45);
   backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 300;
+  z-index: 150;
   display: none;
   opacity: 0;
-  pointer-events: none;
   transition: opacity var(--duration-enter) var(--ease-out);
 }
 
 .modal-backdrop.open {
-  display: flex !important;
-  align-items: flex-end;
-  justify-content: center;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  visibility: visible !important;
-  z-index: 400 !important;
+  display: flex;
+  opacity: 1;
 }
 
 .bottom-sheet {
-  position: relative;
-  width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: white;
   border-radius: 28px 28px 0 0;
   padding: 20px 22px 36px;
   box-shadow: var(--shadow-sheet);
   transform: translateY(100%);
   transition: transform var(--duration-drawer) var(--ease-out);
-  max-height: 85vh;
+  max-height: 85%;
   overflow-y: auto;
-  z-index: 410;
-  pointer-events: auto;
+  z-index: 160;
 }
 
 .modal-backdrop.open .bottom-sheet {
-  transform: translateY(0) !important;
-}
-
-/* Calendar Header Actions & Add Button Clickability */
-#openAddCalendarEventBtn {
-  cursor: pointer !important;
-  pointer-events: auto !important;
-  position: relative;
-  z-index: 50;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  transition: transform 120ms ease, opacity 120ms ease, background-color 120ms ease;
-}
-
-#openAddCalendarEventBtn:active {
-  transform: scale(0.93) !important;
-  opacity: 0.85 !important;
+  transform: translateY(0);
 }
 
 .sheet-handle {
@@ -2269,19 +2244,11 @@ button:active, .btn:active, .interactive-card:active {
   border: none;
   font-weight: 800;
   cursor: pointer;
-  transition: opacity 150ms ease, transform 120ms ease;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
+  transition: opacity 150ms ease;
 }
 
 .btn-primary-mini:hover {
   opacity: 0.9;
-}
-
-.btn-primary-mini:active {
-  transform: scale(0.94);
-  opacity: 0.85;
 }
 
 .calendar-grid {
