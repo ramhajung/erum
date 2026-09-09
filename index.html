@@ -567,17 +567,17 @@
                   <span class="material-symbols-outlined text-[19px]">assignment_ind</span>
                 </div>
                 <div>
-                  <h2 class="text-title-md font-bold text-text-primary" id="duty-heading">이번 주 주일 섬김 (10/18)</h2>
-                  <p class="text-[11px] text-text-muted">정성된 마음으로 준비하는 예배</p>
+                  <h2 class="text-title-md font-bold text-text-primary" id="duty-heading">이번 주 예배 섬김 (<span id="dutyDateDisplay">10/18</span>)</h2>
+                  <p class="text-[11px] text-text-muted" id="dutySubtitleDisplay">정성된 마음으로 준비하는 예배</p>
                 </div>
               </div>
-              <button aria-label="섬김 명단 수정 또는 조회" class="text-text-muted hover:text-primary p-1.5 rounded-xl hover:bg-surface-container transition-colors" type="button">
+              <button id="openEditWorshipDutyBtn" aria-label="예배 섬김 명단 수정" class="text-text-muted hover:text-primary p-1.5 rounded-xl hover:bg-surface-container transition-colors" type="button" title="예배 섬김 명단 수정">
                 <span class="material-symbols-outlined text-[20px]">edit_note</span>
               </button>
             </div>
 
             <!-- 2x2 Duty Grid with Tinted Pastel Icon Accents -->
-            <div class="grid grid-cols-2 gap-2.5">
+            <div class="grid grid-cols-2 gap-2.5" id="worshipDutyGrid">
               <!-- 1) 대표기도 -->
               <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-secondary/40 hover:bg-white transition-all group">
                 <div class="flex items-center justify-between">
@@ -587,11 +587,11 @@
                     </div>
                     <span class="text-label-sm font-bold text-text-secondary">대표기도</span>
                   </div>
-                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-secondary border border-secondary/20 shadow-2xs">학생회</span>
+                  <span id="dutyPrayerBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-secondary border border-secondary/20 shadow-2xs">학생회</span>
                 </div>
                 <div>
-                  <p class="text-title-md font-extrabold text-text-primary group-hover:text-secondary transition-colors">김예원</p>
-                  <p class="text-label-sm font-label-sm text-text-muted">고등부 2학년</p>
+                  <p id="dutyPrayerName" class="text-title-md font-extrabold text-text-primary group-hover:text-secondary transition-colors">김예원</p>
+                  <p id="dutyPrayerRole" class="text-label-sm font-label-sm text-text-muted">고등부 2학년</p>
                 </div>
               </div>
 
@@ -604,11 +604,11 @@
                     </div>
                     <span class="text-label-sm font-bold text-text-secondary">헌금위원</span>
                   </div>
-                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-primary border border-primary/20 shadow-2xs">2인</span>
+                  <span id="dutyOfferingBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-primary border border-primary/20 shadow-2xs">2인</span>
                 </div>
                 <div>
-                  <p class="text-title-md font-extrabold text-text-primary truncate group-hover:text-primary transition-colors">이유리 · 이지훈</p>
-                  <p class="text-label-sm font-label-sm text-text-muted">중등부 3학년</p>
+                  <p id="dutyOfferingName" class="text-title-md font-extrabold text-text-primary truncate group-hover:text-primary transition-colors">이유리 · 이지훈</p>
+                  <p id="dutyOfferingRole" class="text-label-sm font-label-sm text-text-muted">중등부 3학년</p>
                 </div>
               </div>
 
@@ -621,11 +621,11 @@
                     </div>
                     <span class="text-label-sm font-bold text-text-secondary">찬양팀</span>
                   </div>
-                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-badge-indigo-bg text-badge-indigo-text border border-badge-indigo-text/20">예배전</span>
+                  <span id="dutyPraiseBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-badge-indigo-bg text-badge-indigo-text border border-badge-indigo-text/20">예배전</span>
                 </div>
                 <div>
-                  <p class="text-title-md font-extrabold text-text-primary group-hover:text-tertiary transition-colors">예랑 워십팀</p>
-                  <p class="text-label-sm font-label-sm text-text-muted">인도: 한성민 싱어</p>
+                  <p id="dutyPraiseName" class="text-title-md font-extrabold text-text-primary group-hover:text-tertiary transition-colors">예랑 워십팀</p>
+                  <p id="dutyPraiseRole" class="text-label-sm font-label-sm text-text-muted">인도: 한성민 싱어</p>
                 </div>
               </div>
 
@@ -638,11 +638,11 @@
                     </div>
                     <span class="text-label-sm font-bold text-text-secondary">방송실</span>
                   </div>
-                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-badge-sage-bg text-badge-sage-text border border-badge-sage-text/20">음향/자막</span>
+                  <span id="dutyMediaBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-badge-sage-bg text-badge-sage-text border border-badge-sage-text/20">음향/자막</span>
                 </div>
                 <div>
-                  <p class="text-title-md font-extrabold text-text-primary group-hover:text-outline transition-colors">김대한 선생님</p>
-                  <p class="text-label-sm font-label-sm text-text-muted">미디어사역부</p>
+                  <p id="dutyMediaName" class="text-title-md font-extrabold text-text-primary group-hover:text-outline transition-colors">김대한 선생님</p>
+                  <p id="dutyMediaRole" class="text-label-sm font-label-sm text-text-muted">미디어사역부</p>
                 </div>
               </div>
             </div>
@@ -665,6 +665,9 @@
             <p class="text-[11px] font-semibold text-accent-butter-text/80 tracking-wide">— 이룸교회 예랑 2026 주제 구절 —</p>
           </div>
         </section>
+
+        <!-- Bottom Spacer for Comfortable Navigation Clearance -->
+        <div class="h-12 w-full" aria-hidden="true"></div>
 
       </section>
 
@@ -1763,6 +1766,96 @@
             </select>
           </div>
           <button type="submit" class="btn-orange" style="margin-top:16px;">체크리스트에 추가하기</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: 이번 주 예배 섬김 명단 수정 모달 -->
+    <div class="modal-backdrop" id="editWorshipDutyModal">
+      <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">✏️ 이번 주 예배 섬김 수정</h3>
+            <p style="font-size:11px; color:var(--text-muted);">대표기도 · 헌금위원 · 찬양팀 · 방송실 섬김이 변경</p>
+          </div>
+          <button class="sheet-close-btn" data-close="editWorshipDutyModal">✕</button>
+        </div>
+        <form id="worshipDutyForm" class="space-y-3.5" style="padding: 10px 0 24px;">
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:700; color:#334155;">예배 주일 날짜</label>
+            <input type="text" id="dutyDateInput" placeholder="예: 10/18" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
+          </div>
+
+          <!-- 1) 대표기도 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px;" class="space-y-2">
+            <div style="font-size:12.5px; font-weight:800; color:#059669; display:flex; align-items:center; gap:4px;">
+              <span>✋ 대표기도</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label style="font-size:11px; color:#64748b;">담당자/이름</label>
+                <input type="text" id="dutyPrayerNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">소속/학년</label>
+                <input type="text" id="dutyPrayerRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- 2) 헌금위원 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px;" class="space-y-2">
+            <div style="font-size:12.5px; font-weight:800; color:#e11d48; display:flex; align-items:center; gap:4px;">
+              <span>💌 헌금위원</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label style="font-size:11px; color:#64748b;">담당자/이름</label>
+                <input type="text" id="dutyOfferingNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">소속/학년</label>
+                <input type="text" id="dutyOfferingRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- 3) 찬양팀 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px;" class="space-y-2">
+            <div style="font-size:12.5px; font-weight:800; color:#0284c7; display:flex; align-items:center; gap:4px;">
+              <span>🎵 찬양팀</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label style="font-size:11px; color:#64748b;">팀명</label>
+                <input type="text" id="dutyPraiseNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">인도/역할</label>
+                <input type="text" id="dutyPraiseRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- 4) 방송실 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px;" class="space-y-2">
+            <div style="font-size:12.5px; font-weight:800; color:#475569; display:flex; align-items:center; gap:4px;">
+              <span>🎛️ 방송실</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label style="font-size:11px; color:#64748b;">담당자</label>
+                <input type="text" id="dutyMediaNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+              </div>
+              <div>
+                <label style="font-size:11px; color:#64748b;">역할/부서</label>
+                <input type="text" id="dutyMediaRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-orange" style="margin-top:16px; width:100%;">예배 섬김 명단 저장하기 ✓</button>
         </form>
       </div>
     </div>
