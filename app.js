@@ -2578,6 +2578,13 @@ function isCurrentRolePastor() {
   return currentRole === "pastor" || (currentUser && currentUser.role === "pastor");
 }
 
+// 행사 체크리스트 접근 권한 확인: 전도사, 선생님(공과반/새친구반/회계), 부장집사만 허용 (학생 제외)
+function canAccessChecklist() {
+  const currentUser = getCurrentUser();
+  const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
+  return ["pastor", "teacher", "teacher_grade", "teacher_new", "accountant", "deacon"].includes(role);
+}
+
 function getCurrentUser() {
   if (!appState.users || appState.users.length === 0) {
     appState.users = JSON.parse(JSON.stringify(INITIAL_DATA.users));
@@ -3831,9 +3838,27 @@ function initHomeDashboardEvents() {
   const chipChecklist = document.getElementById("chipGotoChecklist");
   if (chipChecklist) {
     chipChecklist.addEventListener("click", () => {
+      if (!canAccessChecklist()) {
+        showToast("⚠️ 행사 체크리스트는 전도사, 선생님, 부장집사님 전용 메뉴입니다.", "warn");
+        return;
+      }
       switchToTab("view-scheduler");
       switchSchedulerSubTab("subTabChecklist");
       showToast("예랑 스카 행사 체크리스트 화면으로 이동했습니다. 📋", "info");
+    });
+  }
+
+  // 다가오는 주요 행사 옆 '전체보기' 버튼 클릭 액션
+  const viewAllEventsBtn = document.getElementById("viewAllEventsBtn");
+  if (viewAllEventsBtn) {
+    viewAllEventsBtn.addEventListener("click", () => {
+      if (!canAccessChecklist()) {
+        showToast("⚠️ 행사 체크리스트는 전도사, 선생님, 부장집사님 전용 메뉴입니다.", "warn");
+        return;
+      }
+      switchToTab("view-scheduler");
+      switchSchedulerSubTab("subTabChecklist");
+      showToast("행사 체크리스트 전체보기로 이동했습니다! 📋", "info");
     });
   }
 
@@ -3849,11 +3874,8 @@ function initHomeDashboardEvents() {
 
 // --- Scheduler Sub-Tabs Management ---
 function switchSchedulerSubTab(activeSubTabId) {
-  const currentUser = getCurrentUser();
-  const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
-
-  // 학생만 행사 체크리스트 접근 차단 (교사/전도사 및 학생 모두 예배 출결 열람 가능)
-  if (isStudent && activeSubTabId === "subTabChecklist") {
+  // 학생 등 권한이 없는 경우 행사 체크리스트 접근 차단
+  if (!canAccessChecklist() && activeSubTabId === "subTabChecklist") {
     activeSubTabId = "subTabCalendar";
   }
 
@@ -3885,11 +3907,9 @@ function switchSchedulerSubTab(activeSubTabId) {
 
 // --- Scheduler Sub-Tabs Role Permissions ---
 // 예배 출결: 전도사, 선생님, 학생 모두 활성화
-// 행사 체크리스트: 전도사 및 선생님에게 활성화 (학생에게만 숨김)
+// 행사 체크리스트: 전도사, 선생님, 부장집사에게 활성화 (학생에게만 숨김)
 function renderSchedulerSubTabsByRole() {
-  const currentUser = getCurrentUser();
-  const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
-  const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
+  const hasChecklistAuth = canAccessChecklist();
 
   const tabCal = document.getElementById("subTabCalendar");
   const tabChk = document.getElementById("subTabChecklist");
@@ -3904,8 +3924,8 @@ function renderSchedulerSubTabsByRole() {
   // 1. 예배 출결: 전도사, 선생님, 학생 모두 활성화
   tabAtt.style.display = "";
 
-  // 2. 행사 체크리스트: 전도사 및 선생님 열람 가능 (학생에게는 숨김)
-  if (isStudent) {
+  // 2. 행사 체크리스트: 전도사, 선생님, 부장집사 열람 가능 (학생 등 권한 외 숨김)
+  if (!hasChecklistAuth) {
     tabChk.style.display = "none";
     if (viewChk) viewChk.style.display = "none";
   } else {
@@ -3916,7 +3936,7 @@ function renderSchedulerSubTabsByRole() {
   tabCal.style.display = "";
 
   // 4. 현재 활성화된 서브탭이 비노출 대상인 경우 '사역 캘린더 & 생일'로 안전 전환
-  if (isStudent && tabChk.classList.contains("active")) {
+  if (!hasChecklistAuth && tabChk.classList.contains("active")) {
     switchSchedulerSubTab("subTabCalendar");
   }
 }
