@@ -2357,10 +2357,28 @@ button:active, .btn:active, .interactive-card:active {
 }
 
 .cal-current-title {
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 800;
   color: #2c201c;
   letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.calendar-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.cal-year-badge {
+  font-size: 13.5px;
+  color: #5c4e44;
+  font-weight: 800;
+  background: #fbf5ef;
+  border: 1px solid #f0e6dd;
+  padding: 6px 12px;
+  border-radius: 10px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
 }
 
 .calendar-header-actions {

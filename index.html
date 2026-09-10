@@ -706,15 +706,15 @@
 
         <!-- Sub-View 1: 사역 캘린더 & 생일 관리 (Dynamic Month Navigation & Pastor CRUD) -->
         <div id="subViewCalendar">
-          <!-- 월별 이동 내비게이션 및 전도사 등록 버튼 -->
+          <!-- 월별 이동 내비게이션: 왼쪽(년/월 표시), 오른쪽(◀ [몇월 사역 & 생일] ▶) -->
           <div class="calendar-nav-bar">
+            <div class="calendar-header-left">
+              <span id="calYearDisplay" class="cal-year-badge">2026년 9월</span>
+            </div>
             <div class="calendar-month-selector">
               <button class="cal-nav-btn" id="calPrevMonthBtn" title="이전 달">◀</button>
               <span class="cal-current-title" id="calCurrentMonthTitle">📅 9월 사역 & 생일</span>
               <button class="cal-nav-btn" id="calNextMonthBtn" title="다음 달">▶</button>
-            </div>
-            <div class="calendar-header-actions" style="position:relative; z-index:20;">
-              <span id="calYearDisplay" style="font-size:13px; color:#78695f; font-weight:800; background:#f5efe8; padding:5px 10px; border-radius:10px;">2026년 9월</span>
             </div>
           </div>
 
@@ -2364,7 +2364,7 @@
 
   </div>
 
-  <script src="app.js?v=20260910_remove_cal_btn1"></script>
+  <script src="app.js?v=20260910_cal_nav_reorder1"></script>
 </body>
 </html>
 
