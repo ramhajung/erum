@@ -657,9 +657,15 @@ function renderAgendaSection() {
       badgeHtml = `<span class="approval-badge">${agenda.statusBadge}</span>`;
     }
 
-    // 전도사(pastor)인 경우 확정 안건 수정 및 삭제 버튼 제공
+    // 전도사(pastor)인 경우 순서 변경 핸들 + 수정/삭제 버튼 제공
     let actionButtonsHtml = "";
+    let dragHandleHtml = "";
     if (isPastor) {
+      dragHandleHtml = `
+        <div class="agenda-drag-handle" data-agenda-id="${agenda.id}" title="길게 누르거나 드래그하여 순서 변경">
+          <span class="material-symbols-outlined text-[19px]">drag_indicator</span>
+        </div>
+      `;
       actionButtonsHtml = `
         <div style="display:flex; align-items:center; gap:5px; margin-left:auto;">
           <button type="button" class="edit-confirmed-agenda-btn" data-agenda-id="${agenda.id}" style="padding:4px 8px; font-size:11px; font-weight:700; background:#f5efff; color:#6c35c4; border-radius:6px; border:1px solid #e0c8ff; cursor:pointer;" title="안건 수정">
@@ -672,8 +678,12 @@ function renderAgendaSection() {
       `;
     }
 
+    card.dataset.agendaId = agenda.id;
     card.innerHTML = `
-      <div class="agenda-title">${agenda.title}</div>
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+        <div class="agenda-title" style="flex:1;">${agenda.title}</div>
+        ${dragHandleHtml}
+      </div>
       <div class="agenda-author" style="margin-top:6px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
         <div style="display:flex; align-items:center; gap:6px;">
           <span>(${agenda.author})</span>
@@ -697,6 +707,8 @@ function renderAgendaSection() {
       deleteBtn.addEventListener("click", () => {
         if (confirm(`'${agenda.title}' 안건을 회의 목록에서 삭제하시겠습니까?`)) {
           appState.agendas.confirmed = appState.agendas.confirmed.filter(a => a.id !== agenda.id);
+          // 안건 번호 재부여
+          renumberConfirmedAgendas();
           // 사역자 소통함(staffBox)에서도 연동 삭제
           if (appState.staffBox && appState.staffBox.items) {
             const raw = agenda.title.replace(/\[안건 \d+\]/, "").trim();
@@ -713,6 +725,11 @@ function renderAgendaSection() {
 
     confirmedList.appendChild(card);
   });
+
+  // 전도사 권한인 경우 안건 드래그 앤 드롭 순서 변경 바인딩
+  if (isPastor) {
+    initAgendaDragAndDrop(confirmedList);
+  }
 
   // Render Pending: 전도사와 제안자 본인 외에는 보이지 않게 보안 필터링!
   const visiblePending = isPastor 
@@ -800,6 +817,163 @@ function renderAgendaSection() {
   pendingCountEl.textContent = visiblePending.length;
 
   updateMeetingNavBadge();
+}
+
+// 안건 순서 변경 시 [안건 1], [안건 2] 번호 자동 재정렬
+function renumberConfirmedAgendas() {
+  if (!appState.agendas || !appState.agendas.confirmed) return;
+  appState.agendas.confirmed.forEach((agenda, idx) => {
+    const cleanTitle = agenda.title.replace(/\[안건 \d+\]\s*/, "").trim();
+    agenda.title = `[안건 ${idx + 1}] ${cleanTitle}`;
+  });
+}
+
+// 안건 드래그 앤 드롭 (모바일 터치 + 데스크탑 마우스)
+function initAgendaDragAndDrop(container) {
+  if (!container) return;
+  const cards = Array.from(container.children);
+
+  cards.forEach(card => {
+    const handle = card.querySelector(".agenda-drag-handle");
+    if (!handle) return;
+
+    let startTouchY = 0;
+    let isDragging = false;
+    let draggedCard = null;
+    let placeholderIndex = -1;
+
+    // Mobile Touch Drag Implementation
+    handle.addEventListener("touchstart", (e) => {
+      startTouchY = e.touches[0].clientY;
+      isDragging = true;
+      draggedCard = card;
+      card.classList.add("is-dragging");
+
+      if (navigator.vibrate) {
+        try { navigator.vibrate(20); } catch (err) {}
+      }
+    }, { passive: true });
+
+    handle.addEventListener("touchmove", (e) => {
+      if (!isDragging || !draggedCard) return;
+      const touchY = e.touches[0].clientY;
+
+      if (e.cancelable) e.preventDefault();
+
+      // Find closest card to current touch position
+      const allCards = Array.from(container.children);
+      allCards.forEach(c => {
+        c.classList.remove("drag-over-top", "drag-over-bottom");
+        if (c === draggedCard) return;
+        const rect = c.getBoundingClientRect();
+        if (touchY >= rect.top && touchY <= rect.bottom) {
+          const midPoint = rect.top + rect.height / 2;
+          if (touchY < midPoint) {
+            c.classList.add("drag-over-top");
+          } else {
+            c.classList.add("drag-over-bottom");
+          }
+        }
+      });
+    }, { passive: false });
+
+    handle.addEventListener("touchend", (e) => {
+      if (!isDragging || !draggedCard) return;
+      isDragging = false;
+      draggedCard.classList.remove("is-dragging");
+
+      // Check which card has the drop indicator
+      const allCards = Array.from(container.children);
+      const targetOverTop = allCards.find(c => c.classList.contains("drag-over-top"));
+      const targetOverBottom = allCards.find(c => c.classList.contains("drag-over-bottom"));
+
+      allCards.forEach(c => c.classList.remove("drag-over-top", "drag-over-bottom"));
+
+      const fromId = parseInt(draggedCard.dataset.agendaId, 10);
+      const fromIndex = appState.agendas.confirmed.findIndex(a => a.id === fromId);
+      if (fromIndex === -1) return;
+
+      let toIndex = fromIndex;
+
+      if (targetOverTop) {
+        const toId = parseInt(targetOverTop.dataset.agendaId, 10);
+        toIndex = appState.agendas.confirmed.findIndex(a => a.id === toId);
+        if (toIndex > fromIndex) toIndex -= 1;
+      } else if (targetOverBottom) {
+        const toId = parseInt(targetOverBottom.dataset.agendaId, 10);
+        toIndex = appState.agendas.confirmed.findIndex(a => a.id === toId);
+        if (toIndex < fromIndex) toIndex += 1;
+      }
+
+      if (toIndex !== fromIndex && toIndex >= 0) {
+        const [movedItem] = appState.agendas.confirmed.splice(fromIndex, 1);
+        appState.agendas.confirmed.splice(toIndex, 0, movedItem);
+
+        // Auto renumber [안건 1], [안건 2]
+        renumberConfirmedAgendas();
+        saveState();
+        renderAgendaSection();
+        showToast("안건 순서가 변경되었습니다! 📋", "success");
+      }
+    });
+
+    handle.addEventListener("touchcancel", () => {
+      if (draggedCard) draggedCard.classList.remove("is-dragging");
+      Array.from(container.children).forEach(c => c.classList.remove("drag-over-top", "drag-over-bottom"));
+      isDragging = false;
+    });
+
+    // HTML5 Drag & Drop for PC / Mac
+    card.setAttribute("draggable", "true");
+    card.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", card.dataset.agendaId);
+      card.classList.add("is-dragging");
+    });
+
+    card.addEventListener("dragend", () => {
+      card.classList.remove("is-dragging");
+      Array.from(container.children).forEach(c => c.classList.remove("drag-over-top", "drag-over-bottom"));
+    });
+
+    card.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const rect = card.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      card.classList.remove("drag-over-top", "drag-over-bottom");
+      if (e.clientY < mid) {
+        card.classList.add("drag-over-top");
+      } else {
+        card.classList.add("drag-over-bottom");
+      }
+    });
+
+    card.addEventListener("dragleave", () => {
+      card.classList.remove("drag-over-top", "drag-over-bottom");
+    });
+
+    card.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const fromId = parseInt(e.dataTransfer.getData("text/plain"), 10);
+      const toId = parseInt(card.dataset.agendaId, 10);
+      if (fromId === toId) return;
+
+      const fromIndex = appState.agendas.confirmed.findIndex(a => a.id === fromId);
+      let toIndex = appState.agendas.confirmed.findIndex(a => a.id === toId);
+      if (fromIndex === -1 || toIndex === -1) return;
+
+      if (card.classList.contains("drag-over-bottom") && toIndex < fromIndex) {
+        toIndex += 1;
+      }
+
+      const [movedItem] = appState.agendas.confirmed.splice(fromIndex, 1);
+      appState.agendas.confirmed.splice(toIndex, 0, movedItem);
+
+      renumberConfirmedAgendas();
+      saveState();
+      renderAgendaSection();
+      showToast("안건 순서가 변경되었습니다! 📋", "success");
+    });
+  });
 }
 
 function openEditAgendaModal(agendaId) {

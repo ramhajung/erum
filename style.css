@@ -716,6 +716,48 @@ button:active, .btn:active, .interactive-card:active {
   border: 1px solid var(--border-light);
   border-left: 5px solid var(--primary);
   box-shadow: var(--shadow-sm);
+  position: relative;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.agenda-card.is-dragging {
+  opacity: 0.92;
+  transform: scale(1.02);
+  box-shadow: 0 12px 28px rgba(150, 67, 43, 0.22);
+  z-index: 50;
+  border: 1.5px solid var(--primary);
+}
+
+.agenda-card.drag-over-top {
+  border-top: 3px solid var(--primary) !important;
+}
+
+.agenda-card.drag-over-bottom {
+  border-bottom: 3px solid var(--primary) !important;
+}
+
+.agenda-drag-handle {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a89f91;
+  border-radius: 8px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: background 0.15s, color 0.15s;
+  shrink: 0;
+}
+
+.agenda-drag-handle:hover {
+  background: #f7f1eb;
+  color: var(--primary);
+}
+
+.agenda-drag-handle:active {
+  cursor: grabbing;
 }
 
 .agenda-card.cyan-border {
