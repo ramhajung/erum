@@ -346,7 +346,7 @@ const INITIAL_DATA = {
       name: "김대한 선생님",
       username: "teacher",
       password: "password",
-      role: "teacher",
+      role: "teacher_grade",
       duty: "고3 담임 / 방송실 자막 & 미디어",
       birthday: "1995-11-03",
       phone: "010-3456-7890",
@@ -358,7 +358,7 @@ const INITIAL_DATA = {
       name: "소예진 선생님",
       username: "teacher2",
       password: "password",
-      role: "teacher",
+      role: "teacher_new",
       duty: "새친구반 담임 / 찬양팀 멘토",
       birthday: "1998-03-15",
       phone: "010-4567-8901",
@@ -458,6 +458,16 @@ function loadState() {
         parsed.agendas.confirmed.forEach(a => {
           if (a.statusBadge && a.statusBadge.includes("전도사 승인완료")) {
             a.statusBadge = null;
+          }
+        });
+      // Upgrade teacher roles to teacher_grade or teacher_new
+      if (parsed.users && Array.isArray(parsed.users)) {
+        parsed.users.forEach(u => {
+          if (u.id === "u3" || (u.duty && u.duty.includes("고3") && u.role === "teacher")) {
+            u.role = "teacher_grade";
+          }
+          if (u.id === "u4" || (u.duty && u.duty.includes("새친구") && u.role === "teacher")) {
+            u.role = "teacher_new";
           }
         });
       }
@@ -567,6 +577,32 @@ function initNavigation() {
 
 // Switch to specific tab programmatically
 function switchToTab(viewId) {
+  // Enforce role-based access control for segregated class views
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const userRole = currentUser ? currentUser.role : currentRole;
+
+  if (viewId === "view-teacher-new") {
+    if (userRole === "teacher_grade" || (userRole === "teacher" && (!currentUser || !currentUser.duty || !currentUser.duty.includes("새친구")))) {
+      showToast("공과 선생님은 공과반 메뉴만 열람할 수 있습니다 🔒", "warning");
+      return;
+    }
+    if (userRole === "student") {
+      showToast("선생님 전용 메뉴입니다 🔒", "warning");
+      return;
+    }
+  }
+
+  if (viewId === "view-teacher-grade") {
+    if (userRole === "teacher_new" || (currentUser && currentUser.duty && currentUser.duty.includes("새친구") && userRole !== "pastor" && userRole !== "deacon")) {
+      showToast("새친구반 선생님은 새친구반 메뉴만 열람할 수 있습니다 🔒", "warning");
+      return;
+    }
+    if (userRole === "student") {
+      showToast("선생님 전용 메뉴입니다 🔒", "warning");
+      return;
+    }
+  }
+
   const btn = document.querySelector(`.bottom-tab-bar .tab-btn[data-target="${viewId}"]`);
   if (btn) {
     btn.click();
@@ -579,6 +615,27 @@ function switchToTab(viewId) {
         v.classList.remove("active");
       }
     });
+
+    // Update class switcher active buttons if present
+    document.querySelectorAll(".admin-class-switcher").forEach(switcher => {
+      const btns = switcher.querySelectorAll(".btn-class-switch");
+      if (viewId === "view-teacher-grade" && btns.length >= 2) {
+        btns[0].classList.add("active");
+        btns[0].style.background = "#fff";
+        btns[0].style.color = "#9a3412";
+        btns[1].classList.remove("active");
+        btns[1].style.background = "transparent";
+        btns[1].style.color = "#78716c";
+      } else if (viewId === "view-teacher-new" && btns.length >= 2) {
+        btns[1].classList.add("active");
+        btns[1].style.background = "#fff";
+        btns[1].style.color = "#15803d";
+        btns[0].classList.remove("active");
+        btns[0].style.background = "transparent";
+        btns[0].style.color = "#78716c";
+      }
+    });
+
     const container = document.getElementById("screensContainer");
     if (container) container.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -2648,10 +2705,10 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "분반 지도 및 새친구 4주 체크리스트" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "분반 지도 및 목양 총괄" },
+      { target: "view-teacher-new", icon: "spa", label: "새친구반", title: "새친구반 적응 & 정착", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
-      { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
-      { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
+      { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: false
@@ -2666,7 +2723,7 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "고3 분반 학생 출결 및 심방 지도" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
@@ -2684,7 +2741,7 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
+      { target: "view-teacher-new", icon: "spa", label: "새친구반", title: "새친구반 적응 & 정착", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
@@ -2702,7 +2759,7 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-teacher-class", icon: "menu_book", label: "공과/새친구", title: "공과공부 & 새친구반 적응", subtitle: "고3 분반 지도 및 새친구 4주 체크리스트" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "분반 학생 출결 및 심방 지도" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
@@ -3263,6 +3320,12 @@ function switchMasterRole(roleKey, notify = true) {
   if (memberApprovalBtn) {
     memberApprovalBtn.style.display = roleKey === "pastor" ? "" : "none";
   }
+
+  // 6-3. 공과반/새친구반 전환 바: 전도사 & 부장집사님에게만 노출
+  const canSwitchClasses = (roleKey === "pastor" || roleKey === "deacon");
+  document.querySelectorAll(".admin-class-switcher").forEach(el => {
+    el.style.display = canSwitchClasses ? "flex" : "none";
+  });
 
   // 역할에 따른 안건/소통함 및 배지 상태 즉시 갱신
   renderAgendaSection();
