@@ -2381,10 +2381,9 @@ const ROLES = {
     activeClass: "active-accountant",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "회계 & 행정 대시보드", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-accounting", icon: "account_balance_wallet", label: "회계장부", title: "부서 전체 실잔액 & 장부", subtitle: "영수증 정산 승인 및 구글 시트 연동" },
-      { target: "view-receipt", icon: "photo_camera", label: "영수증", title: "AI 영수증 자동 등록", subtitle: "영수증 OCR 분석 및 구글 시트 연동" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
-      { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" }
+      { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
+      { target: "view-accounting", icon: "account_balance_wallet", label: "회계장부", title: "부서 전체 실잔액 & 장부", subtitle: "영수증 정산 승인 및 구글 시트 연동" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: true
