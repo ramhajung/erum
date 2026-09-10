@@ -34,6 +34,97 @@ const INITIAL_DATA = {
       { id: 2, text: "가족 영혼 구원", count: 24, prayed: false }
     ]
   },
+  currentSelectedClassId: "class_high3",
+  gradeClasses: [
+    {
+      id: "class_high3",
+      grade: "고3반",
+      teacherName: "김대한 선생님",
+      teacherDuty: "고3 담임 / 방송실 자막 & 미디어",
+      teacherPhone: "010-3456-7890",
+      teacherAvatar: "🧑🏻‍🏫",
+      color: "#9a3412",
+      badgeColor: "#fef5ea",
+      students: [
+        { id: "s_high3_1", name: "양형모", roleInfo: "예랑 찬양팀 (드럼)", grade: "고3", avatar: "👦🏻", attendance: "출석", recentVisit: "9/5 카톡 심방 완료 · 수시 진로 집중 기도 중", phone: "010-3849-2918" },
+        { id: "s_high3_2", name: "이유리", roleInfo: "예배 헌금위원", grade: "고3", avatar: "👧🏻", attendance: "출석", recentVisit: "금주 헌금위원 순서 배정 · 공과 참석률 100%", phone: "010-9876-5432" },
+        { id: "s_high3_3", name: "박성준", roleInfo: "고3 수험생", grade: "고3", avatar: "👦🏻", attendance: "출석", recentVisit: "수험생 격려 간식 전달 예정 · 수시 진로 집중 기도", phone: "010-5555-1234" }
+      ]
+    },
+    {
+      id: "class_high2",
+      grade: "고2반",
+      teacherName: "이은혜 선생님",
+      teacherDuty: "고2 담임 / 예배 안내팀 지도",
+      teacherPhone: "010-7788-9900",
+      teacherAvatar: "👩🏻‍🏫",
+      color: "#0369a1",
+      badgeColor: "#f0f9ff",
+      students: [
+        { id: "s_high2_1", name: "최민서", roleInfo: "고2 / 방송실 음향", grade: "고2", avatar: "👧🏻", attendance: "출석", recentVisit: "중간고사 내신 준비 심방 격려 완료", phone: "010-4444-2222" },
+        { id: "s_high2_2", name: "정도윤", roleInfo: "고2 / 찬양팀 베이스", grade: "고2", avatar: "👦🏻", attendance: "출석", recentVisit: "예배 반주 연습 및 1:1 진로 상담", phone: "010-3333-1111" }
+      ]
+    },
+    {
+      id: "class_mid",
+      grade: "중등부반",
+      teacherName: "박진우 선생님",
+      teacherDuty: "중등부 담임 / 새친구 사역 멘토",
+      teacherPhone: "010-8899-0011",
+      teacherAvatar: "🧑🏻‍🏫",
+      color: "#0f766e",
+      badgeColor: "#f0fdfa",
+      students: [
+        { id: "s_mid_1", name: "김하람", roleInfo: "중2 / 새친구반 정착 학생", grade: "중2", avatar: "👧🏻", attendance: "출석", recentVisit: "새친구 4주 수료 후 중등부 적응 완료", phone: "010-5678-9012" },
+        { id: "s_mid_2", name: "강태우", roleInfo: "중3 / 중등부 회장", grade: "중3", avatar: "👦🏻", attendance: "출석", recentVisit: "친구초청주일 레크리에이션 준비 나눔", phone: "010-6666-7777" }
+      ]
+    }
+  ],
+  newcomerMinistry: {
+    teacherName: "소예진 선생님",
+    teacherDuty: "새친구반 전담 담임 / 찬양팀 멘토",
+    teacherPhone: "010-4567-8901",
+    teacherAvatar: "🌱",
+    students: [
+      {
+        id: "new_1",
+        name: "한민준",
+        grade: "고1",
+        avatar: "👦🏻",
+        registeredDate: "2026.09.01 (9월 1주)",
+        interests: "농구, 찬양팀 드럼",
+        prayerTopic: "교회 처음인데 또래 친구들과 잘 어울리고 적응하도록",
+        currentStep: 3,
+        progressPercent: 75,
+        targetClass: "고1 남학생반",
+        steps: [
+          { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓", completed: true },
+          { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔", desc: "학교 적응 및 첫 신앙생활 상담 완료 ✓", completed: true },
+          { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "이번 주일 점심 시간 떡볶이 파티 예정 ⏳", completed: true },
+          { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 고1 남학생반 정규 편성 예정", completed: false }
+        ]
+      },
+      {
+        id: "new_2",
+        name: "김하람",
+        grade: "중2",
+        avatar: "👧🏻",
+        registeredDate: "2026.08.10 (8월 2주)",
+        interests: "피아노, 독서",
+        prayerTopic: "믿음 안에서 흔들리지 않고 바르게 자라가도록",
+        currentStep: 4,
+        progressPercent: 100,
+        targetClass: "중2 여학생반",
+        graduated: true,
+        steps: [
+          { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "웰컴 키트 전달 완료 ✓", completed: true },
+          { week: 2, title: "담임교사 1:1 카톡 인사 & 심방", desc: "신앙 상담 및 기도제목 나눔 완료 ✓", completed: true },
+          { week: 3, title: "또래 친구 소개 & 간식 교제", desc: "중2 친구들과 교제 모임 완료 ✓", completed: true },
+          { week: 4, title: "새친구반 수료 축하 & 정규 등반", desc: "수료 완료 및 중2 여학생반 등반 완료 ✓", completed: true }
+        ]
+      }
+    ]
+  },
   agendas: {
     confirmed: [
       {
@@ -472,6 +563,16 @@ function loadState() {
           }
         });
       }
+      // Ensure gradeClasses and newcomerMinistry exist
+      if (!parsed.gradeClasses || parsed.gradeClasses.length === 0) {
+        parsed.gradeClasses = JSON.parse(JSON.stringify(INITIAL_DATA.gradeClasses));
+      }
+      if (!parsed.newcomerMinistry) {
+        parsed.newcomerMinistry = JSON.parse(JSON.stringify(INITIAL_DATA.newcomerMinistry));
+      }
+      if (!parsed.currentSelectedClassId) {
+        parsed.currentSelectedClassId = "class_high3";
+      }
       return parsed;
     } catch (e) {
       console.error("Failed to parse saved state", e);
@@ -683,13 +784,390 @@ function switchClassMinistrySubTab(tabKey) {
   if (tabKey === "grade") {
     if (titleEl) titleEl.textContent = "공과공부 & 분반 목양";
     if (subtitleEl) subtitleEl.textContent = "고3 분반 학생 출결 및 심방 지도";
+    renderClassMinistrySection();
   } else if (tabKey === "newcomer") {
     if (titleEl) titleEl.textContent = "새친구반 적응 & 정착";
     if (subtitleEl) subtitleEl.textContent = "새친구반 4주 체크리스트 & 등반 관리";
+    renderNewcomerMinistrySection();
   } else if (tabKey === "students") {
     if (titleEl) titleEl.textContent = "학생 심방 & 기도제목";
     if (subtitleEl) subtitleEl.textContent = "청소년부 학생 돌봄 & 신앙 관리";
+    renderStudentSection();
   }
+}
+
+function selectGradeClass(classId) {
+  appState.currentSelectedClassId = classId;
+  saveState();
+  renderClassMinistrySection();
+}
+
+function toggleStudentAttendance(classId, studentId) {
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  const cls = classes.find(c => c.id === classId);
+  if (cls) {
+    const student = cls.students.find(s => s.id === studentId);
+    if (student) {
+      student.attendance = (student.attendance === "출석") ? "결석" : "출석";
+      saveState();
+      renderClassMinistrySection();
+      showToast(`${student.name} 학생의 출결 상태가 '${student.attendance}'으로 변경되었습니다. 👍`);
+    }
+  }
+}
+
+function addNewStudentToClass(classId) {
+  const name = prompt("추가할 분반 학생의 이름을 입력하세요 (예: 이민호):");
+  if (!name || !name.trim()) return;
+  const roleInfo = prompt("학생의 분반/역할 정보를 입력하세요 (예: 고3 / 찬양팀):") || "학생";
+
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  const cls = classes.find(c => c.id === classId);
+  if (cls) {
+    cls.students.push({
+      id: "s_" + Date.now(),
+      name: name.trim(),
+      roleInfo: roleInfo.trim(),
+      grade: cls.grade,
+      avatar: "👦🏻",
+      attendance: "출석",
+      recentVisit: "신규 등록됨 · 첫 분반 모임 진행 예정",
+      phone: "010-0000-0000"
+    });
+    saveState();
+    renderClassMinistrySection();
+    showToast(`${name.trim()} 학생이 ${cls.grade}에 등록되었습니다! 🎉`);
+  }
+}
+
+function toggleNewcomerStep(studentId, week) {
+  const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+  const student = data.students.find(s => s.id === studentId);
+  if (!student) return;
+
+  const step = student.steps.find(st => st.week === week);
+  if (!step) return;
+
+  step.completed = !step.completed;
+  const completedCount = student.steps.filter(st => st.completed).length;
+  student.progressPercent = Math.round((completedCount / student.steps.length) * 100);
+  student.graduated = (student.progressPercent === 100);
+
+  saveState();
+  renderNewcomerMinistrySection();
+
+  if (student.graduated) {
+    showToast(`🎉 축하합니다! ${student.name} 학생이 4주 전 과정을 수료하여 ${student.targetClass} 등반 대상이 되었습니다! 🎓`);
+  } else {
+    showToast(`${student.name} 학생의 ${week}주차 과정이 '${step.completed ? '완료 ✓' : '진행전'}'으로 변경되었습니다.`);
+  }
+}
+
+function addNewcomerStudent() {
+  const name = prompt("새친구 학생의 이름을 입력하세요 (예: 송하은):");
+  if (!name || !name.trim()) return;
+  const grade = prompt("새친구의 학년을 입력하세요 (예: 고1):") || "고1";
+  const interests = prompt("새친구의 관심사나 특기를 입력하세요 (예: 축구, 보컬):") || "새 신앙생활";
+
+  const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+  data.students.unshift({
+    id: "new_" + Date.now(),
+    name: name.trim(),
+    grade: grade.trim(),
+    avatar: "👧🏻",
+    registeredDate: new Date().toLocaleDateString("ko-KR"),
+    interests: interests.trim(),
+    prayerTopic: "교회에 잘 적응하고 좋은 믿음의 친구들을 만나도록",
+    currentStep: 1,
+    progressPercent: 25,
+    targetClass: `${grade.trim()} 분반`,
+    graduated: false,
+    steps: [
+      { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 전달 완료 ✓", completed: true },
+      { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도나눔", desc: "학교 적응 및 첫 신앙생활 상담 예정", completed: false },
+      { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "주일 점심 시간 또래 친구 교제 예정", completed: false },
+      { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 정규 분반 편성 예정", completed: false }
+    ]
+  });
+  saveState();
+  renderNewcomerMinistrySection();
+  showToast(`🌱 ${name.trim()} 학생이 새친구반에 새로 등록되었습니다! 환영합니다!`);
+}
+
+function renderClassMinistrySection() {
+  const containers = [
+    document.getElementById("pastorClassMinistryRoot"),
+    document.getElementById("teacherGradeClassRoot")
+  ].filter(Boolean);
+
+  if (containers.length === 0) return;
+
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  const currentClassId = appState.currentSelectedClassId || "class_high3";
+  const activeClass = classes.find(c => c.id === currentClassId) || classes[0];
+
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastorOrDeacon = !currentUser || currentUser.role === "pastor" || currentUser.role === "deacon";
+
+  containers.forEach(container => {
+    let chipsHtml = "";
+    if (isPastorOrDeacon) {
+      chipsHtml = `
+        <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:8px; margin-bottom:12px; scrollbar-width:none;">
+          ${classes.map(c => {
+            const isSel = c.id === activeClass.id;
+            return `
+              <button type="button" class="class-chip-btn" onclick="selectGradeClass('${c.id}')" style="padding:7px 12px; font-size:12px; font-weight:${isSel ? '800' : '600'}; border-radius:12px; border:1.5px solid ${isSel ? c.color : '#e2d9cf'}; background:${isSel ? c.color : '#fff'}; color:${isSel ? '#fff' : '#57534e'}; white-space:nowrap; cursor:pointer; display:flex; align-items:center; gap:4px; box-shadow:${isSel ? '0 3px 8px rgba(0,0,0,0.12)' : 'none'}; transition:all 0.15s ease;">
+                <span>${c.teacherAvatar}</span>
+                <span>${c.grade} (${c.teacherName.split(' ')[0]})</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      <div class="agenda-date-badge" style="background:#fef5ea; border-color:#fad5b6; color:#ad551b; margin-bottom:12px;">
+        📖 5주차 공과: '믿음의 기초와 말씀 묵상'
+      </div>
+
+      ${chipsHtml}
+
+      <!-- 담임 선생님 프로필 카드 -->
+      <div class="teacher-profile-banner" style="background:linear-gradient(135deg, #fffcf9 0%, #fff7ed 100%); border:1.5px solid #fed7aa; border-radius:20px; padding:15px; margin-bottom:18px; box-shadow:0 4px 14px rgba(234,88,12,0.06);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div style="font-size:11px; font-weight:800; color:#ea580c; background:#ffedd5; padding:2px 8px; border-radius:6px; letter-spacing:-0.2px;">
+            🏷️ ${activeClass.grade} 담당 교사
+          </div>
+          <span style="font-size:11px; color:#9a3412; font-weight:700;">재적 ${activeClass.students.length}명 관리</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:48px; height:48px; border-radius:16px; background:#ffedd5; display:flex; align-items:center; justify-content:center; font-size:24px; border:1px solid #fdba74; flex-shrink:0;">
+            ${activeClass.teacherAvatar}
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:15px; font-weight:800; color:#2d261e; display:flex; align-items:center; gap:6px;">
+              <span>${activeClass.teacherName}</span>
+              <span class="role-identity-tag tag-teacher" style="font-size:9.5px; padding:1px 5px;">공과담임</span>
+            </div>
+            <div style="font-size:11.5px; color:#78716c; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              ${activeClass.teacherDuty}
+            </div>
+            <div style="font-size:11px; color:#ea580c; font-weight:600; margin-top:2px;">
+              📞 ${activeClass.teacherPhone}
+            </div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <a href="tel:${activeClass.teacherPhone}" class="btn-icon" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #fed7aa; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px;" title="전화걸기">📞</a>
+            <button type="button" class="btn-icon" onclick="showToast('${activeClass.teacherName} 선생님과의 1:1 카톡 상담창을 엽니다 💬', 'info')" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #fed7aa; display:flex; align-items:center; justify-content:center; font-size:16px;" title="카톡 대화">💬</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 해당 분반 학생 출결 & 목양 관리 -->
+      <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span>👥 ${activeClass.grade} 학생 관리 & 출결</span>
+        <button type="button" onclick="addNewStudentToClass('${activeClass.id}')" style="font-size:11.5px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 6px;">
+          ＋ 학생 추가
+        </button>
+      </div>
+
+      <div class="timeline-list" style="display:flex; flex-direction:column; gap:8px;">
+        ${activeClass.students.map(s => {
+          const isAttended = (s.attendance === "출석");
+          return `
+            <div class="timeline-item" style="background:#fff; border:1px solid #f1e9e0; border-radius:16px; padding:12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
+              <div style="width:38px; height:38px; border-radius:12px; background:${isAttended ? '#e0f2fe' : '#fef2f2'}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                ${s.avatar || '👦🏻'}
+              </div>
+              <div class="timeline-content" style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                  <span style="font-size:13.5px; font-weight:800; color:#2d261e;">${s.name}</span>
+                  <span style="font-size:11px; color:#78716c;">(${s.roleInfo || s.grade})</span>
+                </div>
+                <div style="font-size:11.5px; color:#8c827a; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${s.recentVisit}
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <button type="button" onclick="toggleStudentAttendance('${activeClass.id}', '${s.id}')" style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; border:none; cursor:pointer; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'}; transition:all 0.15s ease;">
+                  ${isAttended ? '출석 ✓' : '결석 ✕'}
+                </button>
+                <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;">
+                  💬
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- Section 2: 이번 주 공과 교재 요약 -->
+      <div class="section-label" style="margin-top:20px;">
+        <span>📑 금주 공과 나눔 핵심 가이드</span>
+        <span style="font-size:11px; font-weight:700; color:#888;">시편 119:105</span>
+      </div>
+      <div class="card p-4" style="background:#faf8f5; border:1px solid #ebd9c8; border-radius:18px;">
+        <div style="font-size:12.5px; font-weight:800; color:#9a3412; margin-bottom:4px;">💡 교사 나눔 팁</div>
+        <p style="font-size:12px; color:#57534e; line-height:1.6; margin:0;">
+          수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.
+        </p>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <button class="btn-primary" style="flex:1; background:#e67e22;" onclick="openModal('visitModal')">
+          <span>＋</span> <span>새 심방 일지 등록</span>
+        </button>
+        <button class="btn-secondary" style="flex:1; border-color:#fad5b6; color:#9a3412; font-size:13px; font-weight:800;" onclick="addNewStudentToClass('${activeClass.id}')">
+          <span>👤</span> <span>학생 추가</span>
+        </button>
+      </div>
+    `;
+  });
+}
+
+function renderNewcomerMinistrySection() {
+  const containers = [
+    document.getElementById("pastorNewcomerRoot"),
+    document.getElementById("teacherNewcomerRoot")
+  ].filter(Boolean);
+
+  if (containers.length === 0) return;
+
+  const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+
+  containers.forEach(container => {
+    container.innerHTML = `
+      <div class="agenda-date-badge" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:12px;">
+        🌱 새친구반 4주 적응 & 등반 관리
+      </div>
+
+      <!-- 새친구반 전담 교사 프로필 카드 -->
+      <div class="teacher-profile-banner" style="background:linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%); border:1.5px solid #bbf7d0; border-radius:20px; padding:15px; margin-bottom:18px; box-shadow:0 4px 14px rgba(22,163,74,0.06);">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+          <div style="font-size:11px; font-weight:800; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:6px; letter-spacing:-0.2px;">
+            🌱 새친구반 전담 멘토 교사
+          </div>
+          <span style="font-size:11px; color:#166534; font-weight:700;">새친구 ${data.students.length}명 관리 중</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:48px; height:48px; border-radius:16px; background:#dcfce7; display:flex; align-items:center; justify-content:center; font-size:24px; border:1px solid #86efac; flex-shrink:0;">
+            ${data.teacherAvatar}
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:15px; font-weight:800; color:#14532d; display:flex; align-items:center; gap:6px;">
+              <span>${data.teacherName}</span>
+              <span class="role-identity-tag tag-teacher" style="font-size:9.5px; padding:1px 5px; background:#dcfce7; color:#166534;">새친구멘토</span>
+            </div>
+            <div style="font-size:11.5px; color:#4b7a5a; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              ${data.teacherDuty}
+            </div>
+            <div style="font-size:11px; color:#16a34a; font-weight:600; margin-top:2px;">
+              📞 ${data.teacherPhone}
+            </div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <a href="tel:${data.teacherPhone}" class="btn-icon" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px;" title="전화걸기">📞</a>
+            <button type="button" class="btn-icon" onclick="showToast('${data.teacherName} 선생님과의 1:1 대화방을 엽니다 💬', 'info')" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center; font-size:16px;" title="카톡 대화">💬</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 새친구 학생별 4주 정착 과정 트래커 -->
+      <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span>🌱 새친구 4주 적응 & 등반 로드맵</span>
+        <button type="button" onclick="addNewcomerStudent()" style="font-size:11.5px; font-weight:800; color:#16a34a; background:none; border:none; cursor:pointer; padding:2px 6px;">
+          ＋ 새친구 등록
+        </button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        ${data.students.map(s => {
+          const completedCount = s.steps.filter(st => st.completed).length;
+          const percent = Math.round((completedCount / s.steps.length) * 100);
+          const isDone = percent === 100;
+          return `
+            <div class="newcomer-student-card" style="background:#fff; border:1.5px solid ${isDone ? '#bbf7d0' : '#fed7aa'}; border-radius:18px; padding:16px; box-shadow:0 3px 10px rgba(0,0,0,0.03);">
+              <!-- Top Row: Avatar, Name, Grade, Target Class -->
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:36px; height:36px; border-radius:12px; background:${isDone ? '#dcfce7' : '#ffedd5'}; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                    ${s.avatar || '👦🏻'}
+                  </div>
+                  <div>
+                    <div style="font-size:14px; font-weight:800; color:#1f2937; display:flex; align-items:center; gap:6px;">
+                      <span>${s.name} (${s.grade})</span>
+                      <span style="font-size:10px; font-weight:800; padding:1px 6px; border-radius:6px; background:${isDone ? '#dcfce7' : '#fef3c7'}; color:${isDone ? '#166534' : '#92400e'};">
+                        ${isDone ? '등반 수료 🎓' : `${completedCount}/4주 진행중 ⏳`}
+                      </span>
+                    </div>
+                    <div style="font-size:11px; color:#6b7280; margin-top:1px;">
+                      등록: ${s.registeredDate} · 배정 예정: <strong style="color:#0369a1;">${s.targetClass}</strong>
+                    </div>
+                  </div>
+                </div>
+                <button type="button" onclick="showToast('${s.name} 학생에게 환영 응원 톡을 보냅니다 💬', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;">
+                  💬
+                </button>
+              </div>
+
+              <!-- Progress Bar -->
+              <div style="margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; margin-bottom:4px; color:${isDone ? '#166534' : '#ea580c'};">
+                  <span>정착 진행도</span>
+                  <span>${percent}%</span>
+                </div>
+                <div style="width:100%; height:7px; background:#f3f4f6; border-radius:10px; overflow:hidden;">
+                  <div style="width:${percent}%; height:100%; background:${isDone ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #f97316, #ea580c)'}; border-radius:10px; transition:width 0.3s ease;"></div>
+                </div>
+              </div>
+
+              <!-- 4-Week Milestone Steps (Interactive) -->
+              <div style="display:flex; flex-direction:column; gap:6px; background:#fafaf9; padding:10px; border-radius:14px; border:1px solid #f5f5f4;">
+                ${s.steps.map(step => {
+                  return `
+                    <div onclick="toggleNewcomerStep('${s.id}', ${step.week})" style="display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:10px; background:${step.completed ? '#f0fdf4' : '#fff'}; border:1px solid ${step.completed ? '#bbf7d0' : '#e7e5e4'}; cursor:pointer; transition:all 0.15s ease;">
+                      <div style="width:24px; height:24px; border-radius:8px; background:${step.completed ? '#22c55e' : '#e5e7eb'}; color:${step.completed ? '#fff' : '#6b7280'}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">
+                        ${step.completed ? '✓' : step.week}
+                      </div>
+                      <div style="flex:1; min-width:0;">
+                        <div style="font-size:12px; font-weight:700; color:${step.completed ? '#166534' : '#374151'};">
+                          ${step.title}
+                        </div>
+                        <div style="font-size:10.5px; color:#78716c; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                          ${step.desc}
+                        </div>
+                      </div>
+                      <span style="font-size:11px; color:${step.completed ? '#16a34a' : '#9ca3af'}; font-weight:700;">
+                        ${step.completed ? '완료' : '진행전'}
+                      </span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Interest & Prayer -->
+              ${s.interests ? `
+                <div style="margin-top:10px; font-size:11px; color:#57534e; background:#fff; padding:6px 10px; border-radius:8px; border:1px dashed #d6d3d1;">
+                  💡 <strong>관심사:</strong> ${s.interests} | <strong>기도제목:</strong> ${s.prayerTopic}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <button class="btn-primary" style="flex:1; background:#16a34a;" onclick="openModal('visitModal')">
+          <span>＋</span> <span>새친구 심방/상담 일지</span>
+        </button>
+        <button class="btn-secondary" style="flex:1; border-color:#bbf7d0; color:#166534; font-size:13px; font-weight:800;" onclick="addNewcomerStudent()">
+          <span>🌱</span> <span>새친구 등록</span>
+        </button>
+      </div>
+    `;
+  });
 }
 
 function renderStudentSection() {
@@ -3383,6 +3861,8 @@ function switchMasterRole(roleKey, notify = true) {
   renderChecklistSection();
   renderAttendanceSection();
   renderCalendarSection();
+  renderClassMinistrySection();
+  renderNewcomerMinistrySection();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
@@ -6449,6 +6929,8 @@ function initAuthScreen() {
 function renderAll() {
   renderUserHeaderBar();
   renderStudentSection();
+  renderClassMinistrySection();
+  renderNewcomerMinistrySection();
   renderAgendaSection();
   renderAttendanceSection();
   renderAccountingSection();
