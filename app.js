@@ -54,7 +54,7 @@ const INITIAL_DATA = {
         id: 3,
         title: "[안건 3] 10월 생일자 선물 및 파티 기획",
         author: "제안: 김희순 집사",
-        statusBadge: "전도사 승인완료 ✅",
+        statusBadge: null,
         type: "peach"
       }
     ],
@@ -370,12 +370,19 @@ function loadState() {
       if (!parsed.birthdays || parsed.birthdays.length === 0) {
         parsed.birthdays = JSON.parse(JSON.stringify(INITIAL_DATA.birthdays));
       }
-      // Ensure agendaId linkage between pending agendas and staffBox items
       if (parsed.agendas && parsed.agendas.pending && parsed.staffBox && parsed.staffBox.items) {
         parsed.agendas.pending.forEach(pa => {
           const matched = parsed.staffBox.items.find(si => si.type === "회의안건" && (si.agendaId === pa.id || si.title.includes(pa.title.replace("[제안]", "").trim())));
           if (matched) {
             matched.agendaId = pa.id;
+          }
+        });
+      }
+      // Clear '전도사 승인완료' badges from confirmed agendas
+      if (parsed.agendas && parsed.agendas.confirmed) {
+        parsed.agendas.confirmed.forEach(a => {
+          if (a.statusBadge && a.statusBadge.includes("전도사 승인완료")) {
+            a.statusBadge = null;
           }
         });
       }
@@ -815,7 +822,7 @@ function approveAgenda(id) {
     id: item.id,
     title: item.title.replace("[제안]", `[안건 ${appState.agendas.confirmed.length + 1}]`),
     author: item.author.replace("제안자:", "제안:"),
-    statusBadge: "전도사 승인완료 ✅",
+    statusBadge: null,
     type: "peach"
   });
 
@@ -4222,7 +4229,7 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
                 id: pItem.id,
                 title: pItem.title.replace("[제안]", `[안건 ${appState.agendas.confirmed.length + 1}]`),
                 author: pItem.author.replace("제안자:", "제안:"),
-                statusBadge: "전도사 승인완료 ✅",
+                statusBadge: null,
                 type: "peach"
               });
             } else {
@@ -4236,7 +4243,7 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
                   id: newId,
                   title: `[안건 ${appState.agendas.confirmed.length + 1}] ${rawItemTitle}`,
                   author: `제안: ${item.author}`,
-                  statusBadge: "전도사 승인완료 ✅",
+                  statusBadge: null,
                   type: "peach"
                 });
               }
