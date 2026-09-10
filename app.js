@@ -643,8 +643,54 @@ function switchToTab(viewId) {
 }
 
 // =============================================================================
-// 4. Screen 1: 학생 심방 & 기도제목 Rendering & Events
+// 4. Screen 1: 공과·새친구반 & 학생부 목양종합 Rendering & Events
 // =============================================================================
+
+function switchClassMinistrySubTab(tabKey) {
+  const panelGrade = document.getElementById("panel-ministry-grade");
+  const panelNewcomer = document.getElementById("panel-ministry-newcomer");
+  const panelStudents = document.getElementById("panel-ministry-students");
+
+  if (panelGrade) panelGrade.style.display = (tabKey === "grade") ? "block" : "none";
+  if (panelNewcomer) panelNewcomer.style.display = (tabKey === "newcomer") ? "block" : "none";
+  if (panelStudents) panelStudents.style.display = (tabKey === "students") ? "block" : "none";
+
+  const subTabContainer = document.getElementById("classMinistrySubTabs");
+  if (subTabContainer) {
+    const btns = subTabContainer.querySelectorAll(".sub-tab-btn");
+    btns.forEach(btn => {
+      const isTarget = (btn.dataset.subtab === tabKey);
+      btn.classList.toggle("active", isTarget);
+      if (isTarget) {
+        btn.style.background = "#fff";
+        btn.style.fontWeight = "800";
+        btn.style.boxShadow = "0 2px 6px rgba(0,0,0,0.06)";
+        if (tabKey === "grade") btn.style.color = "#9a3412";
+        else if (tabKey === "newcomer") btn.style.color = "#15803d";
+        else btn.style.color = "#2563eb";
+      } else {
+        btn.style.background = "transparent";
+        btn.style.fontWeight = "700";
+        btn.style.boxShadow = "none";
+        btn.style.color = "#78716c";
+      }
+    });
+  }
+
+  // Update screen header title/subtitle dynamically
+  const titleEl = document.getElementById("screenTitle");
+  const subtitleEl = document.getElementById("screenSubtitle");
+  if (tabKey === "grade") {
+    if (titleEl) titleEl.textContent = "공과공부 & 분반 목양";
+    if (subtitleEl) subtitleEl.textContent = "고3 분반 학생 출결 및 심방 지도";
+  } else if (tabKey === "newcomer") {
+    if (titleEl) titleEl.textContent = "새친구반 적응 & 정착";
+    if (subtitleEl) subtitleEl.textContent = "새친구반 4주 체크리스트 & 등반 관리";
+  } else if (tabKey === "students") {
+    if (titleEl) titleEl.textContent = "학생 심방 & 기도제목";
+    if (subtitleEl) subtitleEl.textContent = "청소년부 학생 돌봄 & 신앙 관리";
+  }
+}
 
 function renderStudentSection() {
   const student = appState.student;
@@ -2672,7 +2718,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "이룸교회 중고등부 예랑", subtitle: "2026년 10월 13일 주일" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
-      { target: "view-students", icon: "groups", label: "학생부", title: "학생 심방 & 기도제목", subtitle: "청소년부 학생 돌봄 & 신앙 관리" },
+      { target: "view-students", icon: "menu_book", label: "공과/새친구반", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
       { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
       { target: "view-accounting", icon: "account_balance_wallet", label: "재정", title: "부서 재정 및 회계 장부", subtitle: "실시간 실잔액 및 전체 교사 영수증 감독" }
     ],
@@ -2706,10 +2752,10 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "분반 지도 및 목양 총괄" },
-      { target: "view-teacher-new", icon: "spa", label: "새친구반", title: "새친구반 적응 & 정착", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
+      { target: "view-students", icon: "menu_book", label: "공과/새친구반", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
-      { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" }
+      { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
+      { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: false

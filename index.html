@@ -625,49 +625,192 @@
 
 
       <!-- ===================================================================
-           TAB 1: 학생 심방 & 기도제목 (Image 1)
+           TAB 1: 공과/새친구반 & 학생부 목양 종합 대시보드
            =================================================================== -->
       <section class="screen-view" id="view-students">
         
-        <!-- Student Hero Card -->
-        <div class="student-hero-card">
-          <div class="student-info-box">
-            <div class="student-avatar">👦🏻</div>
-            <div>
-              <div class="student-name">
-                <span id="currentStudentName">양형모</span>
+        <!-- Sub-Navigation Tabs: 공과반 vs 새친구반 vs 학생부 -->
+        <div class="sub-nav-tabs mb-4" id="classMinistrySubTabs" style="display:flex; background:#f5efe6; padding:4px; border-radius:14px; gap:4px;">
+          <button type="button" class="sub-tab-btn active" data-subtab="grade" onclick="switchClassMinistrySubTab('grade')" style="flex:1; padding:8px 4px; font-size:12.5px; font-weight:800; border-radius:10px; border:none; background:#fff; color:#9a3412; box-shadow:0 2px 6px rgba(0,0,0,0.06); transition:all 0.15s ease;">
+            📖 공과반
+          </button>
+          <button type="button" class="sub-tab-btn" data-subtab="newcomer" onclick="switchClassMinistrySubTab('newcomer')" style="flex:1; padding:8px 4px; font-size:12.5px; font-weight:700; border-radius:10px; border:none; background:transparent; color:#78716c; transition:all 0.15s ease;">
+            🌱 새친구반
+          </button>
+          <button type="button" class="sub-tab-btn" data-subtab="students" onclick="switchClassMinistrySubTab('students')" style="flex:1; padding:8px 4px; font-size:12.5px; font-weight:700; border-radius:10px; border:none; background:transparent; color:#78716c; transition:all 0.15s ease;">
+            👥 학생부
+          </button>
+        </div>
+
+        <!-- 1) 공과반 전반적인 내용 서브 패널 -->
+        <div id="panel-ministry-grade" class="ministry-sub-panel">
+          <div class="agenda-date-badge" style="background:#fef5ea; border-color:#fad5b6; color:#ad551b;">
+            📖 5주차 공과: '믿음의 기초와 말씀 묵상'
+          </div>
+
+          <!-- Section 1: 담당 분반 학생 출결 & 목양 -->
+          <div class="section-label">
+            <span>👥 공과 분반 (고3반) 학생 관리</span>
+            <span style="font-size:11px; font-weight:700; color:var(--accent-mint);">3명 재적</span>
+          </div>
+          <div class="timeline-list">
+            <div class="timeline-item">
+              <div class="date-badge" style="background:#d6f4ea; color:#126f57;">고3</div>
+              <div class="timeline-content">
+                <div class="timeline-title">양형모 (예랑 찬양팀)</div>
+                <div class="timeline-desc">9/5 카톡 심방 완료 · 수시 진로 집중 기도 중</div>
               </div>
-              <div class="student-grade" id="currentStudentGrade">고3 · 예랑 찬양팀</div>
+              <button class="timeline-icon-btn" onclick="showToast('양형모 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')">💬</button>
+            </div>
+            <div class="timeline-item">
+              <div class="date-badge" style="background:#d6f4ea; color:#126f57;">고3</div>
+              <div class="timeline-content">
+                <div class="timeline-title">이유리 (헌금위원)</div>
+                <div class="timeline-desc">금주 헌금위원 순서 배정 · 공과 참석률 100%</div>
+              </div>
+              <button class="timeline-icon-btn" onclick="showToast('이유리 학생에게 헌금위원 안내를 전송합니다 📋', 'info')">💬</button>
+            </div>
+            <div class="timeline-item">
+              <div class="date-badge" style="background:#d6f4ea; color:#126f57;">고3</div>
+              <div class="timeline-content">
+                <div class="timeline-title">박성준 (고3)</div>
+                <div class="timeline-desc">수험생 격려 간식 전달 예정 · 수시 진로 집중 기도</div>
+              </div>
+              <button class="timeline-icon-btn" onclick="showToast('박성준 학생에게 심방 연락을 보냅니다 💬', 'info')">💬</button>
             </div>
           </div>
-          <div class="quick-contact-btns">
-            <button class="contact-btn" id="callBtn" title="전화걸기">📞</button>
-            <button class="contact-btn" id="msgBtn" title="문자/카톡 보내기">💬</button>
+
+          <!-- Section 2: 이번 주 공과 교재 요약 -->
+          <div class="section-label" style="margin-top:22px;">
+            <span>📑 금주 공과 나눔 핵심 가이드</span>
+            <span style="font-size:11px; font-weight:700; color:#888;">시편 119:105</span>
           </div>
+          <div class="card p-4" style="background:#faf8f5; border:1px solid #ebd9c8; border-radius:18px;">
+            <div style="font-size:12.5px; font-weight:800; color:#9a3412; margin-bottom:4px;">💡 교사 나눔 팁</div>
+            <p style="font-size:12px; color:#57534e; line-height:1.6; margin:0;">
+              수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.
+            </p>
+          </div>
+
+          <button class="btn-primary" style="background:#e67e22; margin-top:16px;" onclick="openModal('visitModal')">
+            <span>＋</span> <span>새 심방 일지 등록</span>
+          </button>
         </div>
 
-        <!-- Section 1: 최근 심방 기록 -->
-        <div class="section-label">
-          <span>1) 최근 심방 기록</span>
-          <span style="font-size:11px; font-weight:600; color:var(--accent-mint);">실시간 업데이트됨</span>
-        </div>
-        <div class="timeline-list" id="visitationList">
-          <!-- Populated by JS -->
+        <!-- 2) 새친구반 전반적인 내용 서브 패널 -->
+        <div id="panel-ministry-newcomer" class="ministry-sub-panel" style="display:none;">
+          <div class="agenda-date-badge" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534;">
+            🌱 새친구반 4주 적응 & 등반 관리
+          </div>
+
+          <!-- Section 1: 새친구반 4주 적응 체크리스트 -->
+          <div class="section-label">
+            <span>🌱 새친구반 4주 정착 체크리스트</span>
+            <span style="font-size:11px; font-weight:800; color:#16a34a;">새친구: 한민준 (고1)</span>
+          </div>
+          <div class="journey-timeline">
+            <div class="journey-step-card step-done">
+              <div class="journey-step-badge" style="background:#dcfce7; color:#166534;">1주</div>
+              <div class="checklist-text-wrap">
+                <div class="journey-step-title">새친구 등록 & 환영 선물 증정</div>
+                <div class="journey-step-desc">예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓</div>
+              </div>
+            </div>
+            <div class="journey-step-card step-done">
+              <div class="journey-step-badge" style="background:#dcfce7; color:#166534;">2주</div>
+              <div class="checklist-text-wrap">
+                <div class="journey-step-title">담임교사 1:1 카톡 인사 & 기도제목 나눔</div>
+                <div class="journey-step-desc">학교 적응 및 첫 신앙생활 상담 완료 ✓</div>
+              </div>
+            </div>
+            <div class="journey-step-card" style="border-color:#bbf7d0; background:#f7fee7;">
+              <div class="journey-step-badge" style="background:#dcfce7; color:#15803d;">3주</div>
+              <div class="checklist-text-wrap">
+                <div class="journey-step-title">분반 또래 친구 소개 & 간식 교제</div>
+                <div class="journey-step-desc">이번 주일 점심 시간 떡볶이 파티 예정 ⏳</div>
+              </div>
+            </div>
+            <div class="journey-step-card">
+              <div class="journey-step-badge" style="background:#ede6df; color:#888;">4주</div>
+              <div class="checklist-text-wrap">
+                <div class="journey-step-title">새친구반 수료 축하 & 정규 분반 배정</div>
+                <div class="journey-step-desc">수료패 증정 및 고1 남학생반 정규 편성 예정</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: 새친구 프로필 및 목양 현황 -->
+          <div class="section-label" style="margin-top:22px;">
+            <span>📋 새친구 적응 현황 & 목양 카드</span>
+            <span style="font-size:11px; font-weight:700; color:#16a34a;">1명 적응 중</span>
+          </div>
+          <div class="timeline-list">
+            <div class="timeline-item">
+              <div class="date-badge" style="background:#dcfce7; color:#166534;">새친구</div>
+              <div class="timeline-content">
+                <div class="timeline-title">한민준 (고1 · 3주차)</div>
+                <div class="timeline-desc">관심사: 농구, 찬양팀 · 교회 처음 출석, 또래 친구와 친밀도 형성 중</div>
+              </div>
+              <button class="timeline-icon-btn" onclick="showToast('한민준 학생에게 환영 응원 톡을 보냅니다 💬', 'info')">💬</button>
+            </div>
+            <div class="timeline-item">
+              <div class="date-badge" style="background:#e0f2fe; color:#0369a1;">등반완료</div>
+              <div class="timeline-content">
+                <div class="timeline-title">김하람 (중2 · 등반 수료)</div>
+                <div class="timeline-desc">4주 적응 수료 후 중2 여학생반 정상 등반 완료 ✓</div>
+              </div>
+              <button class="timeline-icon-btn" onclick="showToast('김하람 학생 정착 현황을 조회합니다 📋', 'info')">💬</button>
+            </div>
+          </div>
+
+          <button class="btn-primary" style="background:#16a34a; margin-top:16px;" onclick="openModal('visitModal')">
+            <span>＋</span> <span>새친구 심방/상담 일지 등록</span>
+          </button>
         </div>
 
-        <!-- Section 2: 나의 기도제목 -->
-        <div class="section-label" style="margin-top: 22px;">
-          <span>2) 나의 기도제목 💕</span>
-          <span style="font-size:11px; font-weight:600; color:var(--text-sub);">기도 시 터치</span>
-        </div>
-        <div id="prayerList">
-          <!-- Populated by JS -->
+        <!-- 3) 학생부 서브 패널 -->
+        <div id="panel-ministry-students" class="ministry-sub-panel" style="display:none;">
+          <!-- Student Hero Card -->
+          <div class="student-hero-card">
+            <div class="student-info-box">
+              <div class="student-avatar">👦🏻</div>
+              <div>
+                <div class="student-name">
+                  <span id="currentStudentName">양형모</span>
+                </div>
+                <div class="student-grade" id="currentStudentGrade">고3 · 예랑 찬양팀</div>
+              </div>
+            </div>
+            <div class="quick-contact-btns">
+              <button class="contact-btn" id="callBtn" title="전화걸기">📞</button>
+              <button class="contact-btn" id="msgBtn" title="문자/카톡 보내기">💬</button>
+            </div>
+          </div>
+
+          <!-- Section 1: 최근 심방 기록 -->
+          <div class="section-label">
+            <span>1) 최근 심방 기록</span>
+            <span style="font-size:11px; font-weight:600; color:var(--accent-mint);">실시간 업데이트됨</span>
+          </div>
+          <div class="timeline-list" id="visitationList">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Section 2: 나의 기도제목 -->
+          <div class="section-label" style="margin-top: 22px;">
+            <span>2) 나의 기도제목 💕</span>
+            <span style="font-size:11px; font-weight:600; color:var(--text-sub);">기도 시 터치</span>
+          </div>
+          <div id="prayerList">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Action Button -->
+          <button class="btn-primary" id="openAddVisitModalBtn">
+            <span>＋</span> <span>새 심방 기록 등록</span>
+          </button>
         </div>
 
-        <!-- Action Button -->
-        <button class="btn-primary" id="openAddVisitModalBtn">
-          <span>＋</span> <span>새 심방 기록 등록</span>
-        </button>
       </section>
 
 
@@ -1372,12 +1515,12 @@
         </div>
         <span class="text-[11px] font-semibold tracking-tight">스케줄</span>
       </button>
-      <!-- 3: 학생부 -->
-      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-students" data-title="학생 심방 & 기도제목" data-subtitle="청소년부 학생 돌봄 & 신앙 관리" type="button">
+      <!-- 3: 공과/새친구반 -->
+      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-students" data-title="공과·새친구반 & 학생부 목양" data-subtitle="공과반 지도 · 새친구반 정착 · 학생 심방" type="button">
         <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center">
-          <span class="material-symbols-outlined text-[23px]">groups</span>
+          <span class="material-symbols-outlined text-[23px]">menu_book</span>
         </div>
-        <span class="text-[11px] font-semibold tracking-tight">학생부</span>
+        <span class="text-[11px] font-semibold tracking-tight">공과/새친구반</span>
       </button>
       <!-- 4: 회의 -->
       <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-agenda" data-title="이번 주 교사 회의 안건" data-subtitle="2026.09.13 주일 교사 회의 안건" type="button">
@@ -2462,7 +2605,7 @@
 
   </div>
 
-  <script src="app.js?v=20260910_class_split2"></script>
+  <script src="app.js?v=20260910_ministry_subtabs1"></script>
 </body>
 </html>
 
