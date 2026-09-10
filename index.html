@@ -1641,22 +1641,24 @@
             <label style="font-size:12px; font-weight:700; color:#334155;">부제목 / 행사 설명</label>
             <input type="text" id="newEventSubTitleInput" placeholder="예: 은혜와 감동의 성탄 전야제" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
           </div>
-          <div class="grid grid-cols-2 gap-2.5">
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">총괄 담당자 *</label>
-              <select id="newEventManagerInput" style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:700; background:#fff;">
-                <option value="정하람 전도사">정하람 전도사</option>
-                <option value="김대한 선생님">김대한 선생님</option>
-                <option value="소예진 선생님">소예진 선생님</option>
-                <option value="양선아 선생님">양선아 선생님</option>
-                <option value="나하은 선생님">나하은 선생님</option>
-                <option value="김희순 집사">김희순 집사</option>
-              </select>
+          <div class="form-group" style="background:#fef7f2; border:1px solid #fedbc5; border-radius:14px; padding:12px 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:12.5px; font-weight:800; color:#9a3412;">👥 총괄 담당자 (복수 선택 가능) *</label>
+              <span id="newEventManagerCount" style="font-size:11px; font-weight:800; color:#c2410c; background:#ffedd5; padding:2px 7px; border-radius:10px;">1명 선택됨</span>
             </div>
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
-              <input type="text" id="newEventLocationInput" placeholder="예: 이룸교회 비전홀" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
+            <p style="font-size:11px; color:#78695f; margin-bottom:8px;">클릭하여 담당자를 복수로 지정할 수 있습니다.</p>
+            <div id="newEventManagerChipsContainer" style="display:flex; flex-wrap:wrap; gap:6px;">
+              <!-- Populated dynamically with leader options -->
             </div>
+            <div style="margin-top:8px; display:flex; gap:6px;">
+              <input type="text" id="newEventCustomManagerInput" placeholder="직접 추가 입력 (예: 박예은 청년)" style="flex:1; padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff;">
+              <button type="button" id="newEventAddCustomManagerBtn" style="padding:7px 12px; font-size:12px; font-weight:800; background:#ea580c; color:#fff; border:none; border-radius:8px; cursor:pointer;">추가</button>
+            </div>
+            <input type="hidden" id="newEventManagerValue" value="정하람 전도사">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
+            <input type="text" id="newEventLocationInput" placeholder="예: 이룸교회 비전홀" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
           </div>
           <div class="grid grid-cols-2 gap-2.5">
             <div class="form-group">
@@ -1717,16 +1719,24 @@
         <form id="editEventForm" class="space-y-3.5" style="padding: 10px 0 20px;">
           <input type="hidden" id="editEventIdInput">
           
-          <div class="form-group" style="background:#fef7f2; border:1px solid #fedbc5; border-radius:12px; padding:12px;">
-            <label style="font-size:12.5px; font-weight:800; color:#9a3412;">👤 총괄 담당자 변경 *</label>
-            <select id="editEventManagerSelect" style="width:100%; padding:10px 12px; border:1.5px solid #ea580c; border-radius:10px; font-size:14px; font-weight:800; background:#fff; margin-top:4px; color:#1e293b;">
-              <option value="정하람 전도사">정하람 전도사</option>
-              <option value="김대한 선생님">김대한 선생님</option>
-              <option value="소예진 선생님">소예진 선생님</option>
-              <option value="양선아 선생님">양선아 선생님</option>
-              <option value="나하은 선생님">나하은 선생님</option>
-              <option value="김희순 집사">김희순 집사</option>
-            </select>
+          <div class="form-group" style="background:#fef7f2; border:1px solid #fedbc5; border-radius:14px; padding:12px 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:12.5px; font-weight:800; color:#9a3412; display:flex; align-items:center; gap:4px;">
+                <span>👥 총괄 담당자 변경 (복수 선택 가능) *</span>
+              </label>
+              <span id="editEventManagerCount" style="font-size:11px; font-weight:800; color:#c2410c; background:#ffedd5; padding:2px 7px; border-radius:10px;">1명 선택됨</span>
+            </div>
+            <p style="font-size:11px; color:#78695f; margin-bottom:8px;">클릭하여 담당자를 복수로 지정할 수 있습니다.</p>
+            <div id="editEventManagerChipsContainer" style="display:flex; flex-wrap:wrap; gap:6px;">
+              <!-- Populated dynamically with leader options -->
+            </div>
+            <!-- Custom input for writing extra/custom names -->
+            <div style="margin-top:8px; display:flex; gap:6px;">
+              <input type="text" id="editEventCustomManagerInput" placeholder="직접 추가 입력 (예: 박예은 청년)" style="flex:1; padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff;">
+              <button type="button" id="editEventAddCustomManagerBtn" style="padding:7px 12px; font-size:12px; font-weight:800; background:#ea580c; color:#fff; border:none; border-radius:8px; cursor:pointer;">추가</button>
+            </div>
+            <!-- Hidden field that holds the comma-separated managers string -->
+            <input type="hidden" id="editEventManagerValue">
           </div>
 
           <div class="form-group">
@@ -2364,7 +2374,7 @@
 
   </div>
 
-  <script src="app.js?v=20260910_cal_nav_reorder1"></script>
+  <script src="app.js?v=20260910_multi_manager1"></script>
 </body>
 </html>
 

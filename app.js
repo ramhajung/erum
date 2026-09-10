@@ -4724,15 +4724,152 @@ function initChecklistEvents() {
     });
   }
 
+  // --- 행사 총괄 담당자 후보 리스트 및 칩 UI 헬퍼 ---
+  function getAvailableLeaders() {
+    const defaultLeaders = [
+      "정하람 전도사",
+      "김대한 선생님",
+      "소예진 선생님",
+      "양선아 선생님",
+      "나하은 선생님",
+      "김희순 집사"
+    ];
+    const leaderSet = new Set(defaultLeaders);
+    if (appState.users && Array.isArray(appState.users)) {
+      appState.users.forEach(u => {
+        if (u.role !== "student" && u.name) {
+          leaderSet.add(u.name);
+        }
+      });
+    }
+    return Array.from(leaderSet);
+  }
+
+  // 담당자 칩 렌더링 및 다중 선택 상태 관리
+  function setupManagerChipsSelector({
+    containerId,
+    countId,
+    valueInputId,
+    customInputId,
+    addCustomBtnId,
+    initialManagers = []
+  }) {
+    const container = document.getElementById(containerId);
+    const countEl = document.getElementById(countId);
+    const valueInput = document.getElementById(valueInputId);
+    const customInput = document.getElementById(customInputId);
+    const addCustomBtn = document.getElementById(addCustomBtnId);
+
+    if (!container || !valueInput) return;
+
+    let selectedSet = new Set(
+      (initialManagers || [])
+        .map(m => (m || "").trim())
+        .filter(Boolean)
+    );
+
+    // 최소 후보 목록 준비
+    const available = getAvailableLeaders();
+    selectedSet.forEach(m => {
+      if (!available.includes(m)) available.push(m);
+    });
+
+    function updateView() {
+      container.innerHTML = "";
+      available.forEach(leader => {
+        const isSelected = selectedSet.has(leader);
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.style.cssText = isSelected
+          ? "display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800; cursor:pointer; transition:all 0.15s ease; background:#ea580c; color:#ffffff; border:1.5px solid #ea580c; box-shadow:0 2px 6px rgba(234,88,12,0.25);"
+          : "display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s ease; background:#ffffff; color:#475569; border:1.5px solid #cbd5e1;";
+
+        chip.innerHTML = isSelected
+          ? `<span>✓</span><span>${leader}</span>`
+          : `<span>＋</span><span>${leader}</span>`;
+
+        chip.onclick = (e) => {
+          e.preventDefault();
+          if (selectedSet.has(leader)) {
+            if (selectedSet.size <= 1) {
+              showToast("총괄 담당자는 최소 1명 이상 선택되어야 합니다.", "warn");
+              return;
+            }
+            selectedSet.delete(leader);
+          } else {
+            selectedSet.add(leader);
+          }
+          syncState();
+        };
+
+        container.appendChild(chip);
+      });
+
+      const selectedArray = Array.from(selectedSet);
+      valueInput.value = selectedArray.join(", ");
+      if (countEl) {
+        countEl.textContent = `${selectedArray.length}명 선택됨`;
+      }
+    }
+
+    function syncState() {
+      updateView();
+    }
+
+    if (addCustomBtn && customInput) {
+      addCustomBtn.onclick = (e) => {
+        e.preventDefault();
+        const customName = customInput.value.trim();
+        if (!customName) return;
+        if (!available.includes(customName)) {
+          available.push(customName);
+        }
+        selectedSet.add(customName);
+        customInput.value = "";
+        syncState();
+        showToast(`'${customName}' 님이 담당자로 추가되었습니다. 👤✓`);
+      };
+
+      customInput.onkeydown = (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          addCustomBtn.click();
+        }
+      };
+    }
+
+    updateView();
+  }
+
   // --- 새 행사 추가 (Add Event) 모달 열기 버튼들 ---
   const openAddEventBtn = document.getElementById("openAddEventBtn");
   if (openAddEventBtn) {
-    openAddEventBtn.addEventListener("click", () => openModal("addEventModal"));
+    openAddEventBtn.addEventListener("click", () => {
+      setupManagerChipsSelector({
+        containerId: "newEventManagerChipsContainer",
+        countId: "newEventManagerCount",
+        valueInputId: "newEventManagerValue",
+        customInputId: "newEventCustomManagerInput",
+        addCustomBtnId: "newEventAddCustomManagerBtn",
+        initialManagers: ["정하람 전도사"]
+      });
+      openModal("addEventModal");
+    });
   }
 
   const openAddEventHomeBtn = document.getElementById("openAddEventHomeBtn");
   if (openAddEventHomeBtn) {
-    openAddEventHomeBtn.addEventListener("click", () => openModal("addEventModal"));
+    openAddEventHomeBtn.addEventListener("click", () => {
+      setupManagerChipsSelector({
+        containerId: "newEventManagerChipsContainer",
+        countId: "newEventManagerCount",
+        valueInputId: "newEventManagerValue",
+        customInputId: "newEventCustomManagerInput",
+        addCustomBtnId: "newEventAddCustomManagerBtn",
+        initialManagers: ["정하람 전도사"]
+      });
+      openModal("addEventModal");
+    });
   }
 
   // 행사 일시 입력 시 D-Day 실시간 자동 계산 리스너 (추가 모달)
@@ -4762,7 +4899,8 @@ function initChecklistEvents() {
         dday = calculateDdayFromDateString(date) || "D-Day";
       }
 
-      const manager = document.getElementById("newEventManagerInput").value;
+      const managerVal = document.getElementById("newEventManagerValue")?.value || "정하람 전도사";
+      const manager = managerVal.trim() || "정하람 전도사";
       const location = document.getElementById("newEventLocationInput").value.trim() || "이룸교회";
       const theme = document.getElementById("newEventThemeInput").value;
       const icon = document.getElementById("newEventIconInput").value;
@@ -4816,7 +4954,6 @@ function initChecklistEvents() {
     const titleInput = document.getElementById("editEventTitleInput");
     const subTitleInput = document.getElementById("editEventSubTitleInput");
     const ddayInput = document.getElementById("editEventDdayInput");
-    const managerSelect = document.getElementById("editEventManagerSelect");
     const themeSelect = document.getElementById("editEventThemeSelect");
     const dateInput = document.getElementById("editEventDateInput");
     const locationInput = document.getElementById("editEventLocationInput");
@@ -4829,24 +4966,20 @@ function initChecklistEvents() {
     if (locationInput) locationInput.value = event.location || "";
     if (themeSelect) themeSelect.value = event.theme || "sage";
 
-    if (managerSelect) {
-      let matched = false;
-      for (let opt of managerSelect.options) {
-        if (opt.value === event.manager || event.manager.includes(opt.value) || opt.value.includes(event.manager)) {
-          managerSelect.value = opt.value;
-          matched = true;
-          break;
-        }
-      }
-      if (!matched && event.manager) {
-        // Add option if not present
-        const opt = document.createElement("option");
-        opt.value = event.manager;
-        opt.textContent = event.manager;
-        managerSelect.appendChild(opt);
-        managerSelect.value = event.manager;
-      }
-    }
+    // 총괄 담당자 복수 선택 칩 시스템 구성
+    const existingManagers = (event.manager || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    setupManagerChipsSelector({
+      containerId: "editEventManagerChipsContainer",
+      countId: "editEventManagerCount",
+      valueInputId: "editEventManagerValue",
+      customInputId: "editEventCustomManagerInput",
+      addCustomBtnId: "editEventAddCustomManagerBtn",
+      initialManagers: existingManagers.length > 0 ? existingManagers : ["정하람 전도사"]
+    });
 
     // 수정 모달: 행사 일시 입력 시 D-Day 실시간 자동 계산 리스너
     const editEventDateInput = document.getElementById("editEventDateInput");
@@ -4894,7 +5027,8 @@ function initChecklistEvents() {
         newDday = calculateDdayFromDateString(newDate) || targetEvent.dday || "D-Day";
       }
 
-      const newManager = document.getElementById("editEventManagerSelect").value;
+      const managerVal = document.getElementById("editEventManagerValue")?.value || "";
+      const newManager = managerVal.trim() || targetEvent.manager || "정하람 전도사";
       const newTheme = document.getElementById("editEventThemeSelect").value;
       const newLocation = document.getElementById("editEventLocationInput").value.trim();
 
