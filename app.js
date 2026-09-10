@@ -324,6 +324,7 @@ const INITIAL_DATA = {
       password: "password",
       role: "pastor",
       duty: "중고등부 총괄 사역 & 설교",
+      birthday: "1994-05-12",
       phone: "010-1234-5678",
       avatar: "✝️",
       isAdmin: true
@@ -335,6 +336,7 @@ const INITIAL_DATA = {
       password: "password",
       role: "accountant",
       duty: "중고등부 회계 & 재정 장부 결산",
+      birthday: "1997-08-20",
       phone: "010-2345-6789",
       avatar: "💼",
       isAdmin: false
@@ -346,6 +348,7 @@ const INITIAL_DATA = {
       password: "password",
       role: "teacher",
       duty: "고3 담임 / 방송실 자막 & 미디어",
+      birthday: "1995-11-03",
       phone: "010-3456-7890",
       avatar: "🧑🏻‍🏫",
       isAdmin: false
@@ -357,6 +360,7 @@ const INITIAL_DATA = {
       password: "password",
       role: "teacher",
       duty: "새친구반 담임 / 찬양팀 멘토",
+      birthday: "1998-03-15",
       phone: "010-4567-8901",
       avatar: "👩🏻‍🏫",
       isAdmin: false
@@ -368,6 +372,7 @@ const INITIAL_DATA = {
       password: "password",
       role: "student",
       duty: "고3 / 예랑 찬양팀 드럼 세션",
+      birthday: "2008-04-22",
       phone: "010-3849-2918",
       avatar: "👦🏻",
       isAdmin: false
@@ -379,6 +384,7 @@ const INITIAL_DATA = {
       password: "password",
       role: "student",
       duty: "중2 / 새친구반 정착 학생",
+      birthday: "2012-09-18",
       phone: "010-5678-9012",
       avatar: "👧🏻",
       isAdmin: false
@@ -2811,8 +2817,11 @@ function renderUserSwitchGrid() {
             <span>${user.name}</span>
             ${ROLE_BADGES[user.role] || ""}
           </div>
-          <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${user.duty || ""}</div>
-          <div style="font-size:11px; color:#888;">📞 ${user.phone || "-"}</div>
+          <div class="user-mgmt-duty">${user.duty || ""}</div>
+          <div style="font-size:11px; color:#888; display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
+            <span>📞 ${user.phone || "-"}</span>
+            ${user.birthday ? `<span style="color:#d97706; font-weight:700;">🎂 ${user.birthday}</span>` : ''}
+          </div>
         </div>
       </div>
       <div>
@@ -2855,7 +2864,10 @@ function renderUserManagerSection() {
             ${isCurrent ? '<span style="font-size:10px; background:#e8def8; color:#4a148c; padding:2px 6px; border-radius:4px; margin-left:2px;">현재 본인</span>' : ''}
           </div>
           <div class="user-mgmt-duty">${user.duty || "-"} · ${user.phone || ""}</div>
-          ${user.username ? `<div style="font-size:11px; color:#888;">ID: ${user.username}</div>` : ''}
+          <div style="font-size:11px; color:#888; display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
+            ${user.username ? `<span>ID: ${user.username}</span>` : ''}
+            ${user.birthday ? `<span style="color:#d97706; font-weight:700;">🎂 생일: ${user.birthday}</span>` : ''}
+          </div>
         </div>
       </div>
       <div style="display:flex; align-items:center; gap:6px; margin-top:8px;">
@@ -2925,6 +2937,8 @@ function openEditUserModal(userId) {
   document.getElementById("editUserIdInput").value = user.id;
   document.getElementById("editUserNameInput").value = user.name || "";
   document.getElementById("editUserDutyInput").value = user.duty || "";
+  const bdayInput = document.getElementById("editUserBirthdayInput");
+  if (bdayInput) bdayInput.value = user.birthday || "";
   document.getElementById("editUserPhoneInput").value = user.phone || "";
 
   openModal("editUserModal");
@@ -2941,6 +2955,7 @@ function initEditUserEvents() {
 
       const name = document.getElementById("editUserNameInput").value.trim();
       const duty = document.getElementById("editUserDutyInput").value.trim();
+      const birthday = document.getElementById("editUserBirthdayInput") ? document.getElementById("editUserBirthdayInput").value.trim() : "";
       const phone = document.getElementById("editUserPhoneInput").value.trim();
 
       if (!name) {
@@ -2950,6 +2965,7 @@ function initEditUserEvents() {
 
       user.name = name;
       user.duty = duty;
+      user.birthday = birthday;
       user.phone = phone;
 
       saveState();
@@ -5998,6 +6014,7 @@ function initAuthScreen() {
       const name = document.getElementById("signupNameInput").value.trim();
       const username = document.getElementById("signupUsernameInput") ? document.getElementById("signupUsernameInput").value.trim() : "";
       const password = document.getElementById("signupPasswordInput") ? document.getElementById("signupPasswordInput").value.trim() : "";
+      const birthday = document.getElementById("signupBirthdayInput") ? document.getElementById("signupBirthdayInput").value.trim() : "";
       const phone = document.getElementById("signupPhoneInput").value.trim();
 
       if (!name) {
@@ -6024,6 +6041,7 @@ function initAuthScreen() {
         password: password || "1234",
         role: defaultRole,
         duty: `${ROLE_NAMES[defaultRole]} (승인 대기)`,
+        birthday: birthday || "",
         phone: phone || "010-0000-0000",
         avatar: DEFAULT_AVATARS[defaultRole] || "🧑🏻‍🏫",
         isAdmin: false,
@@ -6041,8 +6059,10 @@ function initAuthScreen() {
         pendingPanel.classList.remove("hidden");
         const nameEl = document.getElementById("pendingRegisteredName");
         const idEl = document.getElementById("pendingRegisteredUsername");
+        const bdayEl = document.getElementById("pendingRegisteredBirthday");
         if (nameEl) nameEl.textContent = name;
         if (idEl) idEl.textContent = username;
+        if (bdayEl) bdayEl.textContent = birthday || "(미입력)";
       }
 
       showToast(`📋 '${name}'님 가입완료! 현재 승인 대기 중입니다.`, "success", 4000);
