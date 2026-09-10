@@ -460,6 +460,7 @@ function loadState() {
             a.statusBadge = null;
           }
         });
+      }
       // Upgrade teacher roles to teacher_grade or teacher_new
       if (parsed.users && Array.isArray(parsed.users)) {
         parsed.users.forEach(u => {
