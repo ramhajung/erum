@@ -209,6 +209,62 @@ const INITIAL_DATA = {
       { id: 904, month: 9, date: "2026.09.13", title: "김대한T / 파리바게뜨 (분반 간식)", offering: 0, fee: 0, donation: 0, expense: 22000, author: "김대한T", store: "파리바게뜨", category: "간식비", receiptUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80" }
     ]
   },
+  events: [
+    {
+      id: "event_1",
+      title: "예랑 스카",
+      subTitle: "중간고사 집중 스터디 카페",
+      dday: "D-12",
+      date: "10월 25일 (토) 10:00",
+      location: "예랑실 및 비전홀",
+      manager: "김대한 선생님",
+      tag: "Focus Study Cafe",
+      theme: "terracotta",
+      icon: "menu_book",
+      items: [
+        { id: 1, title: "멀티탭 및 고속 충전기 10구 구매 (김대한T)", manager: "김대한T", checked: true, color: "green" },
+        { id: 2, title: "야간 집중 간식(토스트/음료) 주문 (양선아T)", manager: "양선아T", checked: false, color: "default" },
+        { id: 3, title: "스카 홍보 포스터 인쇄 및 게시 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "yellow" },
+        { id: 4, title: "10분 말씀 큐티지 인쇄 (소예진T)", manager: "소예진T", checked: false, color: "default" },
+        { id: 5, title: "자습실 좌석 배치 및 청소 당번표 확정 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" }
+      ]
+    },
+    {
+      id: "event_2",
+      title: "10월 생일파티",
+      subTitle: "10월 생일자 축복의 시간",
+      dday: "D-26",
+      date: "11월 08일 (토) 14:00",
+      location: "중고등부실 본당",
+      manager: "김희순 집사",
+      tag: "Blessing Day",
+      theme: "butter",
+      icon: "cake",
+      items: [
+        { id: 201, title: "생일 선물 포장 및 롤링페이퍼 준비 (소예진T)", manager: "소예진T", checked: false, color: "default" },
+        { id: 202, title: "생일 케이크 및 다과 주문 (김희순 집사)", manager: "김희순 집사", checked: true, color: "green" },
+        { id: 203, title: "축복 찬양 및 특별 축하 영상 제작 (양선아T)", manager: "양선아T", checked: false, color: "default" }
+      ]
+    },
+    {
+      id: "event_3",
+      title: "친구초청예배",
+      subTitle: "친구와 함께하는 열린 예배",
+      dday: "D-12",
+      date: "10월 25일 (일) 11:00",
+      location: "이룸교회 대예배실",
+      manager: "정하람 전도사",
+      tag: "Open Sunday",
+      theme: "sage",
+      icon: "volunteer_activism",
+      items: [
+        { id: 301, title: "초청 선물 키트 준비 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" },
+        { id: 302, title: "환영 찬양 및 특별 순서 연습 (소예진T)", manager: "소예진T", checked: false, color: "default" },
+        { id: 303, title: "새친구 환영 만찬 테이블 세팅 (김대한T)", manager: "김대한T", checked: false, color: "default" }
+      ]
+    }
+  ],
+  currentChecklistEventId: "event_1",
   checklist: {
     eventName: "예랑 스카",
     dday: "D-12",
@@ -369,6 +425,19 @@ function loadState() {
       }
       if (!parsed.birthdays || parsed.birthdays.length === 0) {
         parsed.birthdays = JSON.parse(JSON.stringify(INITIAL_DATA.birthdays));
+      }
+      if (!parsed.events || parsed.events.length === 0) {
+        parsed.events = JSON.parse(JSON.stringify(INITIAL_DATA.events));
+        // If there was legacy checklist, migrate it to events[0]
+        if (parsed.checklist && parsed.checklist.items) {
+          parsed.events[0].items = parsed.checklist.items;
+          if (parsed.checklist.eventName) parsed.events[0].title = parsed.checklist.eventName;
+          if (parsed.checklist.dday) parsed.events[0].dday = parsed.checklist.dday;
+          if (parsed.checklist.manager) parsed.events[0].manager = parsed.checklist.manager;
+        }
+      }
+      if (!parsed.currentChecklistEventId) {
+        parsed.currentChecklistEventId = parsed.events[0] ? parsed.events[0].id : "event_1";
       }
       if (parsed.agendas && parsed.agendas.pending && parsed.staffBox && parsed.staffBox.items) {
         parsed.agendas.pending.forEach(pa => {
@@ -3972,15 +4041,185 @@ function isChecklistAssignee(item, user) {
   return false;
 }
 
+function getActiveChecklistEvent() {
+  if (!appState.events || appState.events.length === 0) {
+    appState.events = JSON.parse(JSON.stringify(INITIAL_DATA.events));
+  }
+  let event = appState.events.find(e => e.id === appState.currentChecklistEventId);
+  if (!event) {
+    event = appState.events[0];
+    appState.currentChecklistEventId = event.id;
+  }
+  // Keep appState.checklist in sync for backward compatibility
+  appState.checklist = {
+    eventName: event.title,
+    dday: event.dday,
+    manager: event.manager,
+    items: event.items
+  };
+  return event;
+}
+
+function renderUpcomingEventsSection() {
+  const container = document.getElementById("upcomingEventsContainer");
+  const countBadge = document.getElementById("upcomingEventsCountBadge");
+  if (!container || !appState.events) return;
+
+  if (countBadge) {
+    countBadge.textContent = `${appState.events.length}개`;
+  }
+
+  container.innerHTML = "";
+
+  appState.events.forEach((event, index) => {
+    const totalItems = event.items ? event.items.length : 0;
+    const checkedItems = event.items ? event.items.filter(i => i.checked).length : 0;
+    const pct = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+    const article = document.createElement("article");
+
+    if (event.theme === "terracotta" || (!event.theme && index === 0)) {
+      // Hero Terracotta Gradient Card
+      article.className = "flex-shrink-0 w-[265px] snap-start bg-gradient-to-br from-[#9E4830] via-[#8B3B24] to-[#712D19] rounded-3xl p-4 text-white shadow-[0_12px_30px_rgba(150,67,43,0.28)] flex flex-col justify-between relative overflow-hidden group transition-all duration-200 cursor-pointer active:scale-98";
+      article.innerHTML = `
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+        <div class="absolute right-3 bottom-2 text-white/[0.07] pointer-events-none select-none">
+          <span class="material-symbols-outlined text-[90px]">${event.icon || "menu_book"}</span>
+        </div>
+        <div class="space-y-3 z-10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/25 shadow-inner">
+              <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+              <span class="text-white text-label-sm font-extrabold tracking-tight">${event.dday || "D-Day"}</span>
+              <span class="text-[10px] text-white/80 font-bold ml-1">· 준비 ${pct}%</span>
+            </div>
+            <span class="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-md text-white flex items-center justify-center border border-white/20">
+              <span class="material-symbols-outlined text-[19px]">${event.icon || "menu_book"}</span>
+            </span>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold text-white/75 tracking-wider uppercase">${event.tag || "Special Event"}</span>
+            <h3 class="text-headline-md font-bold text-white tracking-tight mt-0.5">${event.title}</h3>
+            <p class="text-body-sm font-body-sm text-white/85 mt-0.5 line-clamp-1">${event.subTitle || ""}</p>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-white/15 z-10 space-y-1.5 text-[12px]">
+          <div class="flex items-center gap-2 text-white font-semibold">
+            <div class="w-5 h-5 rounded-md bg-white/20 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[13px] text-white">event</span>
+            </div>
+            <span>${event.date || ""}</span>
+          </div>
+          <div class="flex items-center gap-2 text-white/80 font-medium">
+            <div class="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[13px] text-white/80">location_on</span>
+            </div>
+            <span>${event.location || "이룸교회"}</span>
+          </div>
+        </div>
+      `;
+    } else if (event.theme === "butter") {
+      // Warm Butter Card
+      article.className = "flex-shrink-0 w-[245px] snap-start bg-surface-card rounded-3xl p-4 border border-outline-variant/30 shadow-[0_8px_24px_rgba(60,50,40,0.06)] flex flex-col justify-between relative overflow-hidden group hover:border-accent-butter-text/50 transition-all cursor-pointer active:scale-98";
+      article.innerHTML = `
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-accent-butter/80 -z-0 pointer-events-none"></div>
+        <div class="space-y-3 z-10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="px-2.5 py-1 rounded-full bg-accent-butter text-accent-butter-text text-label-sm font-bold tracking-tight border border-accent-butter-text/20">
+                ${event.dday || "D-Day"}
+              </span>
+              <span class="text-[10.5px] font-bold text-accent-butter-text bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/50">준비 ${pct}%</span>
+            </div>
+            <span class="w-8 h-8 rounded-xl bg-amber-50 text-accent-butter-text flex items-center justify-center border border-amber-200/50">
+              <span class="material-symbols-outlined text-[19px]">${event.icon || "cake"}</span>
+            </span>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold text-accent-butter-text tracking-wider uppercase">${event.tag || "Blessing"}</span>
+            <h3 class="text-headline-sm font-bold text-text-primary group-hover:text-accent-butter-text transition-colors">${event.title}</h3>
+            <p class="text-body-sm font-body-sm text-text-muted mt-0.5">${event.subTitle || ""}</p>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-surface-container z-10 space-y-1.5 text-[12px]">
+          <div class="flex items-center gap-2 font-semibold text-text-secondary">
+            <span class="material-symbols-outlined text-[15px] text-accent-butter-text">event</span>
+            <span>${event.date || ""}</span>
+          </div>
+          <div class="flex items-center gap-2 text-text-muted font-medium">
+            <span class="material-symbols-outlined text-[15px]">location_on</span>
+            <span>${event.location || "이룸교회"}</span>
+          </div>
+        </div>
+      `;
+    } else {
+      // Sage Green or Default Card
+      article.className = "flex-shrink-0 w-[245px] snap-start bg-surface-card rounded-3xl p-4 border border-outline-variant/30 shadow-[0_8px_24px_rgba(60,50,40,0.06)] flex flex-col justify-between relative overflow-hidden group hover:border-secondary/50 transition-all cursor-pointer active:scale-98";
+      article.innerHTML = `
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-secondary/8 -z-0 pointer-events-none"></div>
+        <div class="space-y-3 z-10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="px-2.5 py-1 rounded-full bg-badge-sage-bg text-badge-sage-text text-label-sm font-bold tracking-tight border border-secondary/20">
+                ${event.dday || "D-Day"}
+              </span>
+              <span class="text-[10.5px] font-bold text-secondary bg-emerald-50 px-2 py-0.5 rounded-full border border-secondary/20">준비 ${pct}%</span>
+            </div>
+            <span class="w-8 h-8 rounded-xl bg-badge-sage-bg text-secondary flex items-center justify-center border border-secondary/20">
+              <span class="material-symbols-outlined text-[19px]">${event.icon || "volunteer_activism"}</span>
+            </span>
+          </div>
+          <div>
+            <span class="text-[11px] font-semibold text-secondary tracking-wider uppercase">${event.tag || "Open Sunday"}</span>
+            <h3 class="text-headline-sm font-bold text-text-primary group-hover:text-secondary transition-colors">${event.title}</h3>
+            <p class="text-body-sm font-body-sm text-text-muted mt-0.5">${event.subTitle || ""}</p>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-surface-container z-10 space-y-1.5 text-[12px]">
+          <div class="flex items-center gap-2 font-semibold text-text-secondary">
+            <span class="material-symbols-outlined text-[15px] text-secondary">event</span>
+            <span>${event.date || ""}</span>
+          </div>
+          <div class="flex items-center gap-2 text-text-muted font-medium">
+            <span class="material-symbols-outlined text-[15px]">location_on</span>
+            <span>${event.location || "이룸교회"}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // 카드 클릭 시 해당 행사 체크리스트로 이동
+    article.addEventListener("click", () => {
+      if (!canAccessChecklist()) {
+        showToast("⚠️ 행사 체크리스트는 전도사, 선생님, 부장집사님 전용 메뉴입니다.", "warn");
+        return;
+      }
+      appState.currentChecklistEventId = event.id;
+      saveState();
+      switchToTab("view-scheduler");
+      switchSchedulerSubTab("subTabChecklist");
+      renderChecklistSection();
+      showToast(`'${event.title}' 행사 체크리스트로 이동했습니다. 📋`, "info");
+    });
+
+    container.appendChild(article);
+  });
+}
+
 function openEditChecklistModal(item) {
   const modal = document.getElementById("editChecklistModal");
   if (!modal) return;
+  const currentEvent = getActiveChecklistEvent();
   const idInput = document.getElementById("editChkIdInput");
   const titleInput = document.getElementById("editChkTitleInput");
   const managerInput = document.getElementById("editChkManagerInput");
   const checkedInput = document.getElementById("editChkCheckedInput");
+  const eventTargetDisplay = document.getElementById("editChkEventTargetDisplay");
 
   if (idInput) idInput.value = item.id;
+  if (eventTargetDisplay) {
+    eventTargetDisplay.value = `${currentEvent.title} (${currentEvent.dday})`;
+  }
   // Clean raw title from parenthesis manager if present
   let cleanTitle = item.title || "";
   cleanTitle = cleanTitle.replace(/\s*\([^)]+\)\s*$/, "").trim();
@@ -3995,9 +4234,11 @@ function deleteChecklistItem(itemId, itemTitle) {
   if (!confirm(`'${itemTitle}' 체크리스트 항목을 정말 삭제하시겠습니까?`)) {
     return;
   }
-  appState.checklist.items = appState.checklist.items.filter(i => i.id !== itemId);
+  const currentEvent = getActiveChecklistEvent();
+  currentEvent.items = currentEvent.items.filter(i => i.id !== itemId);
   saveState();
   renderChecklistSection();
+  renderUpcomingEventsSection();
   closeModal("editChecklistModal");
   showToast("체크리스트 항목이 삭제되었습니다. 🗑️");
 }
@@ -4007,7 +4248,10 @@ function renderChecklistSection() {
   const progressFill = document.getElementById("checklistProgressFill");
   const progressText = document.getElementById("checklistProgressText");
   const openAddBtn = document.getElementById("openAddChecklistBtn");
-  if (!container || !appState.checklist) return;
+  const selectorContainer = document.getElementById("checklistEventSelector");
+
+  const currentEvent = getActiveChecklistEvent();
+  if (!container || !currentEvent) return;
 
   const currentUser = getCurrentUser();
   const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
@@ -4017,7 +4261,41 @@ function renderChecklistSection() {
     openAddBtn.style.display = isPastor ? "" : "none";
   }
 
-  const items = appState.checklist.items;
+  // 행사 전환 탭/알약 (Event Selector Pills)
+  if (selectorContainer && appState.events) {
+    selectorContainer.innerHTML = "";
+    appState.events.forEach(ev => {
+      const isSelected = ev.id === currentEvent.id;
+      const pill = document.createElement("button");
+      pill.type = "button";
+      pill.className = `px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 flex-shrink-0 ${
+        isSelected
+          ? "bg-[#9E4830] text-white shadow-sm ring-1 ring-[#9E4830]"
+          : "bg-surface-card text-text-secondary border border-outline-variant/40 hover:border-[#9E4830]/40"
+      }`;
+      pill.innerHTML = `<span>${ev.title}</span><span class="text-[10px] opacity-80">(${ev.dday})</span>`;
+      pill.addEventListener("click", () => {
+        appState.currentChecklistEventId = ev.id;
+        saveState();
+        renderChecklistSection();
+        renderUpcomingEventsSection();
+      });
+      selectorContainer.appendChild(pill);
+    });
+  }
+
+  // Hero Card 동적 텍스트 갱신
+  const mainTitleEl = document.getElementById("chkEventMainTitle");
+  const subTitleEl = document.getElementById("chkEventSubTitle");
+  const ddayBadgeEl = document.getElementById("chkEventDdayBadge");
+  const managerTextEl = document.getElementById("chkEventManagerText");
+
+  if (mainTitleEl) mainTitleEl.textContent = currentEvent.title;
+  if (subTitleEl) subTitleEl.textContent = currentEvent.subTitle ? `(${currentEvent.subTitle})` : "";
+  if (ddayBadgeEl) ddayBadgeEl.textContent = currentEvent.dday;
+  if (managerTextEl) managerTextEl.textContent = `담당: ${currentEvent.manager || "미정"}`;
+
+  const items = currentEvent.items || [];
   const total = items.length;
   const checkedCount = items.filter(i => i.checked).length;
   const percentage = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
@@ -4028,6 +4306,16 @@ function renderChecklistSection() {
   }
 
   container.innerHTML = "";
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 24px 12px; text-align: center; color: #94a3b8; font-size: 13px;">
+        등록된 체크리스트 항목이 없습니다.<br>
+        ${isPastor ? "하단의 '+ 새 체크리스트 추가' 버튼을 눌러 항목을 등록하세요." : ""}
+      </div>
+    `;
+    return;
+  }
+
   items.forEach(item => {
     const el = document.createElement("div");
     let colorClass = "";
@@ -4054,7 +4342,7 @@ function renderChecklistSection() {
       badgeHtml = `<span style="font-size:10px; font-weight:700; color:#94a3b8; margin-left:4px;" title="담당자 전용">🔒</span>`;
     }
 
-    // 전도사 전용 수정/삭제 버튼 (선생님 및 타 역할에는 완전히 비노출)
+    // 전도사 전용 수정/삭제 버튼
     let pastorActionsHtml = "";
     if (isPastor) {
       pastorActionsHtml = `
@@ -4096,7 +4384,6 @@ function renderChecklistSection() {
 
     // Toggle checklist item
     el.addEventListener("click", (e) => {
-      // If clicked on action buttons, do not toggle
       if (e.target.closest(".chk-item-actions")) return;
 
       if (!canCheck) {
@@ -4107,6 +4394,7 @@ function renderChecklistSection() {
       item.checked = !item.checked;
       saveState();
       renderChecklistSection();
+      renderUpcomingEventsSection(); // 홈 화면 주요 행사 카드 진행률 실시간 연동
       const statusWord = item.checked ? "완료 처리됨 ✓" : "진행중으로 변경됨";
       showToast(`'${item.title.split("(")[0].trim()}' ${statusWord}`);
     });
@@ -4118,7 +4406,23 @@ function renderChecklistSection() {
 function initChecklistEvents() {
   const openBtn = document.getElementById("openAddChecklistBtn");
   if (openBtn) {
-    openBtn.addEventListener("click", () => openModal("addChecklistModal"));
+    openBtn.addEventListener("click", () => {
+      // populate event select in add modal
+      const eventSelect = document.getElementById("chkEventSelectInput");
+      if (eventSelect && appState.events) {
+        eventSelect.innerHTML = "";
+        appState.events.forEach(ev => {
+          const opt = document.createElement("option");
+          opt.value = ev.id;
+          opt.textContent = `${ev.title} (${ev.dday})`;
+          if (ev.id === appState.currentChecklistEventId) {
+            opt.selected = true;
+          }
+          eventSelect.appendChild(opt);
+        });
+      }
+      openModal("addChecklistModal");
+    });
   }
 
   // 추가 폼 리스너
@@ -4126,7 +4430,11 @@ function initChecklistEvents() {
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const title = document.getElementById("chkTitleInput").value;
+      const eventSelect = document.getElementById("chkEventSelectInput");
+      const targetEventId = eventSelect ? eventSelect.value : appState.currentChecklistEventId;
+      const targetEvent = appState.events.find(ev => ev.id === targetEventId) || getActiveChecklistEvent();
+
+      const title = document.getElementById("chkTitleInput").value.trim();
       const manager = document.getElementById("chkManagerInput").value;
 
       const newItem = {
@@ -4137,12 +4445,18 @@ function initChecklistEvents() {
         color: "green"
       };
 
-      appState.checklist.items.push(newItem);
+      if (!targetEvent.items) targetEvent.items = [];
+      targetEvent.items.push(newItem);
+
+      // 만약 다른 행사에 추가한 경우 해당 행사로 활성화
+      appState.currentChecklistEventId = targetEvent.id;
+
       saveState();
       renderChecklistSection();
+      renderUpcomingEventsSection();
       closeModal("addChecklistModal");
       form.reset();
-      showToast("새 행사 체크리스트 항목이 추가되었습니다! 📋");
+      showToast(`'${targetEvent.title}'에 새 체크리스트 항목이 추가되었습니다! 📋`);
     });
   }
 
@@ -4156,13 +4470,15 @@ function initChecklistEvents() {
       const manager = document.getElementById("editChkManagerInput").value;
       const isChecked = document.getElementById("editChkCheckedInput").checked;
 
-      const target = appState.checklist.items.find(i => i.id === itemId);
+      const currentEvent = getActiveChecklistEvent();
+      const target = currentEvent.items ? currentEvent.items.find(i => i.id === itemId) : null;
       if (target) {
         target.title = `${title} (${manager})`;
         target.manager = manager;
         target.checked = isChecked;
         saveState();
         renderChecklistSection();
+        renderUpcomingEventsSection();
         closeModal("editChecklistModal");
         showToast("체크리스트 항목이 성공적으로 수정되었습니다! ✏️");
       }
@@ -5325,6 +5641,7 @@ function renderAll() {
   renderAgendaSection();
   renderAttendanceSection();
   renderAccountingSection();
+  renderUpcomingEventsSection();
   renderChecklistSection();
   renderStaffBoxSection();
   renderWorshipDutySection();
