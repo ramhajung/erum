@@ -1155,6 +1155,15 @@ function initAgendaEvents() {
 // 6. Screen 3: 예랑 스마트 스케줄러 (사전 출결 & 대타) Rendering & Events
 // =============================================================================
 
+// 출결 작성자 판별 헬퍼 (ID 또는 이름 비교)
+function isAttendanceAuthor(att, user) {
+  if (!att || !user) return false;
+  if (att.userId && user.id && att.userId === user.id) return true;
+  const cleanAttName = (att.name || "").replace(/선생님|집사님|전도사님|교사|T|쌤/gi, "").replace(/\s+/g, "");
+  const cleanUserName = (user.name || "").replace(/선생님|집사님|전도사님|교사|T|쌤/gi, "").replace(/\s+/g, "");
+  return !!(cleanAttName && cleanUserName && (cleanAttName === cleanUserName || cleanAttName.includes(cleanUserName) || cleanUserName.includes(cleanAttName)));
+}
+
 function renderAttendanceSection() {
   const listEl = document.getElementById("attendanceList");
   if (!listEl) return;
@@ -1188,12 +1197,7 @@ function renderAttendanceSection() {
   // 2. 다른 선생님들이 보낸 출결 카드는 숨기고, 전도사는 전체 / 선생님은 본인 것만 표시
   const filteredAttendance = isPastor
     ? appState.attendance
-    : appState.attendance.filter(att => {
-        if (!currentUser) return false;
-        const cleanAttName = (att.name || "").replace(/선생님|집사님|전도사님|교사|T|쌤/gi, "").replace(/\s+/g, "");
-        const cleanUserName = (currentUser.name || "").replace(/선생님|집사님|전도사님|교사|T|쌤/gi, "").replace(/\s+/g, "");
-        return cleanAttName && cleanUserName && (cleanAttName === cleanUserName || cleanAttName.includes(cleanUserName) || cleanUserName.includes(cleanAttName));
-      });
+    : appState.attendance.filter(att => isAttendanceAuthor(att, currentUser));
 
   // 3. 나의 예배 불참/지각 등록 버튼: 전도사에게만 비노출 (선생님+학생 모두 노출)
   const openAbsentBtn = document.getElementById("openAbsentModalBtn");
@@ -1219,6 +1223,10 @@ function renderAttendanceSection() {
 
   filteredAttendance.forEach(att => {
     const isLate = att.status === "지각";
+    const isAuthor = isAttendanceAuthor(att, currentUser);
+    const canEdit = isPastor || isAuthor;
+    const canDelete = isPastor;
+
     const card = document.createElement("div");
     card.className = `teacher-att-card ${isLate ? "late-card" : ""}`;
 
@@ -1231,8 +1239,20 @@ function renderAttendanceSection() {
             <div class="teacher-reason-pill">${att.role}</div>
           </div>
         </div>
-        <div class="${isLate ? "badge-late" : "badge-absent"}">
-          ${att.status} ${isLate ? "⏰" : "✕"}
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <div class="${isLate ? "badge-late" : "badge-absent"}">
+            ${att.status} ${isLate ? "⏰" : "✕"}
+          </div>
+          ${canEdit ? `
+            <button class="att-action-btn edit-att-btn" title="출결 수정" style="background:#f1f5f9; border:1px solid #e2e8f0; color:#475569; width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; padding:0; transition:all 0.15s ease;" data-att-id="${att.id}">
+              ✏️
+            </button>
+          ` : ''}
+          ${canDelete ? `
+            <button class="att-action-btn delete-att-btn" title="출결 삭제" style="background:#fef2f2; border:1px solid #fee2e2; color:#ef4444; width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; padding:0; transition:all 0.15s ease;" data-att-id="${att.id}">
+              🗑️
+            </button>
+          ` : ''}
         </div>
       </div>
 
@@ -1241,8 +1261,74 @@ function renderAttendanceSection() {
         ${att.eta ? `<div style="margin-top:6px; font-weight:700; color:#d97706; font-size:12px; display:flex; align-items:center; gap:4px;"><span>⏰ 도착 예정:</span> <span>${att.eta}</span></div>` : ''}
       </div>
     `;
+
+    // 이벤트 바인딩
+    const editBtn = card.querySelector(".edit-att-btn");
+    if (editBtn) {
+      editBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openEditAbsentModal(att.id);
+      });
+    }
+
+    const deleteBtn = card.querySelector(".delete-att-btn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        handleDeleteAttendance(att.id);
+      });
+    }
+
     listEl.appendChild(card);
   });
+}
+
+function openEditAbsentModal(attId) {
+  const att = appState.attendance.find(a => String(a.id) === String(attId));
+  if (!att) return;
+
+  const currentUser = getCurrentUser();
+  const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
+
+  const idInput = document.getElementById("editAttIdInput");
+  const nameInput = document.getElementById("editAttNameInput");
+  const statusInput = document.getElementById("editAttStatusInput");
+  const reasonInput = document.getElementById("editAttReasonCategory");
+  const memoInput = document.getElementById("editAttMemoInput");
+  const etaInput = document.getElementById("editAttEtaInput");
+  const deleteBtn = document.getElementById("deleteAttBtnInModal");
+
+  if (idInput) idInput.value = att.id;
+  if (nameInput) nameInput.value = att.name;
+  if (statusInput) statusInput.value = att.status;
+  if (reasonInput) reasonInput.value = att.role;
+  if (memoInput) memoInput.value = att.memo || "";
+  if (etaInput) etaInput.value = att.eta || "";
+
+  // 모달 내 삭제 버튼: 전도사에게만 표시
+  if (deleteBtn) {
+    deleteBtn.style.display = isPastor ? "block" : "none";
+    deleteBtn.onclick = () => {
+      handleDeleteAttendance(att.id, true);
+    };
+  }
+
+  openModal("editAbsentModal");
+}
+
+function handleDeleteAttendance(attId, closeModAfter = false) {
+  const att = appState.attendance.find(a => String(a.id) === String(attId));
+  const attName = att ? att.name : "선생님";
+
+  if (confirm(`'${attName}'의 출결 등록 내역을 삭제하시겠습니까?`)) {
+    appState.attendance = appState.attendance.filter(a => String(a.id) !== String(attId));
+    saveState();
+    renderAttendanceSection();
+    if (closeModAfter) {
+      closeModal("editAbsentModal");
+    }
+    showToast(`출결 내역이 삭제되었습니다. 🗑️`);
+  }
 }
 
 function initAttendanceEvents() {
@@ -1277,6 +1363,7 @@ function initAttendanceEvents() {
 
     const newAtt = {
       id: Date.now(),
+      userId: currentUser?.id || null,
       name: name,
       role: reason,
       status: status,
@@ -1292,6 +1379,32 @@ function initAttendanceEvents() {
     closeModal("absentModal");
     showToast(`예배 ${status} 등록이 완료되었습니다! ✅`);
   });
+
+  // 출결 수정 폼 제출 핸들러
+  const editAbsentForm = document.getElementById("editAbsentForm");
+  if (editAbsentForm) {
+    editAbsentForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const attId = document.getElementById("editAttIdInput").value;
+      const status = document.getElementById("editAttStatusInput").value;
+      const reason = document.getElementById("editAttReasonCategory").value;
+      const memo = document.getElementById("editAttMemoInput").value;
+      const eta = document.getElementById("editAttEtaInput")?.value?.trim() || "";
+
+      const attIndex = appState.attendance.findIndex(a => String(a.id) === String(attId));
+      if (attIndex !== -1) {
+        appState.attendance[attIndex].status = status;
+        appState.attendance[attIndex].role = reason;
+        appState.attendance[attIndex].memo = memo;
+        appState.attendance[attIndex].eta = eta;
+
+        saveState();
+        renderAttendanceSection();
+        closeModal("editAbsentModal");
+        showToast("출결 내역이 성공적으로 수정되었습니다! ✏️");
+      }
+    });
+  }
 }
 
 // =============================================================================

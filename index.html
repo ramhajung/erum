@@ -1457,6 +1457,61 @@
       </div>
     </div>
 
+    <!-- Modal 3-1: 예배 출결 수정/삭제 모달 (본인 수정 / 전도사 수정 및 삭제) -->
+    <div class="modal-backdrop" id="editAbsentModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">✏️ 예배 출결 내역 수정</h3>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">등록된 출결 상태 및 사유를 변경합니다.</p>
+          </div>
+          <button class="sheet-close-btn" data-close="editAbsentModal">✕</button>
+        </div>
+        <form id="editAbsentForm">
+          <input type="hidden" id="editAttIdInput">
+          <div class="form-group">
+            <label>작성자</label>
+            <input type="text" id="editAttNameInput" readonly style="background:#f8fafc; font-weight:700; color:#1e293b; cursor:default;">
+          </div>
+          <div class="form-group">
+            <label>출결 상태</label>
+            <select id="editAttStatusInput">
+              <option value="사전 결석">사전 결석 ❌</option>
+              <option value="지각">지각 ⏰</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>사유 카테고리</label>
+            <select id="editAttReasonCategory">
+              <option value="직장 출장 💼">직장 출장 💼</option>
+              <option value="가족 행사 🚗">가족 행사 🚗</option>
+              <option value="학업 / 시험 📖">학업 / 시험 📖</option>
+              <option value="건강 / 병원 🏥">건강 / 병원 🏥</option>
+              <option value="기타 💬">기타 💬</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>상세 메모</label>
+            <input type="text" id="editAttMemoInput" placeholder="사유를 입력해주세요" required>
+          </div>
+          <div class="form-group">
+            <label>도착 예정 시간</label>
+            <input type="text" id="editAttEtaInput" placeholder="예: 11:20 도착 예정 (지각 시 기재)">
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <button type="button" id="deleteAttBtnInModal" style="display:none; flex:1; background:#fee2e2; border:1px solid #fecaca; color:#b91c1c; padding:13px; border-radius:12px; font-weight:800; font-size:13px; cursor:pointer;">
+              🗑️ 삭제하기
+            </button>
+            <button type="submit" class="btn-orange" style="flex:2; margin-top:0;">
+              수정 완료
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal 4: 구글 스프레드시트 실시간 원본 장부 모달 -->
     <div class="modal-backdrop" id="gsheetModal">
       <div class="bottom-sheet" style="max-height: 90%;">
@@ -2300,7 +2355,7 @@
 
   </div>
 
-  <script src="app.js?v=20260910_auto_dday1"></script>
+  <script src="app.js?v=20260910_att_auth1"></script>
 </body>
 </html>
 

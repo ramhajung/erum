@@ -927,6 +927,13 @@ button:active, .btn:active, .interactive-card:active {
   border-radius: var(--radius-full);
 }
 
+.att-action-btn:active {
+  transform: scale(0.92);
+}
+.att-action-btn:hover {
+  filter: brightness(0.96);
+}
+
 .teacher-memo-box {
   background: #fef4f4;
   border-radius: var(--radius-sm);
