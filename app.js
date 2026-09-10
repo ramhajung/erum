@@ -2973,6 +2973,9 @@ function initEditUserEvents() {
       renderUserManagerSection();
       renderUserSwitchGrid();
       renderUserHeaderBar();
+      if (typeof renderCalendarSection === "function") {
+        renderCalendarSection();
+      }
 
       showToast(`✅ '${name}' 계정 정보가 성공적으로 수정되었습니다!`);
     });
@@ -5262,6 +5265,61 @@ let currentCalendarYear = _initialCalDate.getFullYear() || 2026;
 let currentCalendarMonth = (_initialCalDate.getMonth() + 1) || 9; // Real-time month (1-12)
 let selectedCalendarItem = null; // currently viewed item in manage modal
 
+// 회원가입 및 사용자 계정의 생일과 캘린더 생일을 실시간 통합/동기화하는 함수
+function getAllCalendarBirthdays() {
+  const baseBirthdays = (appState.birthdays && appState.birthdays.length > 0)
+    ? JSON.parse(JSON.stringify(appState.birthdays))
+    : JSON.parse(JSON.stringify(INITIAL_DATA.birthdays));
+
+  // appState.users 중 birthday가 등록된 회원 동기화
+  if (appState.users && Array.isArray(appState.users)) {
+    appState.users.forEach(user => {
+      if (!user.birthday || !user.name) return;
+      const bdayParts = user.birthday.split("-");
+      if (bdayParts.length < 3) return;
+      const m = parseInt(bdayParts[1], 10);
+      const d = parseInt(bdayParts[2], 10);
+      if (isNaN(m) || isNaN(d)) return;
+
+      const cleanUserName = user.name.replace(/선생님|집사님|전도사님|교사|T|쌤/gi, "").replace(/\s+/g, "");
+
+      // 기존 캘린더 생일 항목 중 매칭되는 항목 찾기
+      const existingIdx = baseBirthdays.findIndex(b => {
+        if (b.userId && b.userId === user.id) return true;
+        const cleanBdayName = (b.name || "").replace(/선생님|집사님|전도사님|교사|T|쌤/gi, "").replace(/\s+/g, "");
+        return cleanBdayName && cleanUserName && (cleanBdayName === cleanUserName || cleanBdayName.includes(cleanUserName) || cleanUserName.includes(cleanBdayName));
+      });
+
+      const roleDesc = (user.role === "pastor") ? "전도사"
+        : (user.role === "accountant") ? "선생님(회계)"
+        : (user.role === "deacon") ? "부장집사님"
+        : (user.role === "student") ? "학생" : "선생님";
+
+      if (existingIdx !== -1) {
+        // 이미 캘린더에 항목이 있으면 사용자의 최신 생일(월/일), 역할, 아바타로 동기화
+        baseBirthdays[existingIdx].month = m;
+        baseBirthdays[existingIdx].day = d;
+        baseBirthdays[existingIdx].userId = user.id;
+        baseBirthdays[existingIdx].avatar = user.avatar || baseBirthdays[existingIdx].avatar;
+        baseBirthdays[existingIdx].roleDesc = roleDesc;
+      } else {
+        // 새로운 가입자 생일이면 캘린더에 자동 추가
+        baseBirthdays.push({
+          id: `bday_user_${user.id}`,
+          userId: user.id,
+          month: m,
+          day: d,
+          name: user.name,
+          roleDesc: roleDesc,
+          avatar: user.avatar || (user.role === "student" ? "👦🏻" : "🧑🏻‍🏫")
+        });
+      }
+    });
+  }
+
+  return baseBirthdays;
+}
+
 function renderCalendarSection() {
   const isPastor = isCurrentRolePastor();
   const yearTitleEl = document.getElementById("calYearDisplay");
@@ -5293,8 +5351,8 @@ function renderCalendarSection() {
   const isCurrentRealMonth = (now.getFullYear() === currentCalendarYear && (now.getMonth() + 1) === currentCalendarMonth);
   const realTodayDate = now.getDate();
 
-  // Current month's birthdays & events (fallback to INITIAL_DATA if appState is empty)
-  const allBirthdays = (appState.birthdays && appState.birthdays.length > 0) ? appState.birthdays : INITIAL_DATA.birthdays;
+  // Current month's birthdays (회원가입/사용자 프로필 생일 자동 동기화) & events
+  const allBirthdays = getAllCalendarBirthdays();
   const allEvents = (appState.calendarEvents && appState.calendarEvents.length > 0) ? appState.calendarEvents : INITIAL_DATA.calendarEvents;
 
   const curBirthdays = allBirthdays.filter(b => Number(b.month) === Number(currentCalendarMonth));
@@ -5393,12 +5451,13 @@ function renderCalendarSection() {
 
 function bindCalendarDynamicEvents() {
   const isPastor = isCurrentRolePastor();
+  const allBirthdays = getAllCalendarBirthdays();
 
   // A. Birthday Person Item Click (opens modal)
   document.querySelectorAll(".birthday-person-item").forEach(item => {
     item.addEventListener("click", () => {
       const bdayId = item.dataset.itemId;
-      const bday = (appState.birthdays || []).find(b => b.id === bdayId);
+      const bday = allBirthdays.find(b => String(b.id) === String(bdayId));
       if (bday) {
         openManageCalendarItemModal("birthday", bday);
       }
@@ -5412,10 +5471,10 @@ function bindCalendarDynamicEvents() {
       const itemType = pill.dataset.itemType;
       const itemId = pill.dataset.itemId;
       if (itemType === "birthday") {
-        const bday = (appState.birthdays || []).find(b => b.id === itemId);
+        const bday = allBirthdays.find(b => String(b.id) === String(itemId));
         if (bday) openManageCalendarItemModal("birthday", bday);
       } else if (itemType === "event") {
-        const evt = (appState.calendarEvents || []).find(ev => ev.id === itemId);
+        const evt = (appState.calendarEvents || []).find(ev => String(ev.id) === String(itemId));
         if (evt) openManageCalendarItemModal("event", evt);
       }
     });
@@ -5754,8 +5813,19 @@ function initCalendarEvents() {
           appState.birthdays = JSON.parse(JSON.stringify(INITIAL_DATA.birthdays));
         }
         appState.birthdays = appState.birthdays.filter(b => b.id !== data.id);
+
+        // 연동된 회원의 생일 필드도 초기화
+        if (data.userId && appState.users) {
+          const matchedUser = appState.users.find(u => u.id === data.userId);
+          if (matchedUser) {
+            matchedUser.birthday = "";
+          }
+        }
+
         saveState();
         renderCalendarSection();
+        renderUserManagerSection();
+        renderUserSwitchGrid();
         closeModal("manageCalendarItemModal");
         showToast(`🗑️ ${data.name}님의 생일이 삭제되었습니다.`, "info");
       } else {
@@ -5807,16 +5877,30 @@ function initCalendarEvents() {
       if (kind === "birthday") {
         const roleDesc = document.getElementById("editCalRoleSelect").value;
         const avatar = document.getElementById("editCalAvatarSelect").value;
-        const target = (appState.birthdays || []).find(b => b.id === id);
+        
+        // 1. appState.birthdays 수정
+        if (!appState.birthdays) appState.birthdays = JSON.parse(JSON.stringify(INITIAL_DATA.birthdays));
+        let target = appState.birthdays.find(b => String(b.id) === String(id));
         if (target) {
           target.name = titleVal;
           target.month = m;
           target.day = d;
           target.roleDesc = roleDesc;
           target.avatar = avatar;
-          saveState();
-          showToast(`✨ ${target.name}님의 생일 정보가 수정되었습니다!`);
         }
+
+        // 2. 만약 특정 사용자와 연동된 생일이면 해당 회원의 생일 데이터도 양방향 업데이트
+        if (selectedCalendarItem && selectedCalendarItem.data && selectedCalendarItem.data.userId && appState.users) {
+          const matchedUser = appState.users.find(u => u.id === selectedCalendarItem.data.userId);
+          if (matchedUser) {
+            matchedUser.birthday = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          }
+        }
+
+        saveState();
+        renderUserManagerSection();
+        renderUserSwitchGrid();
+        showToast(`✨ ${titleVal}님의 생일 정보가 수정되었습니다!`);
       } else {
         const color = document.getElementById("editCalColorSelect").value;
         const target = (appState.calendarEvents || []).find(e => e.id === id);
@@ -6051,6 +6135,10 @@ function initAuthScreen() {
       appState.users.push(newUser);
       saveState();
       signupForm.reset();
+
+      if (typeof renderCalendarSection === "function") {
+        renderCalendarSection();
+      }
 
       // Show 가입완료 / 승인대기 Panel
       if (signupPanel) signupPanel.classList.add("hidden");
