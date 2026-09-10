@@ -4164,12 +4164,18 @@ function isChecklistAssignee(item, user) {
   const userName = (user.name || "").trim();
   if (!managerName || !userName) return false;
 
-  const cleanManager = managerName.replace(/선생님|전도사|목사|집사|교사|T|쌤|간사/gi, "").replace(/\s+/g, "");
   const cleanUser = userName.replace(/선생님|전도사|목사|집사|교사|T|쌤|간사/gi, "").replace(/\s+/g, "");
+  if (!cleanUser) return false;
 
-  if (cleanManager && cleanUser && (cleanManager === cleanUser || cleanManager.includes(cleanUser) || cleanUser.includes(cleanManager))) {
-    return true;
+  // Split multiple managers by comma or slash
+  const managerList = managerName.split(/[,/]/).map(m => m.trim()).filter(Boolean);
+  for (let mgr of managerList) {
+    const cleanManager = mgr.replace(/선생님|전도사|목사|집사|교사|T|쌤|간사/gi, "").replace(/\s+/g, "");
+    if (cleanManager && (cleanManager === cleanUser || cleanManager.includes(cleanUser) || cleanUser.includes(cleanManager))) {
+      return true;
+    }
   }
+
   return false;
 }
 
@@ -4400,13 +4406,129 @@ function renderUpcomingEventsSection() {
   });
 }
 
+// --- 행사 총괄 담당자 & 체크리스트 담당자 후보 리스트 및 칩 UI 헬퍼 ---
+function getAvailableLeaders() {
+  const defaultLeaders = [
+    "정하람 전도사",
+    "김대한 선생님",
+    "소예진 선생님",
+    "양선아 선생님",
+    "나하은 선생님",
+    "김희순 집사"
+  ];
+  const leaderSet = new Set(defaultLeaders);
+  if (appState.users && Array.isArray(appState.users)) {
+    appState.users.forEach(u => {
+      if (u.role !== "student" && u.name) {
+        leaderSet.add(u.name);
+      }
+    });
+  }
+  return Array.from(leaderSet);
+}
+
+// 담당자 칩 렌더링 및 다중 선택 상태 관리
+function setupManagerChipsSelector({
+  containerId,
+  countId,
+  valueInputId,
+  customInputId,
+  addCustomBtnId,
+  initialManagers = []
+}) {
+  const container = document.getElementById(containerId);
+  const countEl = document.getElementById(countId);
+  const valueInput = document.getElementById(valueInputId);
+  const customInput = document.getElementById(customInputId);
+  const addCustomBtn = document.getElementById(addCustomBtnId);
+
+  if (!container || !valueInput) return;
+
+  let selectedSet = new Set(
+    (initialManagers || [])
+      .map(m => (m || "").trim())
+      .filter(Boolean)
+  );
+
+  // 최소 후보 목록 준비
+  const available = getAvailableLeaders();
+  selectedSet.forEach(m => {
+    if (!available.includes(m)) available.push(m);
+  });
+
+  function updateView() {
+    container.innerHTML = "";
+    available.forEach(leader => {
+      const isSelected = selectedSet.has(leader);
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.style.cssText = isSelected
+        ? "display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800; cursor:pointer; transition:all 0.15s ease; background:#ea580c; color:#ffffff; border:1.5px solid #ea580c; box-shadow:0 2px 6px rgba(234,88,12,0.25);"
+        : "display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s ease; background:#ffffff; color:#475569; border:1.5px solid #cbd5e1;";
+
+      chip.innerHTML = isSelected
+        ? `<span>✓</span><span>${leader}</span>`
+        : `<span>＋</span><span>${leader}</span>`;
+
+      chip.onclick = (e) => {
+        e.preventDefault();
+        if (selectedSet.has(leader)) {
+          if (selectedSet.size <= 1) {
+            showToast("담당자는 최소 1명 이상 선택되어야 합니다.", "warn");
+            return;
+          }
+          selectedSet.delete(leader);
+        } else {
+          selectedSet.add(leader);
+        }
+        syncState();
+      };
+
+      container.appendChild(chip);
+    });
+
+    const selectedArray = Array.from(selectedSet);
+    valueInput.value = selectedArray.join(", ");
+    if (countEl) {
+      countEl.textContent = `${selectedArray.length}명 선택됨`;
+    }
+  }
+
+  function syncState() {
+    updateView();
+  }
+
+  if (addCustomBtn && customInput) {
+    addCustomBtn.onclick = (e) => {
+      e.preventDefault();
+      const customName = customInput.value.trim();
+      if (!customName) return;
+      if (!available.includes(customName)) {
+        available.push(customName);
+      }
+      selectedSet.add(customName);
+      customInput.value = "";
+      syncState();
+      showToast(`'${customName}' 님이 담당자로 추가되었습니다. 👤✓`);
+    };
+
+    customInput.onkeydown = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addCustomBtn.click();
+      }
+    };
+  }
+
+  updateView();
+}
+
 function openEditChecklistModal(item) {
   const modal = document.getElementById("editChecklistModal");
   if (!modal) return;
   const currentEvent = getActiveChecklistEvent();
   const idInput = document.getElementById("editChkIdInput");
   const titleInput = document.getElementById("editChkTitleInput");
-  const managerInput = document.getElementById("editChkManagerInput");
   const checkedInput = document.getElementById("editChkCheckedInput");
   const eventTargetDisplay = document.getElementById("editChkEventTargetDisplay");
 
@@ -4418,8 +4540,22 @@ function openEditChecklistModal(item) {
   let cleanTitle = item.title || "";
   cleanTitle = cleanTitle.replace(/\s*\([^)]+\)\s*$/, "").trim();
   if (titleInput) titleInput.value = cleanTitle;
-  if (managerInput) managerInput.value = item.manager || "정하람 전도사";
   if (checkedInput) checkedInput.checked = !!item.checked;
+
+  // 복수 담당자 칩 선택기 구성
+  const existingManagers = (item.manager || "정하람 전도사")
+    .split(/[,/]/)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  setupManagerChipsSelector({
+    containerId: "editChkManagerChipsContainer",
+    countId: "editChkManagerCount",
+    valueInputId: "editChkManagerValue",
+    customInputId: "editChkCustomManagerInput",
+    addCustomBtnId: "editChkAddCustomManagerBtn",
+    initialManagers: existingManagers.length > 0 ? existingManagers : ["정하람 전도사"]
+  });
 
   openModal("editChecklistModal");
 }
@@ -4650,6 +4786,17 @@ function initChecklistEvents() {
           eventSelect.appendChild(opt);
         });
       }
+
+      // 담당자 복수 선택 칩 초기화 (기본: 정하람 전도사)
+      setupManagerChipsSelector({
+        containerId: "newChkManagerChipsContainer",
+        countId: "newChkManagerCount",
+        valueInputId: "chkManagerValue",
+        customInputId: "newChkCustomManagerInput",
+        addCustomBtnId: "newChkAddCustomManagerBtn",
+        initialManagers: ["정하람 전도사"]
+      });
+
       openModal("addChecklistModal");
     });
   }
@@ -4664,7 +4811,8 @@ function initChecklistEvents() {
       const targetEvent = appState.events.find(ev => ev.id === targetEventId) || getActiveChecklistEvent();
 
       const title = document.getElementById("chkTitleInput").value.trim();
-      const manager = document.getElementById("chkManagerInput").value;
+      const managerVal = document.getElementById("chkManagerValue")?.value || "";
+      const manager = managerVal.trim() || "정하람 전도사";
 
       const newItem = {
         id: Date.now(),
@@ -4696,12 +4844,13 @@ function initChecklistEvents() {
       e.preventDefault();
       const itemId = Number(document.getElementById("editChkIdInput").value);
       const title = document.getElementById("editChkTitleInput").value.trim();
-      const manager = document.getElementById("editChkManagerInput").value;
+      const managerVal = document.getElementById("editChkManagerValue")?.value || "";
       const isChecked = document.getElementById("editChkCheckedInput").checked;
 
       const currentEvent = getActiveChecklistEvent();
       const target = currentEvent.items ? currentEvent.items.find(i => i.id === itemId) : null;
       if (target) {
+        const manager = managerVal.trim() || target.manager || "정하람 전도사";
         target.title = `${title} (${manager})`;
         target.manager = manager;
         target.checked = isChecked;
@@ -4722,123 +4871,6 @@ function initChecklistEvents() {
       const title = document.getElementById("editChkTitleInput").value.trim();
       deleteChecklistItem(itemId, title || "선택한 항목");
     });
-  }
-
-  // --- 행사 총괄 담당자 후보 리스트 및 칩 UI 헬퍼 ---
-  function getAvailableLeaders() {
-    const defaultLeaders = [
-      "정하람 전도사",
-      "김대한 선생님",
-      "소예진 선생님",
-      "양선아 선생님",
-      "나하은 선생님",
-      "김희순 집사"
-    ];
-    const leaderSet = new Set(defaultLeaders);
-    if (appState.users && Array.isArray(appState.users)) {
-      appState.users.forEach(u => {
-        if (u.role !== "student" && u.name) {
-          leaderSet.add(u.name);
-        }
-      });
-    }
-    return Array.from(leaderSet);
-  }
-
-  // 담당자 칩 렌더링 및 다중 선택 상태 관리
-  function setupManagerChipsSelector({
-    containerId,
-    countId,
-    valueInputId,
-    customInputId,
-    addCustomBtnId,
-    initialManagers = []
-  }) {
-    const container = document.getElementById(containerId);
-    const countEl = document.getElementById(countId);
-    const valueInput = document.getElementById(valueInputId);
-    const customInput = document.getElementById(customInputId);
-    const addCustomBtn = document.getElementById(addCustomBtnId);
-
-    if (!container || !valueInput) return;
-
-    let selectedSet = new Set(
-      (initialManagers || [])
-        .map(m => (m || "").trim())
-        .filter(Boolean)
-    );
-
-    // 최소 후보 목록 준비
-    const available = getAvailableLeaders();
-    selectedSet.forEach(m => {
-      if (!available.includes(m)) available.push(m);
-    });
-
-    function updateView() {
-      container.innerHTML = "";
-      available.forEach(leader => {
-        const isSelected = selectedSet.has(leader);
-        const chip = document.createElement("button");
-        chip.type = "button";
-        chip.style.cssText = isSelected
-          ? "display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800; cursor:pointer; transition:all 0.15s ease; background:#ea580c; color:#ffffff; border:1.5px solid #ea580c; box-shadow:0 2px 6px rgba(234,88,12,0.25);"
-          : "display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s ease; background:#ffffff; color:#475569; border:1.5px solid #cbd5e1;";
-
-        chip.innerHTML = isSelected
-          ? `<span>✓</span><span>${leader}</span>`
-          : `<span>＋</span><span>${leader}</span>`;
-
-        chip.onclick = (e) => {
-          e.preventDefault();
-          if (selectedSet.has(leader)) {
-            if (selectedSet.size <= 1) {
-              showToast("총괄 담당자는 최소 1명 이상 선택되어야 합니다.", "warn");
-              return;
-            }
-            selectedSet.delete(leader);
-          } else {
-            selectedSet.add(leader);
-          }
-          syncState();
-        };
-
-        container.appendChild(chip);
-      });
-
-      const selectedArray = Array.from(selectedSet);
-      valueInput.value = selectedArray.join(", ");
-      if (countEl) {
-        countEl.textContent = `${selectedArray.length}명 선택됨`;
-      }
-    }
-
-    function syncState() {
-      updateView();
-    }
-
-    if (addCustomBtn && customInput) {
-      addCustomBtn.onclick = (e) => {
-        e.preventDefault();
-        const customName = customInput.value.trim();
-        if (!customName) return;
-        if (!available.includes(customName)) {
-          available.push(customName);
-        }
-        selectedSet.add(customName);
-        customInput.value = "";
-        syncState();
-        showToast(`'${customName}' 님이 담당자로 추가되었습니다. 👤✓`);
-      };
-
-      customInput.onkeydown = (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          addCustomBtn.click();
-        }
-      };
-    }
-
-    updateView();
   }
 
   // --- 새 행사 추가 (Add Event) 모달 열기 버튼들 ---

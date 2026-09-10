@@ -1789,7 +1789,7 @@
 
     <!-- Modal 7: 새 체크리스트 추가 모달 -->
     <div class="modal-backdrop" id="addChecklistModal">
-      <div class="bottom-sheet">
+      <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
           <h3 class="sheet-title">행사 체크리스트 추가</h3>
@@ -1806,15 +1806,20 @@
             <label>할 일 제목</label>
             <input type="text" id="chkTitleInput" placeholder="예: 10분 말씀 큐티지 인쇄" required>
           </div>
-          <div class="form-group">
-            <label>담당 선생님</label>
-            <select id="chkManagerInput">
-              <option value="소예진T">소예진T</option>
-              <option value="김대한T">김대한T</option>
-              <option value="양선아T">양선아T</option>
-              <option value="정하람 전도사">정하람 전도사</option>
-              <option value="김희순 집사">김희순 집사</option>
-            </select>
+          <div class="form-group" style="background:#fef7f2; border:1px solid #fedbc5; border-radius:14px; padding:12px 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:12.5px; font-weight:800; color:#9a3412;">👥 담당 선생님 (복수 선택 가능) *</label>
+              <span id="newChkManagerCount" style="font-size:11px; font-weight:800; color:#c2410c; background:#ffedd5; padding:2px 7px; border-radius:10px;">1명 선택됨</span>
+            </div>
+            <p style="font-size:11px; color:#78695f; margin-bottom:8px;">클릭하여 담당자를 복수로 지정할 수 있습니다.</p>
+            <div id="newChkManagerChipsContainer" style="display:flex; flex-wrap:wrap; gap:6px;">
+              <!-- Populated dynamically with leader options -->
+            </div>
+            <div style="margin-top:8px; display:flex; gap:6px;">
+              <input type="text" id="newChkCustomManagerInput" placeholder="직접 추가 입력 (예: 박예은 청년)" style="flex:1; padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff;">
+              <button type="button" id="newChkAddCustomManagerBtn" style="padding:7px 12px; font-size:12px; font-weight:800; background:#ea580c; color:#fff; border:none; border-radius:8px; cursor:pointer;">추가</button>
+            </div>
+            <input type="hidden" id="chkManagerValue" value="정하람 전도사">
           </div>
           <button type="submit" class="btn-orange" style="margin-top:16px;">체크리스트에 추가하기</button>
         </form>
@@ -1823,7 +1828,7 @@
 
     <!-- Modal: 행사 체크리스트 수정 모달 (전도사 전용) -->
     <div class="modal-backdrop" id="editChecklistModal">
-      <div class="bottom-sheet">
+      <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
           <h3 class="sheet-title">✏️ 체크리스트 항목 수정</h3>
@@ -1839,16 +1844,20 @@
             <label>할 일 제목</label>
             <input type="text" id="editChkTitleInput" placeholder="할 일 제목 입력" required>
           </div>
-          <div class="form-group">
-            <label>담당 선생님</label>
-            <select id="editChkManagerInput">
-              <option value="소예진T">소예진T</option>
-              <option value="김대한T">김대한T</option>
-              <option value="양선아T">양선아T</option>
-              <option value="정하람 전도사">정하람 전도사</option>
-              <option value="나하은T">나하은T</option>
-              <option value="김희순 집사">김희순 집사</option>
-            </select>
+          <div class="form-group" style="background:#fef7f2; border:1px solid #fedbc5; border-radius:14px; padding:12px 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:12.5px; font-weight:800; color:#9a3412;">👥 담당 선생님 (복수 선택 가능) *</label>
+              <span id="editChkManagerCount" style="font-size:11px; font-weight:800; color:#c2410c; background:#ffedd5; padding:2px 7px; border-radius:10px;">1명 선택됨</span>
+            </div>
+            <p style="font-size:11px; color:#78695f; margin-bottom:8px;">클릭하여 담당자를 복수로 지정할 수 있습니다.</p>
+            <div id="editChkManagerChipsContainer" style="display:flex; flex-wrap:wrap; gap:6px;">
+              <!-- Populated dynamically with leader options -->
+            </div>
+            <div style="margin-top:8px; display:flex; gap:6px;">
+              <input type="text" id="editChkCustomManagerInput" placeholder="직접 추가 입력 (예: 박예은 청년)" style="flex:1; padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:8px; background:#fff;">
+              <button type="button" id="editChkAddCustomManagerBtn" style="padding:7px 12px; font-size:12px; font-weight:800; background:#ea580c; color:#fff; border:none; border-radius:8px; cursor:pointer;">추가</button>
+            </div>
+            <input type="hidden" id="editChkManagerValue" value="정하람 전도사">
           </div>
           <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:10px; background:#f8fafc; padding:10px 12px; border-radius:10px; border:1px solid #e2e8f0;">
             <input type="checkbox" id="editChkCheckedInput" style="width:18px; height:18px; accent-color:#059669; cursor:pointer;">
@@ -2374,7 +2383,7 @@
 
   </div>
 
-  <script src="app.js?v=20260910_multi_manager1"></script>
+  <script src="app.js?v=20260910_multi_manager2"></script>
 </body>
 </html>
 
