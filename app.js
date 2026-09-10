@@ -4309,11 +4309,26 @@ function renderChecklistSection() {
   const subTitleEl = document.getElementById("chkEventSubTitle");
   const ddayBadgeEl = document.getElementById("chkEventDdayBadge");
   const managerTextEl = document.getElementById("chkEventManagerText");
+  const managerPillEl = document.getElementById("chkEventManagerPill");
 
   if (mainTitleEl) mainTitleEl.textContent = currentEvent.title;
   if (subTitleEl) subTitleEl.textContent = currentEvent.subTitle ? `(${currentEvent.subTitle})` : "";
   if (ddayBadgeEl) ddayBadgeEl.textContent = currentEvent.dday;
   if (managerTextEl) managerTextEl.textContent = `담당: ${currentEvent.manager || "미정"}`;
+
+  if (managerPillEl) {
+    const editIcon = managerPillEl.querySelector(".chk-mgr-edit-icon");
+    if (editIcon) {
+      editIcon.style.display = isPastor ? "inline-block" : "none";
+    }
+    if (isPastor) {
+      managerPillEl.style.cursor = "pointer";
+      managerPillEl.title = "클릭하여 총괄 담당자 및 행사 정보 수정";
+    } else {
+      managerPillEl.style.cursor = "default";
+      managerPillEl.title = "";
+    }
+  }
 
   const items = currentEvent.items || [];
   const total = items.length;
@@ -4577,6 +4592,123 @@ function initChecklistEvents() {
       closeModal("addEventModal");
       addEventForm.reset();
       showToast(`'${title}' 행사가 성공적으로 추가되었습니다! 🎉`);
+    });
+  }
+
+  // --- 행사 정보 & 총괄 담당자 수정 모달 (Edit Event & General Manager) ---
+  function openEditEventModal(event) {
+    if (!event) event = getActiveChecklistEvent();
+    if (!event) return;
+
+    const idInput = document.getElementById("editEventIdInput");
+    const titleInput = document.getElementById("editEventTitleInput");
+    const subTitleInput = document.getElementById("editEventSubTitleInput");
+    const ddayInput = document.getElementById("editEventDdayInput");
+    const managerSelect = document.getElementById("editEventManagerSelect");
+    const themeSelect = document.getElementById("editEventThemeSelect");
+    const dateInput = document.getElementById("editEventDateInput");
+    const locationInput = document.getElementById("editEventLocationInput");
+
+    if (idInput) idInput.value = event.id;
+    if (titleInput) titleInput.value = event.title || "";
+    if (subTitleInput) subTitleInput.value = event.subTitle || "";
+    if (ddayInput) ddayInput.value = event.dday || "";
+    if (dateInput) dateInput.value = event.date || "";
+    if (locationInput) locationInput.value = event.location || "";
+    if (themeSelect) themeSelect.value = event.theme || "sage";
+
+    if (managerSelect) {
+      let matched = false;
+      for (let opt of managerSelect.options) {
+        if (opt.value === event.manager || event.manager.includes(opt.value) || opt.value.includes(event.manager)) {
+          managerSelect.value = opt.value;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched && event.manager) {
+        // Add option if not present
+        const opt = document.createElement("option");
+        opt.value = event.manager;
+        opt.textContent = event.manager;
+        managerSelect.appendChild(opt);
+        managerSelect.value = event.manager;
+      }
+    }
+
+    openModal("editEventModal");
+  }
+
+  // 총괄 담당자 알약 클릭 시 수정 모달 열기 (전도사 전용)
+  const managerPill = document.getElementById("chkEventManagerPill");
+  if (managerPill) {
+    managerPill.addEventListener("click", () => {
+      if (!isCurrentRolePastor()) {
+        showToast("ℹ️ 총괄 담당자 수정은 전도사님만 가능합니다.", "info");
+        return;
+      }
+      const currentEvent = getActiveChecklistEvent();
+      openEditEventModal(currentEvent);
+    });
+  }
+
+  // 행사 수정 폼 제출 리스너
+  const editEventForm = document.getElementById("editEventForm");
+  if (editEventForm) {
+    editEventForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const eventId = document.getElementById("editEventIdInput").value;
+      const targetEvent = appState.events.find(ev => ev.id === eventId);
+      if (!targetEvent) return;
+
+      const newTitle = document.getElementById("editEventTitleInput").value.trim();
+      const newSubTitle = document.getElementById("editEventSubTitleInput").value.trim();
+      const newDday = document.getElementById("editEventDdayInput").value.trim();
+      const newManager = document.getElementById("editEventManagerSelect").value;
+      const newTheme = document.getElementById("editEventThemeSelect").value;
+      const newDate = document.getElementById("editEventDateInput").value.trim();
+      const newLocation = document.getElementById("editEventLocationInput").value.trim();
+
+      targetEvent.title = newTitle;
+      targetEvent.subTitle = newSubTitle;
+      targetEvent.dday = newDday;
+      targetEvent.manager = newManager;
+      targetEvent.theme = newTheme;
+      if (newDate) targetEvent.date = newDate;
+      if (newLocation) targetEvent.location = newLocation;
+
+      saveState();
+      renderUpcomingEventsSection();
+      renderChecklistSection();
+      closeModal("editEventModal");
+      showToast(`'${newTitle}' 행사의 총괄 담당자가 [${newManager}](으)로 수정되었습니다! 👤✓`);
+    });
+  }
+
+  // 행사 삭제 버튼 리스너
+  const deleteEventBtn = document.getElementById("deleteEventModalBtn");
+  if (deleteEventBtn) {
+    deleteEventBtn.addEventListener("click", () => {
+      const eventId = document.getElementById("editEventIdInput").value;
+      const targetEvent = appState.events.find(ev => ev.id === eventId);
+      if (!targetEvent) return;
+
+      if (!confirm(`'${targetEvent.title}' 행사를 정말 삭제하시겠습니까?\n(해당 행사의 체크리스트 항목도 함께 삭제됩니다)`)) {
+        return;
+      }
+
+      appState.events = appState.events.filter(ev => ev.id !== eventId);
+      if (appState.events.length > 0) {
+        appState.currentChecklistEventId = appState.events[0].id;
+      } else {
+        appState.currentChecklistEventId = null;
+      }
+
+      saveState();
+      renderUpcomingEventsSection();
+      renderChecklistSection();
+      closeModal("editEventModal");
+      showToast(`'${targetEvent.title}' 행사가 삭제되었습니다. 🗑️`);
     });
   }
 }
