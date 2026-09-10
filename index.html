@@ -1583,10 +1583,6 @@
           </div>
           <div class="grid grid-cols-2 gap-2.5">
             <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">D-Day 설정 *</label>
-              <input type="text" id="newEventDdayInput" placeholder="예: D-14, D-Day" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:700; color:#c2410c;">
-            </div>
-            <div class="form-group">
               <label style="font-size:12px; font-weight:700; color:#334155;">총괄 담당자 *</label>
               <select id="newEventManagerInput" style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:700; background:#fff;">
                 <option value="정하람 전도사">정하람 전도사</option>
@@ -1597,15 +1593,22 @@
                 <option value="김희순 집사">김희순 집사</option>
               </select>
             </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2.5">
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">행사 일시</label>
-              <input type="text" id="newEventDateInput" placeholder="예: 12월 24일 (목) 19:00" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
-            </div>
             <div class="form-group">
               <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
               <input type="text" id="newEventLocationInput" placeholder="예: 이룸교회 비전홀" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#334155;">행사 일시 *</label>
+              <input type="text" id="newEventDateInput" placeholder="예: 12.25 또는 10월 25일" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#c2410c; display:flex; align-items:center; justify-content:space-between;">
+                <span>D-Day (자동계산)</span>
+                <span style="font-size:10px; font-weight:600; color:#059669;">⚡자동</span>
+              </label>
+              <input type="text" id="newEventDdayInput" placeholder="일시 입력 시 자동계산" required style="width:100%; padding:9px 12px; border:1.5px solid #fed7aa; border-radius:10px; font-size:13px; font-weight:800; color:#c2410c; background:#fffbf7;">
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2.5">
@@ -1676,8 +1679,21 @@
           </div>
           <div class="grid grid-cols-2 gap-2.5">
             <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">D-Day 설정 *</label>
-              <input type="text" id="editEventDdayInput" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:700; color:#c2410c;">
+              <label style="font-size:12px; font-weight:700; color:#334155;">행사 일시</label>
+              <input type="text" id="editEventDateInput" placeholder="예: 12.25 또는 10월 25일" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#c2410c; display:flex; align-items:center; justify-content:space-between;">
+                <span>D-Day</span>
+                <span style="font-size:10px; font-weight:600; color:#059669;">⚡일시 변경 시 자동계산</span>
+              </label>
+              <input type="text" id="editEventDdayInput" required style="width:100%; padding:9px 12px; border:1.5px solid #fed7aa; border-radius:10px; font-size:13px; font-weight:800; color:#c2410c; background:#fffbf7;">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
+              <input type="text" id="editEventLocationInput" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
             </div>
             <div class="form-group">
               <label style="font-size:12px; font-weight:700; color:#334155;">카드 테마 컬러</label>
@@ -1686,16 +1702,6 @@
                 <option value="butter">🧈 웜 버터 (골드)</option>
                 <option value="sage">🌿 세이지 (그린)</option>
               </select>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2.5">
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">행사 일시</label>
-              <input type="text" id="editEventDateInput" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
-            </div>
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
-              <input type="text" id="editEventLocationInput" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
             </div>
           </div>
 
@@ -2294,7 +2300,7 @@
 
   </div>
 
-  <script src="app.js?v=20260910_edit_mgr1"></script>
+  <script src="app.js?v=20260910_auto_dday1"></script>
 </body>
 </html>
 

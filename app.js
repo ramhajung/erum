@@ -4041,6 +4041,68 @@ function isChecklistAssignee(item, user) {
   return false;
 }
 
+// 행사 일시 문자열로부터 D-Day 자동 계산 헬퍼 함수
+function calculateDdayFromDateString(dateStr) {
+  if (!dateStr || typeof dateStr !== "string") return "";
+  const trimmed = dateStr.trim();
+  if (!trimmed) return "";
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const today = new Date(currentYear, now.getMonth(), now.getDate());
+
+  let targetDate = null;
+
+  // 1) YYYY-MM-DD 또는 YYYY.MM.DD 또는 YYYY/MM/DD
+  const fullMatch = trimmed.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if (fullMatch) {
+    const y = parseInt(fullMatch[1], 10);
+    const m = parseInt(fullMatch[2], 10) - 1;
+    const d = parseInt(fullMatch[3], 10);
+    targetDate = new Date(y, m, d);
+  } else {
+    // 2) MM.DD 또는 M.D 또는 MM-DD 또는 MM/DD (예: 12.25, 10.25, 11/8)
+    const dotMatch = trimmed.match(/^(\d{1,2})[-./](\d{1,2})/);
+    if (dotMatch) {
+      const m = parseInt(dotMatch[1], 10) - 1;
+      const d = parseInt(dotMatch[2], 10);
+      targetDate = new Date(currentYear, m, d);
+      // 만약 이미 지난 날짜라면 다음 해로 간주 (단, 90일 이상 이전인 경우에 한함)
+      const diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
+      if (diffDays < -90) {
+        targetDate = new Date(currentYear + 1, m, d);
+      }
+    } else {
+      // 3) "10월 25일" 또는 "12월 24일" 형태
+      const korMatch = trimmed.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일?/);
+      if (korMatch) {
+        const m = parseInt(korMatch[1], 10) - 1;
+        const d = parseInt(korMatch[2], 10);
+        targetDate = new Date(currentYear, m, d);
+        const diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
+        if (diffDays < -90) {
+          targetDate = new Date(currentYear + 1, m, d);
+        }
+      }
+    }
+  }
+
+  if (!targetDate || isNaN(targetDate.getTime())) {
+    return "";
+  }
+
+  const diffTime = targetDate - today;
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return "D-Day";
+  } else if (diffDays > 0) {
+    return `D-${diffDays}`;
+  } else {
+    return `D+${Math.abs(diffDays)}`;
+  }
+}
+
 function getActiveChecklistEvent() {
   if (!appState.events || appState.events.length === 0) {
     appState.events = JSON.parse(JSON.stringify(INITIAL_DATA.events));
@@ -4541,6 +4603,18 @@ function initChecklistEvents() {
     openAddEventHomeBtn.addEventListener("click", () => openModal("addEventModal"));
   }
 
+  // 행사 일시 입력 시 D-Day 실시간 자동 계산 리스너 (추가 모달)
+  const newEventDateInput = document.getElementById("newEventDateInput");
+  const newEventDdayInput = document.getElementById("newEventDdayInput");
+  if (newEventDateInput && newEventDdayInput) {
+    newEventDateInput.addEventListener("input", () => {
+      const calculated = calculateDdayFromDateString(newEventDateInput.value);
+      if (calculated) {
+        newEventDdayInput.value = calculated;
+      }
+    });
+  }
+
   // 새 행사 추가 폼 제출 리스너
   const addEventForm = document.getElementById("addEventForm");
   if (addEventForm) {
@@ -4548,9 +4622,15 @@ function initChecklistEvents() {
       e.preventDefault();
       const title = document.getElementById("newEventTitleInput").value.trim();
       const subTitle = document.getElementById("newEventSubTitleInput").value.trim();
-      const dday = document.getElementById("newEventDdayInput").value.trim();
-      const manager = document.getElementById("newEventManagerInput").value;
       const date = document.getElementById("newEventDateInput").value.trim() || "일정 미정";
+      let dday = document.getElementById("newEventDdayInput").value.trim();
+      
+      // 만약 D-Day가 비어있거나 직접 입력되지 않은 경우 자동 계산값 적용
+      if (!dday) {
+        dday = calculateDdayFromDateString(date) || "D-Day";
+      }
+
+      const manager = document.getElementById("newEventManagerInput").value;
       const location = document.getElementById("newEventLocationInput").value.trim() || "이룸교회";
       const theme = document.getElementById("newEventThemeInput").value;
       const icon = document.getElementById("newEventIconInput").value;
@@ -4591,7 +4671,7 @@ function initChecklistEvents() {
       renderChecklistSection();
       closeModal("addEventModal");
       addEventForm.reset();
-      showToast(`'${title}' 행사가 성공적으로 추가되었습니다! 🎉`);
+      showToast(`'${title}' 행사가 성공적으로 추가되었습니다! 🎉 (${dday})`);
     });
   }
 
@@ -4636,6 +4716,18 @@ function initChecklistEvents() {
       }
     }
 
+    // 수정 모달: 행사 일시 입력 시 D-Day 실시간 자동 계산 리스너
+    const editEventDateInput = document.getElementById("editEventDateInput");
+    const editEventDdayInput = document.getElementById("editEventDdayInput");
+    if (editEventDateInput && editEventDdayInput) {
+      editEventDateInput.oninput = () => {
+        const calculated = calculateDdayFromDateString(editEventDateInput.value);
+        if (calculated) {
+          editEventDdayInput.value = calculated;
+        }
+      };
+    }
+
     openModal("editEventModal");
   }
 
@@ -4663,10 +4755,15 @@ function initChecklistEvents() {
 
       const newTitle = document.getElementById("editEventTitleInput").value.trim();
       const newSubTitle = document.getElementById("editEventSubTitleInput").value.trim();
-      const newDday = document.getElementById("editEventDdayInput").value.trim();
+      const newDate = document.getElementById("editEventDateInput").value.trim();
+      let newDday = document.getElementById("editEventDdayInput").value.trim();
+
+      if (!newDday && newDate) {
+        newDday = calculateDdayFromDateString(newDate) || targetEvent.dday || "D-Day";
+      }
+
       const newManager = document.getElementById("editEventManagerSelect").value;
       const newTheme = document.getElementById("editEventThemeSelect").value;
-      const newDate = document.getElementById("editEventDateInput").value.trim();
       const newLocation = document.getElementById("editEventLocationInput").value.trim();
 
       targetEvent.title = newTitle;
