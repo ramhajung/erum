@@ -4248,6 +4248,8 @@ function renderChecklistSection() {
   const progressFill = document.getElementById("checklistProgressFill");
   const progressText = document.getElementById("checklistProgressText");
   const openAddBtn = document.getElementById("openAddChecklistBtn");
+  const openAddEventBtn = document.getElementById("openAddEventBtn");
+  const openAddEventHomeBtn = document.getElementById("openAddEventHomeBtn");
   const selectorContainer = document.getElementById("checklistEventSelector");
 
   const currentEvent = getActiveChecklistEvent();
@@ -4256,9 +4258,15 @@ function renderChecklistSection() {
   const currentUser = getCurrentUser();
   const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
 
-  // 전도사에게만 '새 체크리스트 추가' 버튼 노출
+  // 전도사에게만 '새 체크리스트 추가' 및 '새 행사 추가' 버튼 노출
   if (openAddBtn) {
     openAddBtn.style.display = isPastor ? "" : "none";
+  }
+  if (openAddEventBtn) {
+    openAddEventBtn.style.display = isPastor ? "" : "none";
+  }
+  if (openAddEventHomeBtn) {
+    openAddEventHomeBtn.style.display = isPastor ? "" : "none";
   }
 
   // 행사 전환 탭/알약 (Event Selector Pills)
@@ -4282,6 +4290,18 @@ function renderChecklistSection() {
       });
       selectorContainer.appendChild(pill);
     });
+
+    // 전도사인 경우 알약 목록 끝에 "+ 행사 추가" 퀵 버튼 추가
+    if (isPastor) {
+      const addEventPill = document.createElement("button");
+      addEventPill.type = "button";
+      addEventPill.className = "px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 flex-shrink-0 bg-amber-50 text-[#8B3B24] border border-[#d4a373]/60 hover:bg-amber-100/70";
+      addEventPill.innerHTML = `<span>＋</span> <span>행사 추가</span>`;
+      addEventPill.addEventListener("click", () => {
+        openModal("addEventModal");
+      });
+      selectorContainer.appendChild(addEventPill);
+    }
   }
 
   // Hero Card 동적 텍스트 갱신
@@ -4492,6 +4512,71 @@ function initChecklistEvents() {
       const itemId = Number(document.getElementById("editChkIdInput").value);
       const title = document.getElementById("editChkTitleInput").value.trim();
       deleteChecklistItem(itemId, title || "선택한 항목");
+    });
+  }
+
+  // --- 새 행사 추가 (Add Event) 모달 열기 버튼들 ---
+  const openAddEventBtn = document.getElementById("openAddEventBtn");
+  if (openAddEventBtn) {
+    openAddEventBtn.addEventListener("click", () => openModal("addEventModal"));
+  }
+
+  const openAddEventHomeBtn = document.getElementById("openAddEventHomeBtn");
+  if (openAddEventHomeBtn) {
+    openAddEventHomeBtn.addEventListener("click", () => openModal("addEventModal"));
+  }
+
+  // 새 행사 추가 폼 제출 리스너
+  const addEventForm = document.getElementById("addEventForm");
+  if (addEventForm) {
+    addEventForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const title = document.getElementById("newEventTitleInput").value.trim();
+      const subTitle = document.getElementById("newEventSubTitleInput").value.trim();
+      const dday = document.getElementById("newEventDdayInput").value.trim();
+      const manager = document.getElementById("newEventManagerInput").value;
+      const date = document.getElementById("newEventDateInput").value.trim() || "일정 미정";
+      const location = document.getElementById("newEventLocationInput").value.trim() || "이룸교회";
+      const theme = document.getElementById("newEventThemeInput").value;
+      const icon = document.getElementById("newEventIconInput").value;
+      const firstChecklist = document.getElementById("newEventFirstChecklistInput").value.trim();
+
+      const newEventId = "event_" + Date.now();
+      const items = [];
+      if (firstChecklist) {
+        items.push({
+          id: Date.now(),
+          title: `${firstChecklist} (${manager})`,
+          manager: manager,
+          checked: false,
+          color: "green"
+        });
+      }
+
+      const newEvent = {
+        id: newEventId,
+        title: title,
+        subTitle: subTitle,
+        dday: dday,
+        date: date,
+        location: location,
+        manager: manager,
+        tag: "Special Event",
+        theme: theme,
+        icon: icon,
+        items: items
+      };
+
+      if (!appState.events) appState.events = [];
+      appState.events.push(newEvent);
+      appState.currentChecklistEventId = newEventId;
+
+      saveState();
+      renderUpcomingEventsSection();
+      renderChecklistSection();
+      closeModal("addEventModal");
+      addEventForm.reset();
+      showToast(`'${title}' 행사가 성공적으로 추가되었습니다! 🎉`);
     });
   }
 }

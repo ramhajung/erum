@@ -489,10 +489,16 @@
               <h2 class="text-headline-sm font-bold text-text-primary tracking-tight" id="events-heading">다가오는 주요 행사</h2>
               <span id="upcomingEventsCountBadge" class="text-[11px] font-bold bg-primary-fixed/60 text-primary px-2 py-0.5 rounded-full ring-1 ring-primary/15">3개</span>
             </div>
-            <button id="viewAllEventsBtn" class="text-label-sm font-label-sm text-text-secondary hover:text-primary font-bold flex items-center gap-0.5 transition-colors group" type="button">
-              전체보기
-              <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
-            </button>
+            <div class="flex items-center gap-1">
+              <button id="openAddEventHomeBtn" class="text-label-sm font-bold text-primary hover:text-primary-focus bg-primary-fixed/30 hover:bg-primary-fixed/50 px-2.5 py-1 rounded-full flex items-center gap-1 transition-colors" type="button" title="새 행사 추가">
+                <span class="material-symbols-outlined text-[15px]">add</span>
+                <span>행사 추가</span>
+              </button>
+              <button id="viewAllEventsBtn" class="text-label-sm font-label-sm text-text-secondary hover:text-primary font-bold flex items-center gap-0.5 transition-colors group" type="button">
+                전체보기
+                <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+              </button>
+            </div>
           </div>
 
           <!-- Horizontal Scrollable Cards Container (Populated dynamically) -->
@@ -755,9 +761,14 @@
             </div>
           </div>
 
-          <button class="btn-orange" id="openAddChecklistBtn">
-            <span>＋</span> <span>새 체크리스트 추가</span>
-          </button>
+          <div class="flex gap-2.5 mt-3">
+            <button class="btn-secondary" id="openAddEventBtn" style="flex:1; border-color:#d4a373; color:#8B3B24; font-weight:800; background:#fdf8f4;">
+              <span>🎉</span> <span>새 행사 추가</span>
+            </button>
+            <button class="btn-orange" id="openAddChecklistBtn" style="flex:1.5;">
+              <span>＋</span> <span>새 체크리스트 추가</span>
+            </button>
+          </div>
         </div>
 
         <!-- Sub-View 3: 예배 출결 & 대타 관리 (Image 3 from prompt 1) -->
@@ -1549,6 +1560,85 @@
       </div>
     </div>
 
+    <!-- Modal: 새 행사 추가 모달 (전도사 & 사역자 전용) -->
+    <div class="modal-backdrop" id="addEventModal">
+      <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">🎉 새 주요 행사 추가</h3>
+            <p style="font-size:11px; color:var(--text-muted);">홈 화면의 '다가오는 주요 행사' 및 '행사 체크리스트'에 동시 등록됩니다</p>
+          </div>
+          <button class="sheet-close-btn" data-close="addEventModal">✕</button>
+        </div>
+        <form id="addEventForm" class="space-y-3.5" style="padding: 10px 0 20px;">
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:700; color:#334155;">행사 이름 *</label>
+            <input type="text" id="newEventTitleInput" placeholder="예: 성탄 축하의 밤, 겨울 비전 캠프" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13.5px; font-weight:700;">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:700; color:#334155;">부제목 / 행사 설명</label>
+            <input type="text" id="newEventSubTitleInput" placeholder="예: 은혜와 감동의 성탄 전야제" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#334155;">D-Day 설정 *</label>
+              <input type="text" id="newEventDdayInput" placeholder="예: D-14, D-Day" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:700; color:#c2410c;">
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#334155;">총괄 담당자 *</label>
+              <select id="newEventManagerInput" style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:700; background:#fff;">
+                <option value="정하람 전도사">정하람 전도사</option>
+                <option value="김대한 선생님">김대한 선생님</option>
+                <option value="소예진 선생님">소예진 선생님</option>
+                <option value="양선아 선생님">양선아 선생님</option>
+                <option value="나하은 선생님">나하은 선생님</option>
+                <option value="김희순 집사">김희순 집사</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#334155;">행사 일시</label>
+              <input type="text" id="newEventDateInput" placeholder="예: 12월 24일 (목) 19:00" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
+              <input type="text" id="newEventLocationInput" placeholder="예: 이룸교회 비전홀" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#334155;">카드 테마 컬러</label>
+              <select id="newEventThemeInput" style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:700; background:#fff;">
+                <option value="terracotta">🍂 테라코타 (프리미엄 브라운)</option>
+                <option value="butter">🧈 웜 버터 (골드 옐로우)</option>
+                <option value="sage" selected>🌿 세이지 (차분한 그린)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="font-size:12px; font-weight:700; color:#334155;">아이콘</label>
+              <select id="newEventIconInput" style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; background:#fff;">
+                <option value="celebration">🎉 축하 (celebration)</option>
+                <option value="volunteer_activism">❤️ 사랑/초청 (volunteer_activism)</option>
+                <option value="menu_book">📖 말씀/도서 (menu_book)</option>
+                <option value="cake">🎂 생일/기념 (cake)</option>
+                <option value="campaign">📢 공지/선포 (campaign)</option>
+                <option value="hiking">🏕️ 수련회/캠프 (hiking)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:700; color:#334155;">첫 번째 체크리스트 할 일 (선택)</label>
+            <input type="text" id="newEventFirstChecklistInput" placeholder="예: 행사 기획안 작성 및 장소 대관 확인" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
+          </div>
+          <button type="submit" class="btn-orange" style="margin-top:10px; width:100%;">
+            <span>🎉 행사 추가하기</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal 7: 새 체크리스트 추가 모달 -->
     <div class="modal-backdrop" id="addChecklistModal">
       <div class="bottom-sheet">
@@ -2132,7 +2222,7 @@
 
   </div>
 
-  <script src="app.js?v=20260910_event_sync2"></script>
+  <script src="app.js?v=20260910_add_event1"></script>
 </body>
 </html>
 
