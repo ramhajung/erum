@@ -131,7 +131,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="style.css?v=20260909_cal5">
+  <link rel="stylesheet" href="style.css?v=20260910_ptr1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -369,6 +369,14 @@
 
     <!-- Screens / Views Container -->
     <main class="screens-container flex-1 min-h-0 px-gutter-screen pt-4 space-y-6 relative z-10" id="screensContainer">
+
+      <!-- Pull to Refresh Indicator Container -->
+      <div id="pullToRefreshIndicator" class="pull-refresh-container" aria-hidden="true">
+        <div class="pull-refresh-pill">
+          <span class="material-symbols-outlined pull-refresh-icon">refresh</span>
+          <span class="pull-refresh-text">당겨서 새로고침</span>
+        </div>
+      </div>
 
       <!-- ===================================================================
            TAB 0: 홈 대시보드 (Stitch Master Design)
@@ -2214,7 +2222,7 @@
 
   </div>
 
-  <script src="app.js?v=20260909_cal13"></script>
+  <script src="app.js?v=20260910_ptr1"></script>
 </body>
 </html>
 

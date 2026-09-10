@@ -5254,6 +5254,155 @@ function renderAll() {
   updateMeetingNavBadge();
 }
 
+// =============================================================================
+// 12. Pull-to-Refresh Engine (Apple HIG & Emil Kowalski Fluid Physics)
+// =============================================================================
+
+function initPullToRefresh() {
+  const container = document.getElementById("screensContainer");
+  const indicator = document.getElementById("pullToRefreshIndicator");
+  if (!container || !indicator) return;
+
+  const icon = indicator.querySelector(".pull-refresh-icon");
+  const text = indicator.querySelector(".pull-refresh-text");
+
+  let startY = 0;
+  let currentY = 0;
+  let isPulling = false;
+  let isRefreshing = false;
+  const PULL_THRESHOLD = 70; // px to trigger refresh
+  const MAX_PULL = 110;
+
+  function onTouchStart(e) {
+    if (isRefreshing) return;
+    // Only allow pull-down if user is at the very top of the scroll container
+    if (container.scrollTop > 2) return;
+
+    startY = e.touches[0].clientY;
+    currentY = startY;
+    isPulling = true;
+  }
+
+  function onTouchMove(e) {
+    if (!isPulling || isRefreshing) return;
+    if (container.scrollTop > 2) {
+      isPulling = false;
+      resetPullUI();
+      return;
+    }
+
+    currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+
+    if (diff > 0) {
+      // Apply rubber-band damping
+      const pullDistance = Math.min(diff * 0.45, MAX_PULL);
+
+      indicator.style.height = `${pullDistance}px`;
+      indicator.classList.add("pulling");
+
+      // Rotate icon proportionally
+      const rotation = (pullDistance / PULL_THRESHOLD) * 180;
+      if (icon) {
+        icon.style.transform = `rotate(${rotation}deg)`;
+      }
+
+      if (pullDistance >= PULL_THRESHOLD) {
+        if (text) text.textContent = "놓으면 새로고침";
+      } else {
+        if (text) text.textContent = "당겨서 새로고침";
+      }
+
+      // Prevent native rubber-band bounce interfering
+      if (e.cancelable && diff > 10) {
+        e.preventDefault();
+      }
+    } else {
+      resetPullUI();
+    }
+  }
+
+  function onTouchEnd() {
+    if (!isPulling || isRefreshing) return;
+    isPulling = false;
+    const diff = currentY - startY;
+    const pullDistance = Math.min(diff * 0.45, MAX_PULL);
+
+    if (pullDistance >= PULL_THRESHOLD) {
+      triggerRefresh();
+    } else {
+      resetPullUI();
+    }
+  }
+
+  function triggerRefresh() {
+    isRefreshing = true;
+    indicator.classList.remove("pulling");
+    indicator.classList.add("refreshing");
+    indicator.style.height = "52px";
+    if (text) text.textContent = "최신 데이터 갱신 중...";
+    if (icon) icon.style.transform = "";
+
+    // Haptic feedback if available (Mobile Safari / Android)
+    if (navigator.vibrate) {
+      try { navigator.vibrate(15); } catch (err) {}
+    }
+
+    // Perform reload of all live data & Google Sheet sync
+    const refreshTasks = [];
+
+    // 1. Google Sheets sync if on accounting tab
+    if (typeof syncFromGoogleSheet === "function") {
+      refreshTasks.push(new Promise(resolve => {
+        syncFromGoogleSheet(false);
+        setTimeout(resolve, 600);
+      }));
+    }
+
+    // 2. Reload state from localStorage (or merge)
+    try {
+      const saved = localStorage.getItem("yerang_app_state_v1");
+      if (saved) {
+        appState = JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn("State reload warning:", e);
+    }
+
+    // Wait at least 650ms for satisfying visual feedback
+    Promise.all([
+      new Promise(r => setTimeout(r, 650)),
+      ...refreshTasks
+    ]).then(() => {
+      renderAll();
+      showToast("🔄 모든 사역 데이터가 최신으로 새로고침되었습니다!", "success");
+
+      if (text) text.textContent = "완료!";
+      setTimeout(() => {
+        isRefreshing = false;
+        resetPullUI();
+      }, 300);
+    }).catch(() => {
+      renderAll();
+      isRefreshing = false;
+      resetPullUI();
+    });
+  }
+
+  function resetPullUI() {
+    indicator.style.height = "0px";
+    indicator.classList.remove("pulling", "refreshing");
+    if (icon) icon.style.transform = "";
+    if (text) text.textContent = "당겨서 새로고침";
+  }
+
+  // Bind touch events on screensContainer
+  container.addEventListener("touchstart", onTouchStart, { passive: true });
+  container.addEventListener("touchmove", onTouchMove, { passive: false });
+  container.addEventListener("touchend", onTouchEnd, { passive: true });
+  container.addEventListener("touchcancel", onTouchEnd, { passive: true });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initNavigation();
   initHomeDashboardEvents();
@@ -5275,6 +5424,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initFrameSwitcher();
   initClock();
   initAuthScreen();
+  initPullToRefresh();
 
   renderAll();
 
