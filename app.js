@@ -646,7 +646,7 @@ function renderAgendaSection() {
   pendingList.innerHTML = "";
 
   // Render Confirmed
-  appState.agendas.confirmed.forEach(agenda => {
+  appState.agendas.confirmed.forEach((agenda, index) => {
     const card = document.createElement("div");
     card.className = "agenda-card default-border";
     if (agenda.type === "cyan") card.classList.add("cyan-border");
