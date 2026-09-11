@@ -6043,7 +6043,15 @@ function getAllCalendarBirthdays() {
       const existingIdx = baseBirthdays.findIndex(b => {
         if (b.userId && b.userId === user.id) return true;
         const cleanBdayName = (b.name || "").replace(/선생님|집사님|전도사님|교사|T|쌤/gi, "").replace(/\s+/g, "");
-        return cleanBdayName && cleanUserName && (cleanBdayName === cleanUserName || cleanBdayName.includes(cleanUserName) || cleanUserName.includes(cleanBdayName));
+        if (cleanBdayName && cleanUserName) {
+          if (cleanBdayName === cleanUserName) return true;
+          // 성(1자) 제외 이름이 같은 경우 매칭 (예: 김하람 <-> 하람) 단, 이름이 최소 2글자 이상일 때만
+          if (cleanBdayName.length >= 2 && cleanUserName.length >= 2) {
+            if (cleanBdayName.length === cleanUserName.length + 1 && cleanBdayName.endsWith(cleanUserName)) return true;
+            if (cleanUserName.length === cleanBdayName.length + 1 && cleanUserName.endsWith(cleanBdayName)) return true;
+          }
+        }
+        return false;
       });
 
       const roleDesc = (user.role === "pastor") ? "전도사"
@@ -6478,7 +6486,7 @@ function initCalendarEvents() {
   if (addForm) {
     addForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const type = addForm.querySelector('input[name="calItemType"]:checked').value;
+      const type = addForm.querySelector('input[name="calItemType"]:checked')?.value || "birthday";
       const dateVal = document.getElementById("calItemDateInput").value;
       if (!dateVal) {
         showToast("⚠️ 날짜를 선택해주세요.", "warn");
