@@ -3328,6 +3328,11 @@ textarea {
 /* ==========================================================================
    Notice System & Notice History Modal Styles
    ========================================================================== */
+#noticesHistoryModal .bottom-sheet {
+  display: flex;
+  flex-direction: column;
+}
+
 .notice-filter-chip {
   background: #fffcf9;
   color: #786f66;

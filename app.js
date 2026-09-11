@@ -7338,12 +7338,28 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
 }
 
 function openNoticesModal(filterTag = "ALL") {
-  if (!appState.notices || !Array.isArray(appState.notices) || appState.notices.length === 0) {
-    appState.notices = JSON.parse(JSON.stringify(INITIAL_DATA.notices || []));
-    saveState();
+  try {
+    if (!appState.notices || !Array.isArray(appState.notices) || appState.notices.length === 0) {
+      appState.notices = JSON.parse(JSON.stringify(INITIAL_DATA.notices || []));
+      saveState();
+    }
+    renderNoticesHistoryList(filterTag);
+    openModal("noticesHistoryModal");
+  } catch (err) {
+    console.error("[openNoticesModal] ERROR:", err);
+    // Fallback: force open the modal directly
+    const modal = document.getElementById("noticesHistoryModal");
+    if (modal) {
+      modal.classList.add("open");
+      modal.style.display = "flex";
+      modal.style.opacity = "1";
+      modal.style.pointerEvents = "auto";
+      const sheet = modal.querySelector(".bottom-sheet");
+      if (sheet) {
+        sheet.style.transform = "translateY(0)";
+      }
+    }
   }
-  renderNoticesHistoryList(filterTag);
-  openModal("noticesHistoryModal");
 }
 
 window.openNoticesModal = openNoticesModal;
