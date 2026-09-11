@@ -4145,6 +4145,13 @@ function openModal(modalId) {
 
 window.openModal = openModal;
 window.closeModal = closeModal;
+window.openNoticesModal = function(tag) {
+  if (typeof openNoticesModalImpl === "function") {
+    openNoticesModalImpl(tag);
+  } else {
+    openModal("noticesHistoryModal");
+  }
+};
 
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
@@ -7337,7 +7344,7 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
   });
 }
 
-function openNoticesModal(filterTag = "ALL") {
+function openNoticesModalImpl(filterTag = "ALL") {
   try {
     if (!appState.notices || !Array.isArray(appState.notices) || appState.notices.length === 0) {
       appState.notices = JSON.parse(JSON.stringify(INITIAL_DATA.notices || []));
@@ -7347,22 +7354,12 @@ function openNoticesModal(filterTag = "ALL") {
     openModal("noticesHistoryModal");
   } catch (err) {
     console.error("[openNoticesModal] ERROR:", err);
-    // Fallback: force open the modal directly
-    const modal = document.getElementById("noticesHistoryModal");
-    if (modal) {
-      modal.classList.add("open");
-      modal.style.display = "flex";
-      modal.style.opacity = "1";
-      modal.style.pointerEvents = "auto";
-      const sheet = modal.querySelector(".bottom-sheet");
-      if (sheet) {
-        sheet.style.transform = "translateY(0)";
-      }
-    }
+    openModal("noticesHistoryModal");
   }
 }
 
-window.openNoticesModal = openNoticesModal;
+const openNoticesModal = openNoticesModalImpl;
+window.openNoticesModal = openNoticesModalImpl;
 window.openAddNoticeModal = openAddNoticeModal;
 
 function setNoticeAsCurrent(noticeId) {
