@@ -4132,10 +4132,19 @@ function openModal(modalId) {
     console.warn("[openModal] Modal not found:", modalId);
     return;
   }
+  const sheet = modal.querySelector(".bottom-sheet");
+  if (sheet) {
+    sheet.style.transition = "transform var(--duration-drawer) var(--ease-out)";
+    sheet.style.transform = "translateY(0)";
+  }
   modal.classList.add("open");
   modal.style.display = "flex";
   modal.style.opacity = "1";
+  modal.style.pointerEvents = "auto";
 }
+
+window.openModal = openModal;
+window.closeModal = closeModal;
 
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
@@ -7329,9 +7338,16 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
 }
 
 function openNoticesModal(filterTag = "ALL") {
+  if (!appState.notices || !Array.isArray(appState.notices) || appState.notices.length === 0) {
+    appState.notices = JSON.parse(JSON.stringify(INITIAL_DATA.notices || []));
+    saveState();
+  }
   renderNoticesHistoryList(filterTag);
   openModal("noticesHistoryModal");
 }
+
+window.openNoticesModal = openNoticesModal;
+window.openAddNoticeModal = openAddNoticeModal;
 
 function setNoticeAsCurrent(noticeId) {
   if (!appState.notices) return;

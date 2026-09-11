@@ -131,7 +131,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="style.css?v=20260911_notice_popup1">
+  <link rel="stylesheet" href="style.css?v=20260912_notice_fix2">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -482,8 +482,8 @@
         </section>
 
         <!-- Notice Strip Banner: 금주 공지 (다가오는 주요 행사 상단 배치) -->
-        <div id="noticeBanner" class="bg-gradient-to-r from-white via-surface-card to-badge-terracotta-bg/30 rounded-2xl p-3.5 border border-primary/15 shadow-[0_4px_16px_rgba(150,67,43,0.06)] flex items-center justify-between gap-3 hover:border-primary/30 transition-all cursor-pointer group" role="button" tabindex="0" title="공지 히스토리 모아보기">
-          <div class="flex items-center gap-3 min-w-0">
+        <div id="noticeBanner" class="bg-gradient-to-r from-white via-surface-card to-badge-terracotta-bg/30 rounded-2xl p-3.5 border border-primary/15 shadow-[0_4px_16px_rgba(150,67,43,0.06)] flex items-center justify-between gap-3 hover:border-primary/30 active:scale-[0.99] transition-all cursor-pointer group" role="button" tabindex="0" title="공지 히스토리 모아보기" onclick="openNoticesModal()">
+          <div class="flex items-center gap-3 min-w-0 pointer-events-none">
             <div class="relative w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
               <span class="material-symbols-outlined text-[19px]">campaign</span>
             </div>
@@ -495,7 +495,7 @@
               <p id="noticeBannerTitle" class="text-body-sm font-bold text-text-primary mt-1 group-hover:text-primary transition-colors truncate">전 학년 간식 타임! (식당 3층 모임)</p>
             </div>
           </div>
-          <button type="button" id="noticeBannerArrowBtn" class="w-7 h-7 rounded-full bg-surface-container-low flex items-center justify-center text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" aria-label="공지 목록 보기" title="공지 목록 보기">
+          <button type="button" id="noticeBannerArrowBtn" class="w-7 h-7 rounded-full bg-surface-container-low flex items-center justify-center text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0 cursor-pointer" aria-label="공지 목록 보기" title="공지 목록 보기" onclick="event.stopPropagation(); openNoticesModal();">
             <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
           </button>
         </div>
@@ -2361,7 +2361,7 @@
 
     <!-- Modal: 공지사항 히스토리 모아보기 모달 (Notice History Popup) -->
     <div class="modal-backdrop" id="noticesHistoryModal">
-      <div class="bottom-sheet" style="max-height: 88vh; display: flex; flex-direction: column;">
+      <div class="bottom-sheet" style="max-height: 90%; display: flex; flex-direction: column;">
         <div class="sheet-handle"></div>
         <div class="sheet-header" style="margin-bottom: 12px; flex-shrink: 0;">
           <div>
@@ -2404,7 +2404,7 @@
 
     <!-- Modal: 새 공지 작성 및 수정 모달 -->
     <div class="modal-backdrop" id="addNoticeModal">
-      <div class="bottom-sheet" style="max-height: 88vh; overflow-y: auto;">
+      <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
           <div>
@@ -2477,7 +2477,7 @@
 
   </div>
 
-  <script src="app.js?v=20260911_notice_popup1"></script>
+  <script src="app.js?v=20260912_notice_fix2"></script>
 </body>
 </html>
 
