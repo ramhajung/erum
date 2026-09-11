@@ -34,6 +34,58 @@ const INITIAL_DATA = {
       { id: 2, text: "가족 영혼 구원", count: 24, prayed: false }
     ]
   },
+  notices: [
+    {
+      id: "notice_1",
+      tag: "금주 공지",
+      time: "12시",
+      title: "전 학년 간식 타임! (식당 3층 모임)",
+      content: "이번 주일 예배 후 3층 식당에서 전 학년 간식 타임(피자 & 음료)이 진행됩니다. 공과 공부를 마친 후 각 반 담임 선생님의 인솔 하에 3층 식당으로 이동해 주세요.",
+      author: "정하람 전도사",
+      date: "2026.09.13 (주일)",
+      isCurrent: true
+    },
+    {
+      id: "notice_2",
+      tag: "행사 공지",
+      time: "16:00",
+      title: "중고등부 찬양팀 토요 정기 합주 연습 안내",
+      content: "이번 주 토요일 오후 4시 본당 예루살렘홀에서 주일 예배 찬양팀 합주 연습이 있습니다. 세션 및 싱어팀 학생들은 악보와 개인 악기를 지참하여 10분 전까지 도착해 주세요.",
+      author: "소예진 선생님",
+      date: "2026.09.12 (토)",
+      isCurrent: false
+    },
+    {
+      id: "notice_3",
+      tag: "예배 공지",
+      time: "11:00",
+      title: "9월 친구초청주일 및 웰컴 페스티벌 안내",
+      content: "새학기를 맞아 믿지 않는 친구들을 초청하는 '예랑 프렌즈 데이'가 열립니다. 친구를 위한 기도와 초청장 전달에 함께 동참해 주세요. 풍성한 웰컴 선물과 레크리에이션이 준비되어 있습니다.",
+      author: "정하람 전도사",
+      date: "2026.09.06 (주일)",
+      isCurrent: false
+    },
+    {
+      id: "notice_4",
+      tag: "안내",
+      time: "20:00",
+      title: "예랑 스카(자습실) 중간고사 시험기간 24시간 특별 개방",
+      content: "중간고사를 준비하는 학생들을 위해 교육관 2층 스터디카페를 24시간 특별 개방합니다. 지정 좌석제 및 야간 간식(토스트/음료)이 제공되오니 많은 이용 바랍니다.",
+      author: "김대한 선생님",
+      date: "2026.08.30",
+      isCurrent: false
+    },
+    {
+      id: "notice_5",
+      tag: "사역 공지",
+      time: "13:30",
+      title: "3분기 교사 기도회 및 월례회",
+      content: "주일 3부 예배 후 소예배실에서 교사 월례회가 진행됩니다. 분반별 심방 현황 및 하반기 사역 기획 안건을 함께 나눕니다.",
+      author: "김희순 부장집사",
+      date: "2026.08.23",
+      isCurrent: false
+    }
+  ],
   currentSelectedClassId: "class_high3",
   gradeClasses: [
     {
@@ -572,6 +624,9 @@ function loadState() {
       }
       if (!parsed.currentSelectedClassId) {
         parsed.currentSelectedClassId = "class_high3";
+      }
+      if (!parsed.notices || !Array.isArray(parsed.notices) || parsed.notices.length === 0) {
+        parsed.notices = JSON.parse(JSON.stringify(INITIAL_DATA.notices));
       }
       return parsed;
     } catch (e) {
@@ -6942,6 +6997,7 @@ function renderAll() {
   renderAgendaSection();
   renderAttendanceSection();
   renderAccountingSection();
+  renderNoticeBanner();
   renderUpcomingEventsSection();
   renderChecklistSection();
   renderStaffBoxSection();
@@ -7102,9 +7158,357 @@ function initPullToRefresh() {
   container.addEventListener("touchcancel", onTouchEnd, { passive: true });
 }
 
+// =============================================================================
+// 13. Notice System (Notice Strip Banner & Notice History Popup)
+// =============================================================================
+
+let currentNoticeFilterTag = "ALL";
+
+function getActiveBannerNotice() {
+  if (!appState.notices || appState.notices.length === 0) return null;
+  const current = appState.notices.find(n => n.isCurrent);
+  return current || appState.notices[0];
+}
+
+function renderNoticeBanner() {
+  const banner = document.getElementById("noticeBanner");
+  const tagEl = document.getElementById("noticeBannerTag");
+  const timeEl = document.getElementById("noticeBannerTime");
+  const titleEl = document.getElementById("noticeBannerTitle");
+  if (!banner) return;
+
+  const notice = getActiveBannerNotice();
+  if (!notice) {
+    if (tagEl) tagEl.textContent = "공지";
+    if (timeEl) timeEl.textContent = "";
+    if (titleEl) titleEl.textContent = "등록된 공지사항이 없습니다.";
+    return;
+  }
+
+  if (tagEl) {
+    tagEl.textContent = notice.tag || "공지";
+    tagEl.className = "text-[11px] font-bold px-1.5 py-0.5 rounded bg-primary-fixed text-primary border border-primary/20 shrink-0";
+  }
+  if (timeEl) {
+    timeEl.textContent = notice.time || "";
+  }
+  if (titleEl) {
+    titleEl.textContent = notice.title || "";
+  }
+}
+
+function getNoticeTagClass(tag) {
+  if (!tag) return "notice-tag-this-week";
+  if (tag.includes("금주")) return "notice-tag-this-week";
+  if (tag.includes("행사")) return "notice-tag-event";
+  if (tag.includes("예배")) return "notice-tag-worship";
+  if (tag.includes("사역")) return "notice-tag-ministry";
+  return "notice-tag-info";
+}
+
+function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
+  currentNoticeFilterTag = filterTag;
+  const listContainer = document.getElementById("noticesListContainer");
+  const countBadge = document.getElementById("noticesTotalCountBadge");
+  if (!listContainer) return;
+
+  const notices = appState.notices || [];
+  const filtered = filterTag === "ALL" 
+    ? notices 
+    : notices.filter(n => n.tag === filterTag || (filterTag === "안내" && n.tag.includes("안내")));
+
+  if (countBadge) {
+    countBadge.textContent = `${notices.length}개`;
+  }
+
+  // Update active filter chip UI
+  document.querySelectorAll("#noticeTagFilterBar .notice-filter-chip").forEach(chip => {
+    if (chip.dataset.tag === filterTag) {
+      chip.classList.add("active");
+    } else {
+      chip.classList.remove("active");
+    }
+  });
+
+  if (filtered.length === 0) {
+    listContainer.innerHTML = `
+      <div class="py-12 flex flex-col items-center justify-center text-center">
+        <div class="w-14 h-14 rounded-2xl bg-surface-container-low flex items-center justify-center text-text-muted mb-3">
+          <span class="material-symbols-outlined text-[30px]">campaign</span>
+        </div>
+        <p class="text-sm font-bold text-text-primary">해당 카테고리의 공지사항이 없습니다.</p>
+        <p class="text-xs text-text-muted mt-1">새 공지를 등록하거나 다른 탭을 선택해 보세요.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const currentUser = getCurrentUser();
+  const canManage = currentUser && (currentUser.role !== "student");
+
+  listContainer.innerHTML = filtered.map(notice => {
+    const isCurrent = !!notice.isCurrent;
+    const tagClass = getNoticeTagClass(notice.tag);
+
+    return `
+      <article class="notice-card ${isCurrent ? 'is-current-banner' : ''}" data-notice-id="${notice.id}">
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="notice-tag-badge ${tagClass}">${notice.tag || "공지"}</span>
+            ${isCurrent ? `
+              <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-primary text-white flex items-center gap-1 shadow-sm">
+                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span>현재 배너 공지</span>
+              </span>
+            ` : ''}
+            <span class="text-[11px] font-semibold text-text-muted flex items-center gap-1">
+              <span class="material-symbols-outlined text-[13px]">schedule</span>
+              <span>${notice.time || ''}</span>
+            </span>
+          </div>
+          <span class="text-[11px] font-medium text-text-muted shrink-0">${notice.date || ''}</span>
+        </div>
+
+        <h4 class="text-[15px] font-extrabold text-text-primary leading-snug tracking-tight mb-2">
+          ${notice.title || ''}
+        </h4>
+
+        <p class="text-[13px] text-text-secondary leading-relaxed font-normal whitespace-pre-line mb-3">
+          ${notice.content || ''}
+        </p>
+
+        <div class="pt-2.5 border-t border-outline-variant/15 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 text-[11.5px] font-bold text-text-secondary">
+            <span class="material-symbols-outlined text-[15px] text-primary">person</span>
+            <span>${notice.author || '교역자'}</span>
+          </div>
+
+          ${canManage ? `
+            <div class="flex items-center gap-1.5">
+              ${!isCurrent ? `
+                <button type="button" class="set-current-notice-btn text-[11px] font-bold text-primary bg-primary-fixed/40 hover:bg-primary-fixed px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors" data-id="${notice.id}" title="메인 배너로 지정">
+                  <span class="material-symbols-outlined text-[13px]">push_pin</span>
+                  <span>배너 지정</span>
+                </button>
+              ` : ''}
+              <button type="button" class="edit-notice-btn text-[11px] font-bold text-text-secondary hover:text-primary bg-surface-container-low hover:bg-surface-container px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors" data-id="${notice.id}" title="공지 수정">
+                <span class="material-symbols-outlined text-[13px]">edit</span>
+                <span>수정</span>
+              </button>
+              <button type="button" class="delete-notice-btn text-[11px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors" data-id="${notice.id}" title="공지 삭제">
+                <span class="material-symbols-outlined text-[13px]">delete</span>
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  // Attach card event listeners
+  listContainer.querySelectorAll(".set-current-notice-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setNoticeAsCurrent(btn.dataset.id);
+    });
+  });
+
+  listContainer.querySelectorAll(".edit-notice-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openEditNoticeModal(btn.dataset.id);
+    });
+  });
+
+  listContainer.querySelectorAll(".delete-notice-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      deleteNotice(btn.dataset.id);
+    });
+  });
+}
+
+function openNoticesModal(filterTag = "ALL") {
+  renderNoticesHistoryList(filterTag);
+  openModal("noticesHistoryModal");
+}
+
+function setNoticeAsCurrent(noticeId) {
+  if (!appState.notices) return;
+  appState.notices.forEach(n => {
+    n.isCurrent = (n.id === noticeId);
+  });
+  saveState();
+  renderNoticeBanner();
+  renderNoticesHistoryList();
+  showToast("선택한 공지가 홈 화면 메인 배너로 지정되었습니다 📌", "success");
+}
+
+function deleteNotice(noticeId) {
+  if (!appState.notices) return;
+  const target = appState.notices.find(n => n.id === noticeId);
+  if (!target) return;
+  if (!confirm(`"${target.title}" 공지를 삭제하시겠습니까?`)) return;
+
+  const wasCurrent = target.isCurrent;
+  appState.notices = appState.notices.filter(n => n.id !== noticeId);
+
+  if (wasCurrent && appState.notices.length > 0) {
+    appState.notices[0].isCurrent = true;
+  }
+
+  saveState();
+  renderNoticeBanner();
+  renderNoticesHistoryList();
+  showToast("공지가 삭제되었습니다 🗑️", "info");
+}
+
+function openAddNoticeModal() {
+  const form = document.getElementById("noticeForm");
+  if (!form) return;
+  form.reset();
+  document.getElementById("noticeEditId").value = "";
+  document.getElementById("noticeFormModalTitle").textContent = "📢 새 공지 작성";
+  document.getElementById("noticeFormModalSubtitle").textContent = "예랑 메인 공지 및 히스토리에 게시합니다";
+  document.getElementById("noticeSubmitBtn").textContent = "공지 저장하기";
+
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    document.getElementById("noticeAuthorInput").value = currentUser.name || "정하람 전도사";
+  }
+
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const dayStr = days[now.getDay()];
+  document.getElementById("noticeDateInput").value = `${y}.${m}.${d} (${dayStr})`;
+  document.getElementById("noticeIsCurrentInput").checked = true;
+
+  openModal("addNoticeModal");
+}
+
+function openEditNoticeModal(noticeId) {
+  if (!appState.notices) return;
+  const notice = appState.notices.find(n => n.id === noticeId);
+  if (!notice) return;
+
+  document.getElementById("noticeEditId").value = notice.id;
+  document.getElementById("noticeFormModalTitle").textContent = "✏️ 공지사항 수정";
+  document.getElementById("noticeFormModalSubtitle").textContent = "공지 내용을 수정합니다";
+  document.getElementById("noticeSubmitBtn").textContent = "수정사항 저장하기";
+
+  document.getElementById("noticeTagInput").value = notice.tag || "금주 공지";
+  document.getElementById("noticeTimeInput").value = notice.time || "";
+  document.getElementById("noticeTitleInput").value = notice.title || "";
+  document.getElementById("noticeContentInput").value = notice.content || "";
+  document.getElementById("noticeAuthorInput").value = notice.author || "";
+  document.getElementById("noticeDateInput").value = notice.date || "";
+  document.getElementById("noticeIsCurrentInput").checked = !!notice.isCurrent;
+
+  openModal("addNoticeModal");
+}
+
+function initNoticesEvents() {
+  // Notice Banner click to open popup modal
+  const banner = document.getElementById("noticeBanner");
+  if (banner) {
+    banner.addEventListener("click", () => {
+      openNoticesModal();
+    });
+  }
+
+  const arrowBtn = document.getElementById("noticeBannerArrowBtn");
+  if (arrowBtn) {
+    arrowBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openNoticesModal();
+    });
+  }
+
+  // Filter chips
+  document.querySelectorAll("#noticeTagFilterBar .notice-filter-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const tag = chip.dataset.tag;
+      renderNoticesHistoryList(tag);
+    });
+  });
+
+  // Open add notice modal button
+  const openAddBtn = document.getElementById("openAddNoticeBtn");
+  if (openAddBtn) {
+    openAddBtn.addEventListener("click", () => {
+      openAddNoticeModal();
+    });
+  }
+
+  // Notice Form Submit
+  const form = document.getElementById("noticeForm");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const editId = document.getElementById("noticeEditId").value;
+      const tag = document.getElementById("noticeTagInput").value;
+      const time = document.getElementById("noticeTimeInput").value.trim();
+      const title = document.getElementById("noticeTitleInput").value.trim();
+      const content = document.getElementById("noticeContentInput").value.trim();
+      const author = document.getElementById("noticeAuthorInput").value.trim();
+      const date = document.getElementById("noticeDateInput").value.trim();
+      const isCurrent = document.getElementById("noticeIsCurrentInput").checked;
+
+      if (!title) {
+        showToast("공지 제목을 입력해주세요.", "warn");
+        return;
+      }
+
+      if (!appState.notices) {
+        appState.notices = [];
+      }
+
+      if (isCurrent) {
+        appState.notices.forEach(n => { n.isCurrent = false; });
+      }
+
+      if (editId) {
+        const existing = appState.notices.find(n => n.id === editId);
+        if (existing) {
+          existing.tag = tag;
+          existing.time = time;
+          existing.title = title;
+          existing.content = content;
+          existing.author = author;
+          existing.date = date;
+          if (isCurrent) existing.isCurrent = true;
+        }
+        showToast("공지사항이 수정되었습니다 ✏️", "success");
+      } else {
+        const newNotice = {
+          id: `notice_${Date.now()}`,
+          tag,
+          time,
+          title,
+          content,
+          author,
+          date,
+          isCurrent: isCurrent || appState.notices.length === 0
+        };
+        appState.notices.unshift(newNotice);
+        showToast("새 공지가 등록되었습니다 📢", "success");
+      }
+
+      saveState();
+      renderNoticeBanner();
+      renderNoticesHistoryList();
+      closeModal("addNoticeModal");
+    });
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initNavigation();
   initHomeDashboardEvents();
+  initNoticesEvents();
   initWorshipDutyEvents();
   initSchedulerSubTabs();
   initStudentEvents();

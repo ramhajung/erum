@@ -131,7 +131,7 @@
       }
     };
   </script>
-  <link rel="stylesheet" href="style.css?v=20260911_vercel_fix1">
+  <link rel="stylesheet" href="style.css?v=20260911_notice_popup1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -482,22 +482,22 @@
         </section>
 
         <!-- Notice Strip Banner: 금주 공지 (다가오는 주요 행사 상단 배치) -->
-        <div class="bg-gradient-to-r from-white via-surface-card to-badge-terracotta-bg/30 rounded-2xl p-3.5 border border-primary/15 shadow-[0_4px_16px_rgba(150,67,43,0.06)] flex items-center justify-between gap-3 hover:border-primary/30 transition-all cursor-pointer group">
-          <div class="flex items-center gap-3">
+        <div id="noticeBanner" class="bg-gradient-to-r from-white via-surface-card to-badge-terracotta-bg/30 rounded-2xl p-3.5 border border-primary/15 shadow-[0_4px_16px_rgba(150,67,43,0.06)] flex items-center justify-between gap-3 hover:border-primary/30 transition-all cursor-pointer group" role="button" tabindex="0" title="공지 히스토리 모아보기">
+          <div class="flex items-center gap-3 min-w-0">
             <div class="relative w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
               <span class="material-symbols-outlined text-[19px]">campaign</span>
             </div>
-            <div class="leading-tight">
+            <div class="leading-tight min-w-0 flex-1">
               <div class="flex items-center gap-2">
-                <span class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-primary-fixed text-primary border border-primary/20">금주 공지</span>
-                <span class="text-[11px] font-semibold text-text-muted">12시</span>
+                <span id="noticeBannerTag" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-primary-fixed text-primary border border-primary/20 shrink-0">금주 공지</span>
+                <span id="noticeBannerTime" class="text-[11px] font-semibold text-text-muted shrink-0">12시</span>
               </div>
-              <p class="text-body-sm font-bold text-text-primary mt-1 group-hover:text-primary transition-colors">전 학년 간식 타임! (식당 3층 모임)</p>
+              <p id="noticeBannerTitle" class="text-body-sm font-bold text-text-primary mt-1 group-hover:text-primary transition-colors truncate">전 학년 간식 타임! (식당 3층 모임)</p>
             </div>
           </div>
-          <div class="w-7 h-7 rounded-full bg-surface-container-low flex items-center justify-center text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all">
+          <button type="button" id="noticeBannerArrowBtn" class="w-7 h-7 rounded-full bg-surface-container-low flex items-center justify-center text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" aria-label="공지 목록 보기" title="공지 목록 보기">
             <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </div>
+          </button>
         </div>
 
         <!-- Section: 다가오는 주요 행사 (Carousel with Cool Highlight Hero Card) -->
@@ -2359,9 +2359,125 @@
       </div>
     </div>
 
+    <!-- Modal: 공지사항 히스토리 모아보기 모달 (Notice History Popup) -->
+    <div class="modal-backdrop" id="noticesHistoryModal">
+      <div class="bottom-sheet" style="max-height: 88vh; display: flex; flex-direction: column;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="margin-bottom: 12px; flex-shrink: 0;">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="sheet-title flex items-center gap-1.5 text-[18px]">
+                <span>📢</span>
+                <span>공지사항 모아보기</span>
+              </h3>
+              <span id="noticesTotalCountBadge" class="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-primary-fixed text-primary ring-1 ring-primary/20">0개</span>
+            </div>
+            <p class="text-[12px] font-semibold text-text-muted mt-0.5">이룸교회 중고등부 공지 히스토리</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <!-- 새 공지 작성 버튼 (전도사/교사 권한) -->
+            <button type="button" id="openAddNoticeBtn" class="text-label-sm font-bold text-primary hover:text-primary-focus bg-primary-fixed/40 hover:bg-primary-fixed/70 px-3 py-1.5 rounded-full flex items-center gap-1 transition-all" title="새 공지 작성">
+              <span class="material-symbols-outlined text-[16px]">edit_note</span>
+              <span>공지 작성</span>
+            </button>
+            <button type="button" class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" data-close="noticesHistoryModal" aria-label="닫기">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Pills Bar -->
+        <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-2 pt-1 flex-shrink-0" id="noticeTagFilterBar">
+          <button type="button" class="notice-filter-chip active text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="ALL">전체</button>
+          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="금주 공지">금주 공지</button>
+          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="행사 공지">행사 공지</button>
+          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="예배 공지">예배 공지</button>
+          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="안내">안내</button>
+        </div>
+
+        <!-- Scrollable Notices List Container -->
+        <div class="flex-1 overflow-y-auto min-h-0 space-y-3 pr-0.5 pt-2 pb-4" id="noticesListContainer">
+          <!-- Rendered by JS renderNoticesHistoryList() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: 새 공지 작성 및 수정 모달 -->
+    <div class="modal-backdrop" id="addNoticeModal">
+      <div class="bottom-sheet" style="max-height: 88vh; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title" id="noticeFormModalTitle">📢 새 공지 작성</h3>
+            <p class="text-[11px] text-text-muted font-bold" id="noticeFormModalSubtitle">예랑 메인 공지 및 히스토리에 게시합니다</p>
+          </div>
+          <button type="button" class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" data-close="addNoticeModal" aria-label="닫기">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+        <form id="noticeForm" class="space-y-3.5 pt-1">
+          <input type="hidden" id="noticeEditId" value="">
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label for="noticeTagInput">공지 구분</label>
+              <select id="noticeTagInput" required class="w-full">
+                <option value="금주 공지" selected>금주 공지 📢</option>
+                <option value="행사 공지">행사 공지 🎉</option>
+                <option value="예배 공지">예배 공지 ✝️</option>
+                <option value="사역 공지">사역 공지 📋</option>
+                <option value="안내">일반 안내 ℹ️</option>
+              </select>
+            </div>
+            <div class="form-group mb-0">
+              <label for="noticeTimeInput">시간 / 모임 일시</label>
+              <input type="text" id="noticeTimeInput" placeholder="예: 12시, 11:00, 주일 점심" value="12시" required>
+            </div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label for="noticeTitleInput">공지 제목</label>
+            <input type="text" id="noticeTitleInput" placeholder="공지 제목 (예: 전 학년 간식 타임!)" required>
+          </div>
+
+          <div class="form-group mb-0">
+            <label for="noticeContentInput">상세 내용 및 안내</label>
+            <textarea id="noticeContentInput" rows="4" placeholder="상세한 모임 장소, 준비물, 전달 사항을 작성해주세요." required></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="form-group mb-0">
+              <label for="noticeAuthorInput">작성자</label>
+              <input type="text" id="noticeAuthorInput" placeholder="작성자 이름" value="정하람 전도사" required>
+            </div>
+            <div class="form-group mb-0">
+              <label for="noticeDateInput">게시 일자</label>
+              <input type="text" id="noticeDateInput" placeholder="YYYY.MM.DD" value="" required>
+            </div>
+          </div>
+
+          <div class="bg-surface-container-low/70 p-3 rounded-xl border border-outline-variant/20 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[20px] text-primary">campaign</span>
+              <div>
+                <p class="text-[12.5px] font-bold text-text-primary">메인 배너에 즉시 노출</p>
+                <p class="text-[11px] text-text-muted">홈 화면 최상단 공지 배너로 지정합니다</p>
+              </div>
+            </div>
+            <input type="checkbox" id="noticeIsCurrentInput" class="w-4 h-4 text-primary rounded focus:ring-primary accent-primary" checked>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" class="btn-secondary flex-1 py-3 text-sm font-bold" data-close="addNoticeModal">취소</button>
+            <button type="submit" class="btn-primary flex-1 py-3 text-sm font-bold" id="noticeSubmitBtn">공지 저장하기</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 
-  <script src="app.js?v=20260911_vercel_fix1"></script>
+  <script src="app.js?v=20260911_notice_popup1"></script>
 </body>
 </html>
 
