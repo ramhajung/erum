@@ -2526,14 +2526,9 @@ function renderStudentRosterList(filterGrade = currentStudentRosterFilter) {
             </div>
           </div>
 
-          <!-- Right: Quick actions -->
-          <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
-            <button type="button" class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm transition-colors cursor-pointer" onclick="makePhoneCall('${s.phone}', '${s.name}')" title="전화걸기">
-              📞
-            </button>
-            <button type="button" class="w-8 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 flex items-center justify-center text-sm transition-colors cursor-pointer" onclick="sendKakaoMessage('${s.name}')" title="카톡/문자">
-              💬
-            </button>
+          <!-- Right: Detail chevron -->
+          <div class="flex items-center text-stone-300 font-bold text-lg pr-1 flex-shrink-0">
+            ›
           </div>
         </div>
 
