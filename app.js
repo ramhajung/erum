@@ -1569,6 +1569,103 @@ window.submitAddStudentToClass = submitAddStudentToClass;
 window.removeStudentFromClass = removeStudentFromClass;
 window.addNewStudentToClass = addNewStudentToClass;
 
+function openTransferStudentModal(fromClassId, studentId) {
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  const sourceClass = classes.find(c => c.id === fromClassId);
+  if (!sourceClass) {
+    showToast("⚠️ 분반 정보를 찾을 수 없습니다.", "warn");
+    return;
+  }
+  const student = sourceClass.students.find(s => s.id === studentId);
+  if (!student) {
+    showToast("⚠️ 학생 정보를 찾을 수 없습니다.", "warn");
+    return;
+  }
+
+  const nameEl = document.getElementById("transferStudentName");
+  const roleEl = document.getElementById("transferStudentRole");
+  const fromEl = document.getElementById("transferFromClassName");
+  const avatarEl = document.getElementById("transferStudentAvatar");
+  const fromInput = document.getElementById("transferFromClassId");
+  const studentInput = document.getElementById("transferStudentId");
+  const targetSelect = document.getElementById("transferTargetClassSelect");
+  const reasonInput = document.getElementById("transferReasonInput");
+
+  if (nameEl) nameEl.textContent = student.name;
+  if (roleEl) roleEl.textContent = `(${student.roleInfo || student.grade})`;
+  if (fromEl) fromEl.textContent = `${sourceClass.grade} (${sourceClass.teacherName})`;
+  if (avatarEl) avatarEl.textContent = student.avatar || "👦🏻";
+  if (fromInput) fromInput.value = fromClassId;
+  if (studentInput) studentInput.value = studentId;
+  if (reasonInput) reasonInput.value = "";
+
+  if (targetSelect) {
+    const otherClasses = classes.filter(c => c.id !== fromClassId);
+    targetSelect.innerHTML = otherClasses.map(c => `
+      <option value="${c.id}">📍 ${c.grade} (${c.teacherName}) - 현재 재적 ${c.students.length}명</option>
+    `).join('');
+  }
+
+  openModal("transferStudentModal");
+}
+
+function initTransferStudentEvents() {
+  const form = document.getElementById("transferStudentForm");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fromClassId = document.getElementById("transferFromClassId").value;
+      const studentId = document.getElementById("transferStudentId").value;
+      const targetSelect = document.getElementById("transferTargetClassSelect");
+      const targetClassId = targetSelect ? targetSelect.value : "";
+      const reason = (document.getElementById("transferReasonInput").value || "").trim();
+
+      const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+      const sourceClass = classes.find(c => c.id === fromClassId);
+      const targetClass = classes.find(c => c.id === targetClassId);
+
+      if (!sourceClass || !targetClass) {
+        showToast("⚠️ 분반 정보를 찾을 수 없습니다.", "warn");
+        return;
+      }
+
+      const sIndex = sourceClass.students.findIndex(s => s.id === studentId);
+      if (sIndex === -1) {
+        showToast("⚠️ 이동할 학생을 찾을 수 없습니다.", "warn");
+        return;
+      }
+
+      // 학생 분반 이동 처리
+      const student = sourceClass.students.splice(sIndex, 1)[0];
+
+      student.grade = targetClass.grade;
+      if (reason) {
+        student.recentVisit = `[${targetClass.grade} 이동] ${reason}`;
+      } else {
+        student.recentVisit = `${sourceClass.grade}에서 ${targetClass.grade}(으)로 분반 이동 완료`;
+      }
+
+      // 사용자 프로필이 있는 경우 직무/분반 정보도 연동
+      if (Array.isArray(appState.users)) {
+        const userObj = appState.users.find(u => u.name === student.name || u.id === student.id);
+        if (userObj) {
+          userObj.duty = `${targetClass.grade} / ${student.roleInfo || '분반 학생'}`;
+        }
+      }
+
+      targetClass.students.push(student);
+
+      saveState();
+      renderClassMinistrySection();
+      closeModal("transferStudentModal");
+
+      showToast(`🎉 ${student.name} 학생이 '${targetClass.grade}'(으)로 성공적으로 이동되었습니다! ✓`, "success");
+    });
+  }
+}
+
+window.openTransferStudentModal = openTransferStudentModal;
+
 function toggleNewcomerStep(studentId, week) {
   const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
   const student = data.students.find(s => s.id === studentId);
@@ -1797,6 +1894,9 @@ function renderClassMinistrySection() {
                 <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:30px; height:30px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer;" title="1:1 톡">
                   💬
                 </button>
+                <button type="button" onclick="openTransferStudentModal('${activeClass.id}', '${s.id}')" style="width:30px; height:30px; border-radius:8px; background:#eff6ff; border:1px solid #bfdbfe; color:#2563eb; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; cursor:pointer; transition:all 0.15s ease;" title="다른 분반으로 이동">
+                  ⇄
+                </button>
                 <button type="button" onclick="removeStudentFromClass('${activeClass.id}', '${s.id}', '${s.name}')" style="width:30px; height:30px; border-radius:8px; background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; cursor:pointer; transition:all 0.15s ease;" title="분반에서 삭제">
                   ✕
                 </button>
@@ -1804,12 +1904,15 @@ function renderClassMinistrySection() {
             `;
           } else {
             rightActionHtml = `
-              <div style="display:flex; align-items:center; gap:6px;">
+              <div style="display:flex; align-items:center; gap:5px;">
                 <button type="button" onclick="toggleStudentAttendance('${activeClass.id}', '${s.id}')" style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; border:none; cursor:pointer; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'}; transition:all 0.15s ease;">
                   ${isAttended ? '출석 ✓' : '결석 ✕'}
                 </button>
-                <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;" title="1:1 톡">
+                <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:30px; height:30px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer;" title="1:1 톡">
                   💬
+                </button>
+                <button type="button" onclick="openTransferStudentModal('${activeClass.id}', '${s.id}')" style="width:30px; height:30px; border-radius:8px; background:#eff6ff; border:1px solid #bfdbfe; color:#2563eb; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; cursor:pointer; transition:all 0.15s ease;" title="다른 분반으로 이동">
+                  ⇄
                 </button>
               </div>
             `;
@@ -9779,6 +9882,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initClock();
   initAuthScreen();
   initAddStudentToClassEvents();
+  initTransferStudentEvents();
   initPullToRefresh();
 
   renderAll();

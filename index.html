@@ -2723,6 +2723,71 @@
       </div>
     </div>
 
+    <!-- Modal: 학생 분반 이동 (Transfer Student Modal) -->
+    <div class="modal-backdrop" id="transferStudentModal">
+      <div class="bottom-sheet" style="max-height: 85%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="margin-bottom: 14px;">
+          <div>
+            <h3 class="sheet-title flex items-center gap-1.5 text-[17px] font-black text-text-primary">
+              <span>⇄</span>
+              <span>학생 분반 이동</span>
+            </h3>
+            <p class="text-[11.5px] font-medium text-text-muted mt-0.5">학생을 다른 공과 분반으로 이전합니다.</p>
+          </div>
+          <button class="sheet-close-btn" data-close="transferStudentModal">✕</button>
+        </div>
+
+        <!-- 학생 기본 정보 카드 -->
+        <div class="p-3 bg-surface-container/60 border border-outline-variant/30 rounded-2xl mb-3 flex items-center gap-3">
+          <div id="transferStudentAvatar" class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-xl flex-shrink-0">
+            👦🏻
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span id="transferStudentName" class="text-sm font-black text-text-primary">김하람</span>
+              <span id="transferStudentRole" class="text-[11px] font-semibold text-text-muted">(중2)</span>
+            </div>
+            <div class="text-[11.5px] text-text-secondary mt-0.5">
+              현재 소속: <strong id="transferFromClassName" class="text-primary font-bold">중등부반 (박진우 선생님)</strong>
+            </div>
+          </div>
+        </div>
+
+        <form id="transferStudentForm" class="space-y-3.5">
+          <input type="hidden" id="transferFromClassId" value="">
+          <input type="hidden" id="transferStudentId" value="">
+
+          <div class="form-group mb-0">
+            <label for="transferTargetClassSelect" class="block text-[11.5px] font-bold text-text-secondary mb-1">
+              📍 이동할 목표 분반 선택
+            </label>
+            <select id="transferTargetClassSelect" required class="w-full bg-white border border-primary/30 rounded-xl px-3 py-2.5 text-xs font-black text-text-primary shadow-xs focus:ring-2 focus:ring-primary focus:border-primary cursor-pointer">
+              <!-- Populated dynamically by JS -->
+            </select>
+          </div>
+
+          <div class="form-group mb-0">
+            <label for="transferReasonInput" class="block text-[11.5px] font-bold text-text-secondary mb-1">
+              📝 이동 사유 / 메모 (선택)
+            </label>
+            <input type="text" id="transferReasonInput" class="w-full" placeholder="예: 고등부 진급, 또래 친구 반 조정 등">
+          </div>
+
+          <div class="p-3 bg-blue-50/80 border border-blue-200/80 rounded-xl text-[11.5px] text-blue-900 leading-relaxed">
+            💡 분반을 이동하면 해당 학생의 출결 및 심방 기록이 새로운 담당 선생님의 분반으로 즉시 연동됩니다.
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" class="btn-secondary flex-1 py-3 text-xs font-bold" data-close="transferStudentModal">취소</button>
+            <button type="submit" class="btn-primary flex-1 py-3 text-xs font-black bg-primary hover:opacity-90 border-none shadow-xs">
+              분반 이동 실행 ⇄
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Modal: 새친구 정착 로드맵 마스터 설정 모달 (전도사 전용) -->
     <div class="modal-backdrop" id="editCurriculumModal">
       <div class="bottom-sheet" style="max-height: 92%; overflow-y: auto;">
@@ -2908,7 +2973,7 @@
 
   </div>
 
-  <script src="app.js?v=20260914_author_lock_v1"></script>
+  <script src="app.js?v=20260914_transfer_student_v1"></script>
 </body>
 </html>
 
