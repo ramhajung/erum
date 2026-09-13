@@ -567,6 +567,30 @@
           </div>
         </section>
 
+        <!-- Section: 오늘 함께 기도해요 (학생부 중보기도 릴레이) -->
+        <section aria-labelledby="home-prayer-heading" class="space-y-3.5">
+          <div class="flex items-center justify-between px-1">
+            <div class="flex items-center gap-2">
+              <h2 class="text-headline-sm font-bold text-text-primary tracking-tight flex items-center gap-1.5" id="home-prayer-heading">
+                <span>오늘 함께 기도해요</span>
+                <span class="text-base">🙏</span>
+              </h2>
+              <span class="text-[11px] font-extrabold bg-rose-50 text-rose-600 border border-rose-200/80 px-2 py-0.5 rounded-full" id="homePrayerTotalCountBadge">
+                중보기도
+              </span>
+            </div>
+            <button type="button" class="text-label-sm font-label-sm text-text-secondary hover:text-primary font-bold flex items-center gap-0.5 transition-colors group cursor-pointer" onclick="openAllPrayersModal()">
+              <span>전체 기도제목</span>
+              <span class="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+            </button>
+          </div>
+
+          <!-- Horizontal Scrollable Prayer Cards Container -->
+          <div id="homePrayerCarouselContainer" class="flex gap-3 overflow-x-auto hide-scrollbar -mx-gutter-screen px-gutter-screen pb-2 snap-x snap-mandatory pt-1">
+            <!-- Populated dynamically by renderHomePrayersSection() -->
+          </div>
+        </section>
+
         <!-- Section: 주간 섬김 (Duty Roster) -->
         <section aria-labelledby="duty-heading" class="space-y-4">
           <!-- Weekly Duty Roster Block -->
@@ -1452,6 +1476,41 @@
           <button type="button" id="saveStudentPrayersBtn" class="btn-primary w-full py-3 text-sm font-black flex items-center justify-center gap-1.5 cursor-pointer">
             <span>💾</span> <span>기도제목 저장 완료</span>
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: 전체 학생 중보기도 나눔터 바텀시트 -->
+    <div class="modal-backdrop" id="allPrayersModal" style="z-index: 1040;">
+      <div class="bottom-sheet" style="max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="margin-bottom: 12px;">
+          <div>
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 text-[10.5px] font-extrabold">중보기도 나눔</span>
+              <span class="text-[11px] font-semibold text-stone-500">선생님과 함께하는 기도</span>
+            </div>
+            <h3 class="sheet-title flex items-center gap-2 text-[17.5px]">
+              <span>🙏</span>
+              <span>예랑 학생부 전체 기도제목</span>
+            </h3>
+            <p class="text-[11px] font-medium text-stone-500 mt-1">선생님 모두가 우리 학생들을 한마음으로 품고 기도합니다.</p>
+          </div>
+          <button class="sheet-close-btn" data-close="allPrayersModal">✕</button>
+        </div>
+
+        <!-- Grade Filter Chips -->
+        <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-2.5 pt-1 border-b border-stone-100" id="allPrayersFilterBar">
+          <button type="button" class="all-prayers-filter-chip active text-[12px] font-extrabold px-3 py-1 rounded-full bg-primary text-white border border-primary transition-all shadow-xs cursor-pointer" data-grade="all" onclick="filterAllPrayersModal('all')">전체</button>
+          <button type="button" class="all-prayers-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer" data-grade="고3" onclick="filterAllPrayersModal('고3')">고3</button>
+          <button type="button" class="all-prayers-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer" data-grade="고2" onclick="filterAllPrayersModal('고2')">고2</button>
+          <button type="button" class="all-prayers-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer" data-grade="중등부" onclick="filterAllPrayersModal('중등부')">중등부</button>
+          <button type="button" class="all-prayers-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer" data-grade="새친구" onclick="filterAllPrayersModal('새친구')">새친구 🌱</button>
+        </div>
+
+        <!-- Student Prayer List Container -->
+        <div style="flex: 1; overflow-y: auto; padding-right: 2px; padding-top: 10px;" id="allPrayersModalListContainer" class="space-y-3">
+          <!-- Populated by JS renderAllPrayersList() -->
         </div>
       </div>
     </div>
@@ -3059,7 +3118,7 @@
 
   </div>
 
-  <script src="app.js?v=20260914_role_based_prayer_edit_v1"></script>
+  <script src="app.js?v=20260914_home_prayers_v1"></script>
 </body>
 </html>
 

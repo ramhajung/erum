@@ -2515,6 +2515,11 @@ function saveStudentPrayers() {
   closeModal("editStudentPrayerModal");
   openStudentDetailModal(studentId);
   renderStudentRosterList();
+  renderHomePrayersSection();
+  const allModal = document.getElementById("allPrayersModal");
+  if (allModal && allModal.classList.contains("open")) {
+    filterAllPrayersModal(currentAllPrayersFilter || "all");
+  }
   showToast(`🎉 ${student.name} 학생의 기도제목이 저장되었습니다! 🙏`, "success");
 }
 
@@ -2778,6 +2783,174 @@ function renderStudentSection() {
   renderStudentRosterList();
 }
 
+let currentAllPrayersFilter = "all";
+
+function renderHomePrayersSection() {
+  const container = document.getElementById("homePrayerCarouselContainer");
+  const countBadge = document.getElementById("homePrayerTotalCountBadge");
+  if (!container) return;
+
+  const allStudents = getAllStudentsRoster();
+  const studentsWithPrayers = allStudents.filter(s => s.prayers && s.prayers.length > 0);
+
+  if (countBadge) {
+    countBadge.textContent = `학생 ${studentsWithPrayers.length}명 중보`;
+  }
+
+  if (studentsWithPrayers.length === 0) {
+    container.innerHTML = `
+      <div class="w-full bg-white rounded-2xl p-4 text-center border border-stone-200/70 text-xs text-stone-400">
+        현재 등록된 학생 중보기도제목이 없습니다.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = studentsWithPrayers.map(s => {
+    const prayers = s.prayers || [];
+    const topPrayers = prayers.slice(0, 2);
+    const hasMore = prayers.length > 2;
+
+    return `
+      <div class="snap-start flex-shrink-0 w-[275px] bg-gradient-to-br from-orange-50/50 via-white to-rose-50/30 rounded-2xl p-3.5 border border-orange-200/60 shadow-xs hover:border-orange-300 transition-all flex flex-col justify-between cursor-pointer active:scale-[0.99]" onclick="openStudentDetailModal('${s.id}')" title="${s.name} 학생부 보기">
+        <div>
+          <!-- Header: Avatar, Name, Grade, Teacher, Badge -->
+          <div class="flex items-center justify-between gap-1 mb-2.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-orange-100/80 border border-orange-200/80 flex items-center justify-center text-lg flex-shrink-0 shadow-2xs">
+                ${s.avatar || '👦🏻'}
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[13.5px] font-black text-stone-900 truncate">${s.name}</span>
+                  <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded ${s.isNewcomer ? 'bg-emerald-100 text-emerald-800' : 'bg-primary/10 text-primary'}">
+                    ${s.className || s.grade}
+                  </span>
+                </div>
+                <div class="text-[10.5px] font-medium text-stone-400 truncate">담당: ${s.teacherName || '교역자'}</div>
+              </div>
+            </div>
+            <span class="text-[10px] font-extrabold text-orange-700 bg-orange-100/70 px-1.5 py-0.5 rounded-md border border-orange-200/60 flex-shrink-0">
+              기도 ${prayers.length}건
+            </span>
+          </div>
+
+          <!-- Prayer Items Preview -->
+          <div class="space-y-1.5 my-1">
+            ${topPrayers.map(p => `
+              <div class="flex items-start gap-1.5 text-[12px] text-stone-700 font-semibold leading-snug">
+                <span class="text-rose-500 text-[11px] flex-shrink-0 mt-0.5">♥</span>
+                <span class="line-clamp-2">${p.text}</span>
+              </div>
+            `).join('')}
+            ${hasMore ? `
+              <div class="text-[10.5px] font-bold text-stone-400 pl-3">
+                ＋ 외 ${prayers.length - 2}건 더보기
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- Footer link -->
+        <div class="mt-3 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
+          <span class="text-stone-400 font-medium">학생부 & 나눔 기록</span>
+          <span class="font-extrabold text-primary flex items-center gap-0.5">
+            <span>자세히 보기</span>
+            <span class="text-[10px]">›</span>
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openAllPrayersModal() {
+  filterAllPrayersModal(currentAllPrayersFilter || "all");
+  openModal("allPrayersModal");
+}
+
+function filterAllPrayersModal(grade = "all") {
+  currentAllPrayersFilter = grade;
+
+  // Filter chips active styling
+  document.querySelectorAll("#allPrayersFilterBar .all-prayers-filter-chip").forEach(chip => {
+    const g = chip.dataset.grade;
+    if (g === grade) {
+      chip.className = "all-prayers-filter-chip active text-[12px] font-extrabold px-3 py-1 rounded-full bg-primary text-white border border-primary transition-all shadow-xs cursor-pointer";
+    } else {
+      chip.className = "all-prayers-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer";
+    }
+  });
+
+  const listContainer = document.getElementById("allPrayersModalListContainer");
+  if (!listContainer) return;
+
+  const allStudents = getAllStudentsRoster();
+  const studentsWithPrayers = allStudents.filter(s => s.prayers && s.prayers.length > 0);
+
+  const filtered = grade === "all"
+    ? studentsWithPrayers
+    : studentsWithPrayers.filter(s => {
+        if (grade === "새친구") return s.isNewcomer || (s.className && s.className.includes("새친구"));
+        return (s.className && s.className.includes(grade)) || (s.grade && s.grade.includes(grade));
+      });
+
+  if (filtered.length === 0) {
+    listContainer.innerHTML = `
+      <div class="py-12 text-center text-stone-400 bg-stone-50 rounded-2xl border border-stone-200/60">
+        <span class="text-2xl block mb-1">🙏</span>
+        <p class="text-xs font-bold text-stone-600">해당 학년에 등록된 기도제목이 없습니다.</p>
+      </div>
+    `;
+    return;
+  }
+
+  listContainer.innerHTML = filtered.map(s => {
+    const canEdit = canEditStudentPrayer(s);
+    return `
+      <div class="bg-white rounded-2xl p-3.5 border border-stone-200/80 shadow-2xs hover:border-orange-300 transition-all">
+        <!-- Top Row: Student Avatar, Name, Grade, Teacher, Edit btn -->
+        <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-stone-100">
+          <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="openStudentDetailModal('${s.id}')">
+            <div class="w-9 h-9 rounded-xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-xl flex-shrink-0">
+              ${s.avatar || '👦🏻'}
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[14px] font-black text-stone-900">${s.name}</span>
+                <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded ${s.isNewcomer ? 'bg-emerald-100 text-emerald-800' : 'bg-primary/10 text-primary'}">
+                  ${s.className || s.grade}
+                </span>
+              </div>
+              <div class="text-[11px] font-medium text-stone-500">담당: ${s.teacherName || '교역자'} · ${(s.prayers || []).length}개 기도제목</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            ${canEdit ? `
+              <button type="button" onclick="openEditPrayerModal('${s.id}')" class="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200/70 rounded-lg text-[11px] font-extrabold cursor-pointer transition-colors flex items-center gap-1">
+                <span>✏️</span> <span>수정</span>
+              </button>
+            ` : ''}
+            <button type="button" onclick="openStudentDetailModal('${s.id}')" class="px-2 py-1 bg-stone-50 hover:bg-stone-100 text-stone-600 border border-stone-200 rounded-lg text-[11px] font-bold cursor-pointer transition-colors" title="학생부 열람">
+              학생부 ›
+            </button>
+          </div>
+        </div>
+
+        <!-- Prayers List -->
+        <div class="space-y-1.5 pt-2.5">
+          ${(s.prayers || []).map(p => `
+            <div class="flex items-start gap-2 bg-stone-50/80 rounded-xl p-2 border border-stone-100/90 text-xs text-stone-800 font-medium leading-relaxed">
+              <span class="text-rose-500 text-xs flex-shrink-0 mt-0.5">♥</span>
+              <span class="flex-1">${p.text}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 function initStudentEvents() {
   // Filter chips in Roster
   document.querySelectorAll("#studentRosterFilterBar .student-roster-filter-chip").forEach(chip => {
@@ -2848,6 +3021,9 @@ window.openEditPrayerModal = openEditPrayerModal;
 window.deleteTempPrayerItem = deleteTempPrayerItem;
 window.addNewPrayerItem = addNewPrayerItem;
 window.saveStudentPrayers = saveStudentPrayers;
+window.renderHomePrayersSection = renderHomePrayersSection;
+window.openAllPrayersModal = openAllPrayersModal;
+window.filterAllPrayersModal = filterAllPrayersModal;
 window.makePhoneCall = makePhoneCall;
 window.sendKakaoMessage = sendKakaoMessage;
 window.incrementPrayerCount = incrementPrayerCount;
@@ -6864,6 +7040,7 @@ function switchMasterRole(roleKey, notify = true) {
   renderClassMinistrySection();
   renderNewcomerMinistrySection();
   renderUpcomingEventsSection();
+  renderHomePrayersSection();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
@@ -10072,6 +10249,7 @@ function renderAll() {
   renderAccountingSection();
   renderNoticeBanner();
   renderUpcomingEventsSection();
+  renderHomePrayersSection();
   renderChecklistSection();
   renderStaffBoxSection();
   renderWorshipDutySection();
