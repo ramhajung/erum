@@ -146,14 +146,13 @@ const INITIAL_DATA = {
         registeredDate: "2026.09.01 (9월 1주)",
         interests: "농구, 찬양팀 드럼",
         prayerTopic: "교회 처음인데 또래 친구들과 잘 어울리고 적응하도록",
-        currentStep: 3,
-        progressPercent: 75,
+        currentStep: 2,
+        progressPercent: 67,
         targetClass: "고1 남학생반",
         steps: [
           { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓", completed: true },
           { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔", desc: "학교 적응 및 첫 신앙생활 상담 완료 ✓", completed: true },
-          { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "이번 주 토요예배 후 떡볶이 파티 예정 ⏳", completed: true },
-          { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 고1 남학생반 정규 편성 예정", completed: false }
+          { week: 3, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "또래 친구 소개 및 수료패 증정, 고1 남학생반 정규 편성 예정", completed: false }
         ]
       },
       {
@@ -164,15 +163,14 @@ const INITIAL_DATA = {
         registeredDate: "2026.08.10 (8월 2주)",
         interests: "피아노, 독서",
         prayerTopic: "믿음 안에서 흔들리지 않고 바르게 자라가도록",
-        currentStep: 4,
+        currentStep: 3,
         progressPercent: 100,
         targetClass: "중2 여학생반",
         graduated: true,
         steps: [
           { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "웰컴 키트 전달 완료 ✓", completed: true },
           { week: 2, title: "담임교사 1:1 카톡 인사 & 심방", desc: "신앙 상담 및 기도제목 나눔 완료 ✓", completed: true },
-          { week: 3, title: "또래 친구 소개 & 간식 교제", desc: "중2 친구들과 교제 모임 완료 ✓", completed: true },
-          { week: 4, title: "새친구반 수료 축하 & 정규 등반", desc: "수료 완료 및 중2 여학생반 등반 완료 ✓", completed: true }
+          { week: 3, title: "새친구반 수료 축하 & 정규 등반", desc: "수료 완료 및 중2 여학생반 등반 완료 ✓", completed: true }
         ]
       }
     ],
@@ -180,8 +178,7 @@ const INITIAL_DATA = {
       steps: [
         { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓" },
         { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔", desc: "학교 적응 및 첫 신앙생활 상담 완료 ✓" },
-        { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "이번 주 토요예배 후 떡볶이 파티 예정 ⏳" },
-        { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 학년 분반 정규 편성 예정" }
+        { week: 3, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "또래 친구 소개 및 수료패 증정, 정규 학년 분반 편성 완료 ✓" }
       ]
     }
   },
@@ -958,6 +955,20 @@ function loadState() {
       }
       if (!parsed.newcomerMinistry.curriculum || !Array.isArray(parsed.newcomerMinistry.curriculum.steps)) {
         parsed.newcomerMinistry.curriculum = JSON.parse(JSON.stringify(INITIAL_DATA.newcomerMinistry.curriculum));
+      } else if (parsed.newcomerMinistry.curriculum.steps.length === 4 && parsed.newcomerMinistry.curriculum.steps[3].title.includes("등반")) {
+        // User requested 3-week program migration
+        parsed.newcomerMinistry.curriculum.steps = JSON.parse(JSON.stringify(INITIAL_DATA.newcomerMinistry.curriculum.steps));
+        if (Array.isArray(parsed.newcomerMinistry.students)) {
+          parsed.newcomerMinistry.students.forEach(s => {
+            if (Array.isArray(s.steps) && s.steps.length === 4) {
+              s.steps = s.steps.slice(0, 3);
+              s.steps[2].title = "새친구반 수료 축하 & 정규 분반 등반";
+              const completedCount = s.steps.filter(st => st.completed).length;
+              s.progressPercent = Math.round((completedCount / s.steps.length) * 100);
+              s.graduated = (s.progressPercent === 100);
+            }
+          });
+        }
       }
       if (!parsed.curriculum || !parsed.curriculum.bibleStudy) {
         parsed.curriculum = JSON.parse(JSON.stringify(INITIAL_DATA.curriculum));
@@ -1233,7 +1244,8 @@ function switchClassMinistrySubTab(tabKey) {
     renderClassMinistrySection();
   } else if (tabKey === "newcomer") {
     if (titleEl) titleEl.textContent = "새친구반 적응 & 정착";
-    if (subtitleEl) subtitleEl.textContent = "새친구반 4주 체크리스트 & 등반 관리";
+    const totalW = (typeof getNewcomerTotalWeeks === "function") ? getNewcomerTotalWeeks() : 3;
+    if (subtitleEl) subtitleEl.textContent = `새친구반 ${totalW}주 체크리스트 & 등반 관리`;
     renderNewcomerMinistrySection();
   } else if (tabKey === "students") {
     if (titleEl) titleEl.textContent = "학생 심방 & 기도제목";
@@ -1470,7 +1482,7 @@ function toggleNewcomerStep(studentId, week) {
   renderNewcomerMinistrySection();
 
   if (student.graduated) {
-    showToast(`🎉 축하합니다! ${student.name} 학생이 4주 전 과정을 수료하여 ${student.targetClass} 등반 대상이 되었습니다! 🎓`);
+    showToast(`🎉 축하합니다! ${student.name} 학생이 ${student.steps ? student.steps.length : 3}주 전 과정을 수료하여 ${student.targetClass} 등반 대상이 되었습니다! 🎓`);
   } else {
     showToast(`${student.name} 학생의 ${week}주차 과정이 '${step.completed ? '완료 ✓' : '진행전'}'으로 변경되었습니다.`);
   }
@@ -1483,14 +1495,15 @@ function addNewcomerStudent() {
   const interests = prompt("새친구의 관심사나 특기를 입력하세요 (예: 축구, 보컬):") || "새 신앙생활";
 
   const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
-  const templateSteps = (data.curriculum && Array.isArray(data.curriculum.steps))
+  const templateSteps = (data.curriculum && Array.isArray(data.curriculum.steps) && data.curriculum.steps.length > 0)
     ? data.curriculum.steps
     : [
-        { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 전달 완료 ✓" },
-        { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도나눔", desc: "학교 적응 및 첫 신앙생활 상담 예정" },
-        { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "토요예배 후 또래 친구 교제 예정" },
-        { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 정규 분반 편성 예정" }
+        { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓" },
+        { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔", desc: "학교 적응 및 첫 신앙생활 상담 완료 ✓" },
+        { week: 3, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "또래 친구 소개 및 수료패 증정, 정규 학년 분반 편성 완료 ✓" }
       ];
+
+  const totalStepsCount = templateSteps.length || 3;
 
   data.students.unshift({
     id: "new_" + Date.now(),
@@ -1501,7 +1514,7 @@ function addNewcomerStudent() {
     interests: interests.trim(),
     prayerTopic: "교회에 잘 적응하고 좋은 믿음의 친구들을 만나도록",
     currentStep: 1,
-    progressPercent: 25,
+    progressPercent: Math.round((1 / totalStepsCount) * 100),
     targetClass: `${grade.trim()} 분반`,
     graduated: false,
     steps: templateSteps.map((st, idx) => ({
@@ -1726,12 +1739,13 @@ function renderNewcomerMinistrySection() {
   const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
   const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
   const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  const totalWeeks = (typeof getNewcomerTotalWeeks === "function") ? getNewcomerTotalWeeks() : (data.curriculum?.steps?.length || 3);
 
   containers.forEach(container => {
     container.innerHTML = `
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px;">
         <div class="agenda-date-badge" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:0; flex:1;">
-          🌱 새친구반 4주 적응 & 등반 관리
+          🌱 새친구반 ${totalWeeks}주 적응 & 등반 관리
         </div>
         ${isPastor ? `
           <button type="button" onclick="openEditCurriculumModalDirect('newcomer')" style="padding:4px 10px; font-size:11.5px; font-weight:800; border-radius:10px; border:1px solid #bbf7d0; background:#fff; color:#16a34a; cursor:pointer; display:inline-flex; align-items:center; gap:3px; white-space:nowrap; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
@@ -1771,9 +1785,9 @@ function renderNewcomerMinistrySection() {
         </div>
       </div>
 
-      <!-- 새친구 학생별 4주 정착 과정 트래커 -->
+      <!-- 새친구 학생별 정착 과정 로드맵 트래커 -->
       <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <span>🌱 새친구 4주 적응 & 등반 로드맵</span>
+        <span>🌱 새친구 ${totalWeeks}주 적응 & 등반 로드맵</span>
         <div style="display:flex; align-items:center; gap:8px;">
           ${isPastor ? `
             <button type="button" onclick="openEditCurriculumModalDirect('newcomer')" style="font-size:11.5px; font-weight:800; color:#059669; background:none; border:none; cursor:pointer; padding:2px 4px;">
@@ -1789,7 +1803,8 @@ function renderNewcomerMinistrySection() {
       <div style="display:flex; flex-direction:column; gap:16px;">
         ${data.students.map(s => {
           const completedCount = s.steps.filter(st => st.completed).length;
-          const percent = Math.round((completedCount / s.steps.length) * 100);
+          const totalStudentSteps = s.steps ? s.steps.length : totalWeeks;
+          const percent = Math.round((completedCount / totalStudentSteps) * 100);
           const isDone = percent === 100;
           return `
             <div class="newcomer-student-card" style="background:#fff; border:1.5px solid ${isDone ? '#bbf7d0' : '#fed7aa'}; border-radius:18px; padding:16px; box-shadow:0 3px 10px rgba(0,0,0,0.03);">
@@ -1803,7 +1818,7 @@ function renderNewcomerMinistrySection() {
                     <div style="font-size:14px; font-weight:800; color:#1f2937; display:flex; align-items:center; gap:6px;">
                       <span>${s.name} (${s.grade})</span>
                       <span style="font-size:10px; font-weight:800; padding:1px 6px; border-radius:6px; background:${isDone ? '#dcfce7' : '#fef3c7'}; color:${isDone ? '#166534' : '#92400e'};">
-                        ${isDone ? '등반 수료 🎓' : `${completedCount}/4주 진행중 ⏳`}
+                        ${isDone ? '등반 수료 🎓' : `${completedCount}/${totalStudentSteps}주 진행중 ⏳`}
                       </span>
                     </div>
                     <div style="font-size:11px; color:#6b7280; margin-top:1px;">
@@ -2693,8 +2708,26 @@ function initAgendaEvents() {
   }
 
   // =========================================================================
-  // 커리큘럼 편집 (새친구 4주 로드맵 & 분반 공과 가이드) 이벤트 등록
+  // 커리큘럼 편집 (새친구 정착 로드맵 & 분반 공과 가이드) 이벤트 등록
   // =========================================================================
+  const weeksSelect = document.getElementById("newcomerTotalWeeksSelect");
+  if (weeksSelect) {
+    weeksSelect.addEventListener("change", (e) => {
+      const newTotal = parseInt(e.target.value, 10) || 3;
+      // Collect currently typed values so we don't lose user edits
+      const currentSteps = [];
+      document.querySelectorAll(".newcomer-step-editor-card").forEach(card => {
+        const w = parseInt(card.dataset.week, 10);
+        const title = card.querySelector(".step-title-input")?.value.trim();
+        const desc = card.querySelector(".step-desc-input")?.value.trim();
+        if (title || desc) {
+          currentSteps.push({ week: w, title, desc });
+        }
+      });
+      renderNewcomerStepsEditor(newTotal, currentSteps);
+    });
+  }
+
   const editNewcomerCurrForm = document.getElementById("editNewcomerCurriculumForm");
   if (editNewcomerCurrForm) {
     editNewcomerCurrForm.addEventListener("submit", (e) => {
@@ -2711,52 +2744,43 @@ function initAgendaEvents() {
         appState.newcomerMinistry.curriculum = { steps: [] };
       }
 
-      const step1Title = document.getElementById("newcomerStepTitle1").value.trim();
-      const step1Desc = document.getElementById("newcomerStepDesc1").value.trim();
-      const step2Title = document.getElementById("newcomerStepTitle2").value.trim();
-      const step2Desc = document.getElementById("newcomerStepDesc2").value.trim();
-      const step3Title = document.getElementById("newcomerStepTitle3").value.trim();
-      const step3Desc = document.getElementById("newcomerStepDesc3").value.trim();
-      const step4Title = document.getElementById("newcomerStepTitle4").value.trim();
-      const step4Desc = document.getElementById("newcomerStepDesc4").value.trim();
-
-      const newSteps = [
-        { week: 1, title: step1Title, desc: step1Desc },
-        { week: 2, title: step2Title, desc: step2Desc },
-        { week: 3, title: step3Title, desc: step3Desc },
-        { week: 4, title: step4Title, desc: step4Desc }
-      ];
+      const cards = document.querySelectorAll(".newcomer-step-editor-card");
+      const newSteps = [];
+      cards.forEach((card, idx) => {
+        const week = idx + 1;
+        const title = card.querySelector(".step-title-input")?.value.trim() || `${week}주차 정착 과정`;
+        const desc = card.querySelector(".step-desc-input")?.value.trim() || `${week}주차 세부 안내`;
+        newSteps.push({ week, title, desc });
+      });
 
       appState.newcomerMinistry.curriculum.steps = newSteps;
+      const totalWeeks = newSteps.length;
 
-      // 동기화 체크박스가 켜져있으면 기존 학생들의 스텝 제목/설명도 업데이트 (완료 여부는 유지)
+      // 동기화 체크박스가 켜져있으면 기존 학생들의 스텝 제목/설명/주차도 업데이트
       const syncExisting = document.getElementById("syncExistingStudentsCheckbox")?.checked;
       if (syncExisting && Array.isArray(appState.newcomerMinistry.students)) {
         appState.newcomerMinistry.students.forEach(s => {
-          if (Array.isArray(s.steps)) {
-            newSteps.forEach(ns => {
-              const targetSt = s.steps.find(st => st.week === ns.week);
-              if (targetSt) {
-                targetSt.title = ns.title;
-                // 이전 완료 체크 상태는 보존하면서 새 설명 텍스트 동기화
-                targetSt.desc = ns.desc;
-              } else {
-                s.steps.push({
-                  week: ns.week,
-                  title: ns.title,
-                  desc: ns.desc,
-                  completed: false
-                });
-              }
+          const updatedSteps = [];
+          newSteps.forEach(ns => {
+            const existing = Array.isArray(s.steps) ? s.steps.find(st => st.week === ns.week) : null;
+            updatedSteps.push({
+              week: ns.week,
+              title: ns.title,
+              desc: ns.desc,
+              completed: existing ? existing.completed : false
             });
-          }
+          });
+          s.steps = updatedSteps;
+          const completedCount = s.steps.filter(st => st.completed).length;
+          s.progressPercent = Math.round((completedCount / s.steps.length) * 100);
+          s.graduated = (s.progressPercent === 100);
         });
       }
 
       saveState();
       renderNewcomerMinistrySection();
       closeModal("editCurriculumModal");
-      showToast("🌱 새친구 4주 적응 & 등반 로드맵 커리큘럼이 성공적으로 수정되었습니다! ✓");
+      showToast(`🌱 새친구 ${totalWeeks}주 적응 & 등반 로드맵 커리큘럼이 성공적으로 수정되었습니다! ✓`);
     });
   }
 
@@ -2829,6 +2853,70 @@ function initAgendaEvents() {
   }
 }
 
+function getNewcomerTotalWeeks() {
+  const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+  if (data && data.curriculum && Array.isArray(data.curriculum.steps) && data.curriculum.steps.length > 0) {
+    return data.curriculum.steps.length;
+  }
+  return 3;
+}
+
+function renderNewcomerStepsEditor(totalWeeks, existingSteps = []) {
+  const container = document.getElementById("newcomerStepsEditorContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const defaultTemplates = [
+    { title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓" },
+    { title: "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔", desc: "학교 적응 및 첫 신앙생활 상담 완료 ✓" },
+    { title: "새친구반 수료 축하 & 정규 분반 등반", desc: "또래 친구 소개 및 수료패 증정, 정규 학년 분반 편성 완료 ✓" },
+    { title: "정규 분반 정착 멘토링 & 심방", desc: "담임 선생님 및 또래 친구들과 깊은 교제 형성" },
+    { title: "청소년부 사역 나눔 & 은사 발견", desc: "찬양팀, 방송실, 예배 안내 등 봉사 섬김 참여" },
+    { title: "예랑 리더십 및 성장 훈련", desc: "제자 훈련 및 믿음의 멘토링 지속" }
+  ];
+
+  for (let w = 1; w <= totalWeeks; w++) {
+    const existing = existingSteps.find(s => s.week === w) || existingSteps[w - 1];
+    const isLast = (w === totalWeeks);
+    const def = defaultTemplates[w - 1] || { title: `${w}주차 정착 과정`, desc: `${w}주차 세부 안내 및 미션` };
+
+    const titleVal = existing?.title || (isLast ? "새친구반 수료 축하 & 정규 분반 등반" : def.title);
+    const descVal = existing?.desc || def.desc;
+
+    const card = document.createElement("div");
+    card.className = "newcomer-step-editor-card p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-2.5";
+    card.dataset.week = w;
+    card.innerHTML = `
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-lg ${isLast ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'} text-[11px] font-extrabold flex items-center justify-center">${w}</span>
+          <span class="text-[13px] font-extrabold text-text-primary">${w}주차 커리큘럼 ${isLast ? '<span class="text-[11px] text-amber-600 font-extrabold ml-1">(등반/수료 🎓)</span>' : ''}</span>
+        </div>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isLast ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">
+          ${isLast ? '최종 수료주' : `${w}주차 과정`}
+        </span>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-text-secondary mb-1">과정 제목</label>
+        <input type="text" class="step-title-input w-full" value="${titleVal.replace(/"/g, '&quot;')}" placeholder="예: ${def.title}" required>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-text-secondary mb-1">세부 안내 및 미션</label>
+        <input type="text" class="step-desc-input w-full" value="${descVal.replace(/"/g, '&quot;')}" placeholder="예: ${def.desc}" required>
+      </div>
+    `;
+    container.appendChild(card);
+  }
+
+  const tabBtn = document.getElementById("curriculumTabNewcomerBtn");
+  if (tabBtn) tabBtn.innerHTML = `🌱 새친구 ${totalWeeks}주 로드맵`;
+
+  const notice = document.getElementById("newcomerCurriculumNotice");
+  if (notice) {
+    notice.innerHTML = `💡 여기서 수정한 로드맵 제목과 상세 안내는 새친구반 학생들의 ${totalWeeks}주 체크리스트 기본 양식 및 신규 등록 새친구에게 바로 적용됩니다.`;
+  }
+}
+
 // 탭 전환 헬퍼: 새친구 로드맵 vs 공과 가이드
 window.switchCurriculumEditTab = function(tab) {
   const newcomerForm = document.getElementById("editNewcomerCurriculumForm");
@@ -2864,39 +2952,23 @@ window.openEditCurriculumModalDirect = function(initialTab = 'newcomer') {
     return;
   }
 
-  // 새친구 커리큘럼 채우기
+  // 새친구 커리큘럼 채우기 (동적 주차 지원)
   const newcomerData = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
-  const currSteps = (newcomerData.curriculum && Array.isArray(newcomerData.curriculum.steps))
+  const currSteps = (newcomerData.curriculum && Array.isArray(newcomerData.curriculum.steps) && newcomerData.curriculum.steps.length > 0)
     ? newcomerData.curriculum.steps
     : [
         { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓" },
         { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔", desc: "학교 적응 및 첫 신앙생활 상담 완료 ✓" },
-        { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "이번 주 토요예배 후 떡볶이 파티 예정 ⏳" },
-        { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 고1 남학생반 정규 편성 예정" }
+        { week: 3, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "또래 친구 소개 및 수료패 증정, 정규 학년 분반 편성 완료 ✓" }
       ];
 
-  const st1 = currSteps.find(s => s.week === 1) || currSteps[0] || {};
-  const st2 = currSteps.find(s => s.week === 2) || currSteps[1] || {};
-  const st3 = currSteps.find(s => s.week === 3) || currSteps[2] || {};
-  const st4 = currSteps.find(s => s.week === 4) || currSteps[3] || {};
+  const totalWeeks = currSteps.length;
+  const weeksSelect = document.getElementById("newcomerTotalWeeksSelect");
+  if (weeksSelect) {
+    weeksSelect.value = String(totalWeeks);
+  }
 
-  const t1 = document.getElementById("newcomerStepTitle1");
-  const d1 = document.getElementById("newcomerStepDesc1");
-  const t2 = document.getElementById("newcomerStepTitle2");
-  const d2 = document.getElementById("newcomerStepDesc2");
-  const t3 = document.getElementById("newcomerStepTitle3");
-  const d3 = document.getElementById("newcomerStepDesc3");
-  const t4 = document.getElementById("newcomerStepTitle4");
-  const d4 = document.getElementById("newcomerStepDesc4");
-
-  if (t1) t1.value = st1.title || "새친구 등록 & 환영 선물 증정";
-  if (d1) d1.value = st1.desc || "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓";
-  if (t2) t2.value = st2.title || "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔";
-  if (d2) d2.value = st2.desc || "학교 적응 및 첫 신앙생활 상담 완료 ✓";
-  if (t3) t3.value = st3.title || "분반 또래 친구 소개 & 간식 교제";
-  if (d3) d3.value = st3.desc || "이번 주 토요예배 후 떡볶이 파티 예정 ⏳";
-  if (t4) t4.value = st4.title || "새친구반 수료 축하 & 정규 분반 등반";
-  if (d4) d4.value = st4.desc || "수료패 증정 및 정규 분반 편성 예정";
+  renderNewcomerStepsEditor(totalWeeks, currSteps);
 
   // 공과 커리큘럼 채우기
   const bibleCurr = (appState.curriculum && appState.curriculum.bibleStudy) ? appState.curriculum.bibleStudy : (INITIAL_DATA.curriculum ? INITIAL_DATA.curriculum.bibleStudy : {});
@@ -4649,7 +4721,7 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
-      { target: "view-teacher-new", icon: "spa", label: "새친구반", title: "새친구반 적응 & 정착", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
+      { target: "view-teacher-new", icon: "spa", label: "새친구반", title: "새친구반 적응 & 정착", subtitle: "새친구반 적응 체크리스트 & 등반 관리" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
@@ -4696,7 +4768,7 @@ const ROLES = {
     id: "student_new",
     name: "김하람 (중2)",
     title: "예랑 새친구 환영 피드",
-    subtitle: "학생(새친구반) · 새친구 4주 적응",
+    subtitle: "학생(새친구반) · 새친구 적응 & 정착",
     badge: "🌱 학생(새친구반)",
     tagClass: "tag-student",
     activeClass: "active-student",
@@ -4893,7 +4965,7 @@ function renderViewAsRoleModal() {
       badgeClass: "bg-teal-50 text-teal-700 border-teal-200",
       fallbackUserId: "u6",
       tabs: ["홈", "새친구", "캘린더", "1:1상담"],
-      desc: "새친구 환영 대시보드, 4주 정착 양육 현황 및 달란트 스탬프 포털",
+      desc: "새친구 환영 대시보드, 정착 양육 현황 및 달란트 스탬프 포털",
       borderHover: "hover:border-teal-300"
     },
     {
@@ -4915,7 +4987,7 @@ function renderViewAsRoleModal() {
       badgeClass: "bg-rose-50 text-rose-700 border-rose-200",
       fallbackUserId: "u4",
       tabs: ["홈", "회의", "스케줄", "재정"],
-      desc: "새친구 등록 및 4주 정착 커리큘럼 양육/심방 관리",
+      desc: "새친구 등록 및 정착 커리큘럼 양육/심방 관리",
       borderHover: "hover:border-rose-300"
     },
     {

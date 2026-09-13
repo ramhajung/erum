@@ -2686,7 +2686,7 @@
       </div>
     </div>
 
-    <!-- Modal: 새친구 4주 정착 로드맵 & 공과 커리큘럼 마스터 설정 모달 (전도사 전용) -->
+    <!-- Modal: 새친구 정착 로드맵 & 공과 커리큘럼 마스터 설정 모달 (전도사 전용) -->
     <div class="modal-backdrop" id="editCurriculumModal">
       <div class="bottom-sheet" style="max-height: 92%; overflow-y: auto;">
         <div class="sheet-handle"></div>
@@ -2696,7 +2696,7 @@
               <span class="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10.5px] font-extrabold">전도사 전용 권한 🔒</span>
             </div>
             <h3 class="sheet-title">🌱 커리큘럼 마스터 설정</h3>
-            <p class="text-[11.5px] text-text-muted">새친구 4주 정착 로드맵 및 주차별 공과 나눔 핵심 가이드를 수정합니다.</p>
+            <p class="text-[11.5px] text-text-muted">새친구 정착 로드맵(2~6주 설정) 및 주차별 공과 나눔 핵심 가이드를 수정합니다.</p>
           </div>
           <button type="button" class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" data-close="editCurriculumModal" aria-label="닫기">
             <span class="material-symbols-outlined text-[18px]">close</span>
@@ -2706,89 +2706,50 @@
         <!-- Tab switcher: 새친구 로드맵 vs 공과 나눔 가이드 -->
         <div class="flex bg-surface-container-low p-1 rounded-xl mb-4 gap-1">
           <button type="button" id="curriculumTabNewcomerBtn" onclick="switchCurriculumEditTab('newcomer')" class="flex-1 py-2 text-[12px] font-extrabold rounded-lg transition-all bg-white text-emerald-700 shadow-xs">
-            🌱 새친구 4주 로드맵
+            🌱 새친구 로드맵
           </button>
           <button type="button" id="curriculumTabBibleBtn" onclick="switchCurriculumEditTab('bible')" class="flex-1 py-2 text-[12px] font-bold rounded-lg transition-all text-text-muted hover:text-text-primary">
             📖 분반 공과 가이드
           </button>
         </div>
 
-        <!-- Form 1: 새친구 4주 로드맵 커리큘럼 편집 -->
+        <!-- Form 1: 새친구 로드맵 커리큘럼 편집 -->
         <form id="editNewcomerCurriculumForm" class="space-y-4">
           <div class="p-3 bg-emerald-50/70 border border-emerald-200/70 rounded-2xl">
-            <p class="text-[11.5px] text-emerald-800 leading-relaxed font-bold">
-              💡 여기서 수정한 로드맵 제목과 상세 안내는 새친구반 학생들의 4주 체크리스트 기본 양식 및 신규 등록 새친구에게 바로 적용됩니다.
+            <p id="newcomerCurriculumNotice" class="text-[11.5px] text-emerald-800 leading-relaxed font-bold">
+              💡 여기서 수정한 로드맵 제목과 상세 안내는 새친구반 학생들의 체크리스트 기본 양식 및 신규 등록 새친구에게 바로 적용됩니다.
             </p>
           </div>
 
-          <!-- 1주차 -->
-          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center justify-center">1</span>
-              <span class="text-[13px] font-extrabold text-text-primary">1주차 커리큘럼</span>
+          <!-- Total Weeks Selector (2주 ~ 6주 자유 변경) -->
+          <div class="flex items-center justify-between p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 shadow-xs">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-[15px]">📅</span>
+              <div>
+                <label for="newcomerTotalWeeksSelect" class="block text-[13px] font-extrabold text-text-primary">
+                  교육 기간 (총 주차 수)
+                </label>
+                <p class="text-[11px] text-text-muted mt-0.5">새친구반 정착 교육 주차를 설정하세요</p>
+              </div>
             </div>
-            <div>
-              <label for="newcomerStepTitle1" class="block text-[11px] font-bold text-text-secondary mb-1">과정 제목</label>
-              <input type="text" id="newcomerStepTitle1" class="w-full" placeholder="예: 새친구 등록 & 환영 선물 증정" required>
-            </div>
-            <div>
-              <label for="newcomerStepDesc1" class="block text-[11px] font-bold text-text-secondary mb-1">세부 안내 및 미션</label>
-              <input type="text" id="newcomerStepDesc1" class="w-full" placeholder="예: 예랑 웰컴 키트 및 말씀 다이어리 전달 완료" required>
-            </div>
+            <select id="newcomerTotalWeeksSelect" class="bg-white border border-emerald-300 rounded-xl px-3 py-2 text-[13px] font-extrabold text-emerald-800 shadow-sm focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+              <option value="2">2주 과정</option>
+              <option value="3" selected>3주 과정 (기본)</option>
+              <option value="4">4주 과정</option>
+              <option value="5">5주 과정</option>
+              <option value="6">6주 과정</option>
+            </select>
           </div>
 
-          <!-- 2주차 -->
-          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center justify-center">2</span>
-              <span class="text-[13px] font-extrabold text-text-primary">2주차 커리큘럼</span>
-            </div>
-            <div>
-              <label for="newcomerStepTitle2" class="block text-[11px] font-bold text-text-secondary mb-1">과정 제목</label>
-              <input type="text" id="newcomerStepTitle2" class="w-full" placeholder="예: 소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔" required>
-            </div>
-            <div>
-              <label for="newcomerStepDesc2" class="block text-[11px] font-bold text-text-secondary mb-1">세부 안내 및 미션</label>
-              <input type="text" id="newcomerStepDesc2" class="w-full" placeholder="예: 학교 적응 및 첫 신앙생활 상담 완료" required>
-            </div>
-          </div>
-
-          <!-- 3주차 -->
-          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center justify-center">3</span>
-              <span class="text-[13px] font-extrabold text-text-primary">3주차 커리큘럼</span>
-            </div>
-            <div>
-              <label for="newcomerStepTitle3" class="block text-[11px] font-bold text-text-secondary mb-1">과정 제목</label>
-              <input type="text" id="newcomerStepTitle3" class="w-full" placeholder="예: 분반 또래 친구 소개 & 간식 교제" required>
-            </div>
-            <div>
-              <label for="newcomerStepDesc3" class="block text-[11px] font-bold text-text-secondary mb-1">세부 안내 및 미션</label>
-              <input type="text" id="newcomerStepDesc3" class="w-full" placeholder="예: 토요예배 후 분반 또래 친구들과 간식 파티" required>
-            </div>
-          </div>
-
-          <!-- 4주차 -->
-          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-2.5">
-            <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center justify-center">4</span>
-              <span class="text-[13px] font-extrabold text-text-primary">4주차 커리큘럼 (등반)</span>
-            </div>
-            <div>
-              <label for="newcomerStepTitle4" class="block text-[11px] font-bold text-text-secondary mb-1">과정 제목</label>
-              <input type="text" id="newcomerStepTitle4" class="w-full" placeholder="예: 새친구반 수료 축하 & 정규 분반 등반" required>
-            </div>
-            <div>
-              <label for="newcomerStepDesc4" class="block text-[11px] font-bold text-text-secondary mb-1">세부 안내 및 미션</label>
-              <input type="text" id="newcomerStepDesc4" class="w-full" placeholder="예: 수료패 증정 및 정규 학년 분반 배정" required>
-            </div>
+          <!-- Dynamic Steps List Container (Populated by JS) -->
+          <div id="newcomerStepsEditorContainer" class="space-y-3">
+            <!-- Dynamically populated by JS based on selected weeks -->
           </div>
 
           <div class="flex items-center gap-2 bg-surface-container-low p-3 rounded-xl border border-outline-variant/20">
             <input type="checkbox" id="syncExistingStudentsCheckbox" class="w-4 h-4 accent-primary rounded" checked>
             <label for="syncExistingStudentsCheckbox" class="text-[12px] font-bold text-text-primary cursor-pointer">
-              현재 관리 중인 모든 새친구 학생 카드에도 새 커리큘럼 명칭 즉시 동기화
+              현재 관리 중인 모든 새친구 학생 카드에도 새 커리큘럼 명칭 및 주차 즉시 동기화
             </label>
           </div>
 
@@ -2911,7 +2872,7 @@
 
   </div>
 
-  <script src="app.js?v=20260913_remove_guide_v1"></script>
+  <script src="app.js?v=20260913_dynamic_weeks_v1"></script>
 </body>
 </html>
 
