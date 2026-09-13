@@ -1423,13 +1423,10 @@
         <form id="agendaForm">
           <div class="form-group">
             <label>작성자 / 제안자</label>
-            <select id="agendaAuthorInput">
-              <option value="정하람 전도사">정하람 전도사</option>
-              <option value="소예진 선생님">소예진 선생님</option>
-              <option value="김대한 선생님">김대한 선생님</option>
-              <option value="김희순 집사">김희순 집사</option>
-              <option value="나하은 선생님">나하은 선생님</option>
-            </select>
+            <div class="relative">
+              <input type="text" id="agendaAuthorInput" readonly class="w-full text-xs font-black rounded-xl px-3 py-2.5 cursor-not-allowed select-none" style="background:#f4f4f5; color:#18181b; border:1.5px solid #e4e4e7; font-weight:800;" value="정하람 전도사">
+              <span class="text-[10.5px] font-extrabold text-primary bg-primary/10 px-2 py-0.5 rounded-md absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">본인 계정 자동 지정 ✓</span>
+            </div>
           </div>
           <div class="form-group">
             <label>안건 제목</label>
@@ -2911,7 +2908,7 @@
 
   </div>
 
-  <script src="app.js?v=20260914_meeting_archive_v1"></script>
+  <script src="app.js?v=20260914_author_lock_v1"></script>
 </body>
 </html>
 

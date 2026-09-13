@@ -2827,25 +2827,21 @@ function initAgendaEvents() {
       }
 
       const currentUser = getCurrentUser();
-      const authorSelect = document.getElementById("agendaAuthorInput");
+      const authorInput = document.getElementById("agendaAuthorInput");
       const modalTitle = document.querySelector("#agendaModal .sheet-title");
       const submitBtn = document.querySelector("#agendaModal button[type='submit']");
+
+      const authorName = currentUser ? currentUser.name : (currentRole === "pastor" ? "정하람 전도사" : "교사 본인");
+      if (authorInput) {
+        authorInput.value = authorName;
+      }
 
       if (currentRole === "pastor") {
         if (modalTitle) modalTitle.textContent = "회의 안건 즉시 등록 (전도사)";
         if (submitBtn) submitBtn.textContent = "확정 안건으로 바로 추가 ✓";
-        if (authorSelect) authorSelect.value = "정하람 전도사";
       } else {
         if (modalTitle) modalTitle.textContent = "교사 회의 안건 제안";
         if (submitBtn) submitBtn.textContent = "안건 제안 제출 (승인 대기 등록)";
-        if (authorSelect && currentUser) {
-          for (let opt of authorSelect.options) {
-            if (opt.value.includes(currentUser.name) || currentUser.name.includes(opt.value)) {
-              opt.selected = true;
-              break;
-            }
-          }
-        }
       }
 
       openModal("agendaModal");
