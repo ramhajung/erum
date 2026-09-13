@@ -8807,6 +8807,9 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
 }
 
 function openNoticesModalImpl(filterTag = "ALL") {
+  if (typeof filterTag !== "string") {
+    filterTag = "ALL";
+  }
   try {
     if (!appState.notices || !Array.isArray(appState.notices) || appState.notices.length === 0) {
       appState.notices = JSON.parse(JSON.stringify(INITIAL_DATA.notices || []));
@@ -8820,8 +8823,10 @@ function openNoticesModalImpl(filterTag = "ALL") {
   }
 }
 
-const openNoticesModal = openNoticesModalImpl;
-window.openNoticesModal = openNoticesModalImpl;
+function openNoticesModal(tag) {
+  openNoticesModalImpl(tag);
+}
+window.openNoticesModal = openNoticesModal;
 window.openAddNoticeModal = openAddNoticeModal;
 
 function setNoticeAsCurrent(noticeId) {
