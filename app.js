@@ -1751,7 +1751,10 @@ function renderNewcomerMinistrySection() {
 
   const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
   const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const role = currentUser ? currentUser.role : currentRole;
   const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  const isNewcomerTeacher = (role === "teacher_new" || currentRole === "teacher_new" || (currentUser && currentUser.duty && currentUser.duty.includes("새친구")));
+  const canEditNewcomerInfo = isPastor || isNewcomerTeacher;
   const totalWeeks = (typeof getNewcomerTotalWeeks === "function") ? getNewcomerTotalWeeks() : (data.curriculum?.steps?.length || 3);
 
   containers.forEach(container => {
@@ -1771,7 +1774,7 @@ function renderNewcomerMinistrySection() {
       <div class="teacher-profile-banner" style="background:linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%); border:1.5px solid #bbf7d0; border-radius:20px; padding:15px; margin-bottom:18px; box-shadow:0 4px 14px rgba(22,163,74,0.06);">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
           <div style="font-size:11px; font-weight:800; color:#15803d; background:#dcfce7; padding:2px 8px; border-radius:6px; letter-spacing:-0.2px;">
-            🌱 새친구반 전담 멘토 교사
+            ${isNewcomerTeacher ? '🌱 내 새친구반 멘토 프로필' : '🌱 새친구반 전담 멘토 교사'}
           </div>
           <span style="font-size:11px; color:#166534; font-weight:700;">새친구 ${data.students.length}명 관리 중</span>
         </div>
@@ -1792,8 +1795,14 @@ function renderNewcomerMinistrySection() {
             </div>
           </div>
           <div style="display:flex; gap:6px;">
-            <a href="tel:${data.teacherPhone}" class="btn-icon" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px;" title="전화걸기">📞</a>
-            <button type="button" class="btn-icon" onclick="showToast('${data.teacherName} 선생님과의 1:1 대화방을 엽니다 💬', 'info')" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center; font-size:16px;" title="카톡 대화">💬</button>
+            ${isNewcomerTeacher ? `
+              <span style="font-size:11px; font-weight:800; color:#15803d; background:#dcfce7; padding:5px 10px; border-radius:10px; border:1px solid #86efac; display:inline-flex; align-items:center; gap:3px;">
+                <span>👩🏻‍🏫</span> <span>새친구 멘토</span>
+              </span>
+            ` : `
+              <a href="tel:${data.teacherPhone}" class="btn-icon" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px;" title="전화걸기">📞</a>
+              <button type="button" class="btn-icon" onclick="showToast('${data.teacherName} 선생님과의 1:1 대화방을 엽니다 💬', 'info')" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center; font-size:16px;" title="카톡 대화">💬</button>
+            `}
           </div>
         </div>
       </div>
@@ -1855,7 +1864,7 @@ function renderNewcomerMinistrySection() {
                 </div>
               </div>
 
-              <!-- 4-Week Milestone Steps (Interactive) -->
+              <!-- Milestone Steps (Interactive) -->
               <div style="display:flex; flex-direction:column; gap:6px; background:#fafaf9; padding:10px; border-radius:14px; border:1px solid #f5f5f4;">
                 ${s.steps.map(step => {
                   return `
@@ -1875,7 +1884,7 @@ function renderNewcomerMinistrySection() {
                         <span onclick="toggleNewcomerStep('${s.id}', ${step.week})" style="font-size:11px; color:${step.completed ? '#16a34a' : '#9ca3af'}; font-weight:700; cursor:pointer;">
                           ${step.completed ? '완료' : '진행전'}
                         </span>
-                        ${isPastor ? `
+                        ${canEditNewcomerInfo ? `
                           <button type="button" onclick="event.stopPropagation(); openEditStudentStepModal('${s.id}', ${step.week})" style="background:none; border:none; color:#78716c; cursor:pointer; padding:2px; font-size:11px; display:flex; align-items:center;" title="단계 세부내용 수정">
                             ✏️
                           </button>
@@ -1886,12 +1895,27 @@ function renderNewcomerMinistrySection() {
                 }).join('')}
               </div>
 
-              <!-- Interest & Prayer -->
-              ${s.interests ? `
-                <div style="margin-top:10px; font-size:11px; color:#57534e; background:#fff; padding:6px 10px; border-radius:8px; border:1px dashed #d6d3d1;">
-                  💡 <strong>관심사:</strong> ${s.interests} | <strong>기도제목:</strong> ${s.prayerTopic}
+              <!-- Interest & Prayer Box with Edit Permission (새친구반 교사 / 전도사) -->
+              <div style="margin-top:10px; background:#fbfbfb; border:1px solid #e7e5e4; border-radius:12px; padding:10px 12px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+                  <span style="font-size:11px; font-weight:800; color:#15803d; display:flex; align-items:center; gap:4px;">
+                    <span>💡</span> <span>관심사 & 기도제목</span>
+                  </span>
+                  ${canEditNewcomerInfo ? `
+                    <button type="button" onclick="openEditNewcomerInfoModal('${s.id}')" style="background:#fff; border:1px solid #bbf7d0; color:#16a34a; font-size:11px; font-weight:800; padding:2.5px 8px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:3px; box-shadow:0 1px 2px rgba(0,0,0,0.03);" title="관심사 및 기도제목 수정">
+                      <span>✏️</span> <span>수정</span>
+                    </button>
+                  ` : ''}
                 </div>
-              ` : ''}
+                <div style="font-size:11.5px; line-height:1.55; color:#374151;">
+                  <div style="margin-bottom:3px;">
+                    <strong style="color:#166534;">관심사:</strong> <span>${s.interests || '미등록'}</span>
+                  </div>
+                  <div>
+                    <strong style="color:#166534;">기도제목:</strong> <span>${s.prayerTopic || '교회에 잘 적응하고 좋은 믿음의 친구들을 만나도록'}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           `;
         }).join('')}
@@ -2864,6 +2888,29 @@ function initAgendaEvents() {
       }
     });
   }
+
+  // 새친구 관심사 및 기도제목 수정 폼 제출 핸들러 (전도사 & 새친구반 교사)
+  const editNewcomerInfoForm = document.getElementById("editNewcomerInfoForm");
+  if (editNewcomerInfoForm) {
+    editNewcomerInfoForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const studentId = document.getElementById("editNewcomerInfoStudentId").value;
+      const newInterests = document.getElementById("editNewcomerInterestsInput").value.trim();
+      const newPrayerTopic = document.getElementById("editNewcomerPrayerTopicInput").value.trim();
+
+      const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+      const student = data.students.find(s => s.id === studentId);
+      if (!student) return;
+
+      student.interests = newInterests;
+      student.prayerTopic = newPrayerTopic;
+
+      saveState();
+      renderNewcomerMinistrySection();
+      closeModal("editNewcomerInfoModal");
+      showToast(`🌱 ${student.name} 학생의 관심사 및 기도제목이 성공적으로 수정되었습니다! ✓`);
+    });
+  }
 }
 
 function getNewcomerTotalWeeks() {
@@ -2985,8 +3032,18 @@ window.openEditCurriculumModalDirect = function() {
   openModal("editCurriculumModal");
 };
 
-// 개별 학생 단계 수정 모달 열기
+// 개별 학생 단계 수정 모달 열기 (전도사 & 새친구반 교사)
 window.openEditStudentStepModal = function(studentId, week) {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const role = currentUser ? currentUser.role : currentRole;
+  const isPastor = (role === "pastor" || currentRole === "pastor");
+  const isNewTeacher = (role === "teacher_new" || currentRole === "teacher_new" || (currentUser && currentUser.duty && currentUser.duty.includes("새친구")));
+
+  if (!isPastor && !isNewTeacher) {
+    showToast("⚠️ 새친구 단계 수정은 새친구반 선생님과 전도사님만 가능합니다 🔒", "warning");
+    return;
+  }
+
   const newcomerData = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
   const student = newcomerData.students.find(s => s.id === studentId);
   if (!student) return;
@@ -3010,6 +3067,36 @@ window.openEditStudentStepModal = function(studentId, week) {
   if (compInp) compInp.checked = !!step.completed;
 
   openModal("editStudentStepModal");
+};
+
+// 새친구 관심사 & 기도제목 수정 모달 열기 (전도사 & 새친구반 교사 전용)
+window.openEditNewcomerInfoModal = function(studentId) {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const role = currentUser ? currentUser.role : currentRole;
+  const isPastor = (role === "pastor" || currentRole === "pastor");
+  const isNewTeacher = (role === "teacher_new" || currentRole === "teacher_new" || (currentUser && currentUser.duty && currentUser.duty.includes("새친구")));
+
+  if (!isPastor && !isNewTeacher) {
+    showToast("⚠️ 새친구 관심사/기도제목 수정은 새친구반 선생님과 전도사님만 가능합니다 🔒", "warning");
+    return;
+  }
+
+  const newcomerData = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+  const student = newcomerData.students.find(s => s.id === studentId);
+  if (!student) return;
+
+  const titleEl = document.getElementById("editNewcomerInfoModalTitle");
+  if (titleEl) titleEl.textContent = `✏️ ${student.name} (${student.grade}) 관심사 & 기도제목 수정`;
+
+  const sidInp = document.getElementById("editNewcomerInfoStudentId");
+  const intInp = document.getElementById("editNewcomerInterestsInput");
+  const prayInp = document.getElementById("editNewcomerPrayerTopicInput");
+
+  if (sidInp) sidInp.value = student.id;
+  if (intInp) intInp.value = student.interests || "";
+  if (prayInp) prayInp.value = student.prayerTopic || "";
+
+  openModal("editNewcomerInfoModal");
 };
 
 // =============================================================================
