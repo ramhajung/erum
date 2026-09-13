@@ -862,6 +862,11 @@ function initNavigation() {
         if (typeof renderCalendarSection === "function") renderCalendarSection();
       }
 
+      // 공과반 화면 갱신
+      if (targetId === "view-teacher-grade") {
+        if (typeof renderClassMinistrySection === "function") renderClassMinistrySection();
+      }
+
       // Scroll top
       const container = document.getElementById("screensContainer");
       if (container) container.scrollTo({ top: 0, behavior: "smooth" });
@@ -891,8 +896,8 @@ function switchToTab(viewId) {
       showToast("새친구반 선생님은 새친구반 메뉴만 열람할 수 있습니다 🔒", "warning");
       return;
     }
-    if (isStudentRole(userRole)) {
-      showToast("선생님 전용 메뉴입니다 🔒", "warning");
+    if (userRole === "student_new") {
+      showToast("새친구반 학생은 새친구반 안내를 확인해 주세요 🌱", "info");
       return;
     }
   }
@@ -1096,12 +1101,22 @@ function renderClassMinistrySection() {
 
   const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
   const currentClassId = appState.currentSelectedClassId || "class_high3";
-  const activeClass = classes.find(c => c.id === currentClassId) || classes[0];
 
   const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const role = currentUser ? currentUser.role : currentRole;
+  const isStudent = isStudentRole(role) || isStudentRole(currentRole);
   const isPastorOrDeacon = !currentUser || currentUser.role === "pastor" || currentUser.role === "deacon";
 
   containers.forEach(container => {
+    let activeClass;
+    if (isStudent && currentUser) {
+      activeClass = classes.find(c => c.students && c.students.some(s => s.name === currentUser.name || s.id === currentUser.id))
+        || classes.find(c => c.id === "class_high3")
+        || classes[0];
+    } else {
+      activeClass = classes.find(c => c.id === currentClassId) || classes[0];
+    }
+
     let chipsHtml = "";
     if (isPastorOrDeacon) {
       chipsHtml = `
@@ -1130,9 +1145,11 @@ function renderClassMinistrySection() {
       <div class="teacher-profile-banner" style="background:linear-gradient(135deg, #fffcf9 0%, #fff7ed 100%); border:1.5px solid #fed7aa; border-radius:20px; padding:15px; margin-bottom:18px; box-shadow:0 4px 14px rgba(234,88,12,0.06);">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
           <div style="font-size:11px; font-weight:800; color:#ea580c; background:#ffedd5; padding:2px 8px; border-radius:6px; letter-spacing:-0.2px;">
-            🏷️ ${activeClass.grade} 담당 교사
+            ${isStudent ? `🏷️ 우리 반 (${activeClass.grade}) 담임 선생님` : `🏷️ ${activeClass.grade} 담당 교사`}
           </div>
-          <span style="font-size:11px; color:#9a3412; font-weight:700;">재적 ${activeClass.students.length}명 관리</span>
+          <span style="font-size:11px; color:#9a3412; font-weight:700;">
+            ${isStudent ? `우리 분반 친구들 ${activeClass.students.length}명` : `재적 ${activeClass.students.length}명 관리`}
+          </span>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
           <div style="width:48px; height:48px; border-radius:16px; background:#ffedd5; display:flex; align-items:center; justify-content:center; font-size:24px; border:1px solid #fdba74; flex-shrink:0;">
@@ -1159,29 +1176,33 @@ function renderClassMinistrySection() {
 
       <!-- 해당 분반 학생 출결 & 목양 관리 -->
       <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span>👥 ${activeClass.grade} 학생 관리 & 출결</span>
-        <button type="button" onclick="addNewStudentToClass('${activeClass.id}')" style="font-size:11.5px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 6px;">
-          ＋ 학생 추가
-        </button>
+        <span>${isStudent ? `👥 우리 분반 친구들 (${activeClass.grade})` : `👥 ${activeClass.grade} 학생 관리 & 출결`}</span>
+        ${!isStudent ? `
+          <button type="button" onclick="addNewStudentToClass('${activeClass.id}')" style="font-size:11.5px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 6px;">
+            ＋ 학생 추가
+          </button>
+        ` : ''}
       </div>
 
       <div class="timeline-list" style="display:flex; flex-direction:column; gap:8px;">
         ${activeClass.students.map(s => {
           const isAttended = (s.attendance === "출석");
-          return `
-            <div class="timeline-item" style="background:#fff; border:1px solid #f1e9e0; border-radius:16px; padding:12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
-              <div style="width:38px; height:38px; border-radius:12px; background:${isAttended ? '#e0f2fe' : '#fef2f2'}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
-                ${s.avatar || '👦🏻'}
+          const isMe = currentUser && (s.name === currentUser.name || s.id === currentUser.id);
+
+          let rightActionHtml = "";
+          if (isStudent) {
+            rightActionHtml = `
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; background:${isAttended ? '#dcfce7' : '#f1f5f9'}; color:${isAttended ? '#166534' : '#64748b'};">
+                  ${isAttended ? '출석 ✓' : '확인 중'}
+                </span>
+                <button class="timeline-icon-btn" onclick="showToast('${s.name} 친구에게 응원 톡을 보냅니다 💬', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;" title="응원 톡">
+                  💬
+                </button>
               </div>
-              <div class="timeline-content" style="flex:1; min-width:0;">
-                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-                  <span style="font-size:13.5px; font-weight:800; color:#2d261e;">${s.name}</span>
-                  <span style="font-size:11px; color:#78716c;">(${s.roleInfo || s.grade})</span>
-                </div>
-                <div style="font-size:11.5px; color:#8c827a; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                  ${s.recentVisit}
-                </div>
-              </div>
+            `;
+          } else {
+            rightActionHtml = `
               <div style="display:flex; align-items:center; gap:6px;">
                 <button type="button" onclick="toggleStudentAttendance('${activeClass.id}', '${s.id}')" style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; border:none; cursor:pointer; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'}; transition:all 0.15s ease;">
                   ${isAttended ? '출석 ✓' : '결석 ✕'}
@@ -1190,6 +1211,25 @@ function renderClassMinistrySection() {
                   💬
                 </button>
               </div>
+            `;
+          }
+
+          return `
+            <div class="timeline-item" style="background:${isMe ? '#fffbf5' : '#fff'}; border:${isMe ? '1.5px solid #fed7aa' : '1px solid #f1e9e0'}; border-radius:16px; padding:12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
+              <div style="width:38px; height:38px; border-radius:12px; background:${isAttended ? '#e0f2fe' : '#fef2f2'}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                ${s.avatar || '👦🏻'}
+              </div>
+              <div class="timeline-content" style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                  <span style="font-size:13.5px; font-weight:800; color:#2d261e;">${s.name}</span>
+                  ${isMe ? '<span style="font-size:9.5px; background:#ea580c; color:#fff; font-weight:800; padding:1px 5px; border-radius:6px;">나</span>' : ''}
+                  <span style="font-size:11px; color:#78716c;">(${s.roleInfo || s.grade})</span>
+                </div>
+                <div style="font-size:11.5px; color:#8c827a; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${isStudent ? (s.roleInfo || `${activeClass.grade} 친구`) : s.recentVisit}
+                </div>
+              </div>
+              ${rightActionHtml}
             </div>
           `;
         }).join('')}
@@ -1201,20 +1241,32 @@ function renderClassMinistrySection() {
         <span style="font-size:11px; font-weight:700; color:#888;">시편 119:105</span>
       </div>
       <div class="card p-4" style="background:#faf8f5; border:1px solid #ebd9c8; border-radius:18px;">
-        <div style="font-size:12.5px; font-weight:800; color:#9a3412; margin-bottom:4px;">💡 교사 나눔 팁</div>
+        <div style="font-size:12.5px; font-weight:800; color:#9a3412; margin-bottom:4px;">
+          ${isStudent ? '💡 이번 주 나눔 질문' : '💡 교사 나눔 팁'}
+        </div>
         <p style="font-size:12px; color:#57534e; line-height:1.6; margin:0;">
-          수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.
+          ${isStudent
+            ? '“주의 말씀은 내 발에 등이요 내 길에 빛이니이다” (시편 119:105)<br>이번 주 한 주 동안 나를 이끌어 주신 하나님의 말씀이나 분반 친구들과 나누고 싶은 감사 제목을 나누어 보세요.'
+            : '수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.'}
         </p>
       </div>
 
-      <div style="display:flex; gap:8px; margin-top:16px;">
-        <button class="btn-primary" style="flex:1; background:#e67e22;" onclick="openModal('visitModal')">
-          <span>＋</span> <span>새 심방 일지 등록</span>
-        </button>
-        <button class="btn-secondary" style="flex:1; border-color:#fad5b6; color:#9a3412; font-size:13px; font-weight:800;" onclick="addNewStudentToClass('${activeClass.id}')">
-          <span>👤</span> <span>학생 추가</span>
-        </button>
-      </div>
+      ${isStudent ? `
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <button class="btn-primary" style="flex:1; background:#ea580c; border:none; padding:12px; font-size:13.5px; font-weight:800; border-radius:14px; cursor:pointer;" onclick="switchToTab('view-student-counsel')">
+            <span>💬</span> <span>선생님께 1:1 고민 상담하기</span>
+          </button>
+        </div>
+      ` : `
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <button class="btn-primary" style="flex:1; background:#e67e22;" onclick="openModal('visitModal')">
+            <span>＋</span> <span>새 심방 일지 등록</span>
+          </button>
+          <button class="btn-secondary" style="flex:1; border-color:#fad5b6; color:#9a3412; font-size:13px; font-weight:800;" onclick="addNewStudentToClass('${activeClass.id}')">
+            <span>👤</span> <span>학생 추가</span>
+          </button>
+        </div>
+      `}
     `;
   });
 }
@@ -3675,6 +3727,7 @@ const ROLES = {
     activeClass: "active-student",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
     ],
@@ -3707,6 +3760,7 @@ const ROLES = {
     activeClass: "active-student",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
     ],
@@ -4390,6 +4444,11 @@ function renderRoleTabBar(roleConfig) {
       if (tab.target === "view-scheduler") {
         if (typeof renderSchedulerSubTabsByRole === "function") renderSchedulerSubTabsByRole();
         if (typeof renderCalendarSection === "function") renderCalendarSection();
+      }
+
+      // 공과반 화면 갱신
+      if (tab.target === "view-teacher-grade") {
+        if (typeof renderClassMinistrySection === "function") renderClassMinistrySection();
       }
 
       const container = document.getElementById("screensContainer");
