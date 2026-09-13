@@ -2794,7 +2794,7 @@
       </div>
     </div>
 
-    <!-- Modal: 새친구 관심사 & 기도제목 수정 모달 (새친구반 교사/전도사 전용) -->
+    <!-- Modal: 새친구 1:1 멘토 & 관심사 & 기도제목 수정 모달 (새친구반 교사/전도사 전용) -->
     <div class="modal-backdrop" id="editNewcomerInfoModal">
       <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
         <div class="sheet-handle"></div>
@@ -2803,8 +2803,8 @@
             <div class="flex items-center gap-1.5 mb-1">
               <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10.5px] font-extrabold">새친구반 전용 🔒</span>
             </div>
-            <h3 class="sheet-title" id="editNewcomerInfoModalTitle">✏️ 관심사 & 기도제목 수정</h3>
-            <p class="text-[11.5px] text-text-muted">학생의 관심사/특기와 신앙 정착을 위한 기도제목을 수정합니다.</p>
+            <h3 class="sheet-title" id="editNewcomerInfoModalTitle">✏️ 멘토 & 관심사 & 기도제목 수정</h3>
+            <p class="text-[11.5px] text-text-muted">학생의 1:1 담당 멘토 선생님, 관심사 및 기도제목을 수정합니다.</p>
           </div>
           <button type="button" class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" data-close="editNewcomerInfoModal" aria-label="닫기">
             <span class="material-symbols-outlined text-[18px]">close</span>
@@ -2812,6 +2812,13 @@
         </div>
         <form id="editNewcomerInfoForm" class="space-y-3.5 pt-1">
           <input type="hidden" id="editNewcomerInfoStudentId" value="">
+
+          <div class="form-group mb-0">
+            <label for="editNewcomerMentorSelect" class="block text-[11.5px] font-bold text-text-secondary mb-1">🌱 1:1 담당 멘토 교사</label>
+            <select id="editNewcomerMentorSelect" class="w-full bg-white border border-emerald-300 rounded-xl px-3 py-2 text-[13px] font-extrabold text-emerald-800 shadow-sm focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+              <!-- Populated by JS -->
+            </select>
+          </div>
 
           <div class="form-group mb-0">
             <label for="editNewcomerInterestsInput" class="block text-[11.5px] font-bold text-text-secondary mb-1">💡 관심사 및 특기</label>
@@ -2864,7 +2871,7 @@
 
   </div>
 
-  <script src="app.js?v=20260913_newcomer_info_edit_v1"></script>
+  <script src="app.js?v=20260913_newcomer_mentor_team_v1"></script>
 </body>
 </html>
 
