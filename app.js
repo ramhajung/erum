@@ -2434,22 +2434,13 @@ function openStudentDetailModal(studentId) {
       prayers.forEach(prayer => {
         const el = document.createElement("div");
         el.className = "prayer-card";
+        el.style.cursor = "default";
         el.innerHTML = `
-          <div class="prayer-left">
-            <div class="prayer-heart-icon">♥</div>
-            <span>${prayer.text}</span>
-          </div>
-          <div class="prayer-hands" title="기도 동참하기">
-            🙏 <span style="font-size:12px; font-weight:800; color:#5c4e44;">${prayer.count || 0}</span>
+          <div class="prayer-left" style="width:100%;">
+            <div class="prayer-heart-icon" style="background:#ff6e87; color:white; flex-shrink:0;">♥</div>
+            <span style="font-size:13.5px; font-weight:700; color:#2b231d; line-height:1.45;">${prayer.text}</span>
           </div>
         `;
-        const handsBtn = el.querySelector(".prayer-hands");
-        if (handsBtn) {
-          handsBtn.onclick = (e) => {
-            e.stopPropagation();
-            incrementPrayerCount(s.id, prayer.id);
-          };
-        }
         prayerListEl.appendChild(el);
       });
     }
