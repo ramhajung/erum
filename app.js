@@ -554,14 +554,14 @@ const INITIAL_DATA = {
   ],
   birthdays: [
     // 10월 생일 주인공 5명
-    { id: "bday_1", month: 10, day: 1, name: "소예진T", roleDesc: "선생님", avatar: "👩🏻‍🏫" },
-    { id: "bday_2", month: 10, day: 13, name: "김예원", roleDesc: "학생", avatar: "👧🏻" },
-    { id: "bday_3", month: 10, day: 13, name: "김재원", roleDesc: "학생", avatar: "👦🏻" },
-    { id: "bday_4", month: 10, day: 15, name: "양형모", roleDesc: "학생", avatar: "👦🏻" },
-    { id: "bday_5", month: 10, day: 22, name: "김하람", roleDesc: "학생", avatar: "👧🏻" },
+    { id: "bday_1", month: 10, day: 1, name: "소예진T", roleDesc: "선생님(새친구반)", avatar: "👩🏻‍🏫" },
+    { id: "bday_2", month: 10, day: 13, name: "김예원", roleDesc: "학생(공과반)", avatar: "👧🏻" },
+    { id: "bday_3", month: 10, day: 13, name: "김재원", roleDesc: "학생(공과반)", avatar: "👦🏻" },
+    { id: "bday_4", month: 10, day: 15, name: "양형모", roleDesc: "학생(공과반)", avatar: "👦🏻" },
+    { id: "bday_5", month: 10, day: 22, name: "김하람", roleDesc: "학생(새친구반)", avatar: "👧🏻" },
     // 과거 및 다른 월 생일 주인공
     { id: "bday_6", month: 8, day: 30, name: "김희순 집사", roleDesc: "부장집사님", avatar: "👔" },
-    { id: "bday_7", month: 9, day: 10, name: "김대한T", roleDesc: "선생님", avatar: "🧑🏻‍🏫" },
+    { id: "bday_7", month: 9, day: 10, name: "김대한T", roleDesc: "선생님(공과반)", avatar: "🧑🏻‍🏫" },
     { id: "bday_8", month: 11, day: 7, name: "나하은T", roleDesc: "선생님(회계)", avatar: "💼" },
     { id: "bday_9", month: 12, day: 19, name: "정하람 전도사", roleDesc: "전도사", avatar: "✝️" }
   ],
@@ -619,8 +619,8 @@ const INITIAL_DATA = {
       name: "양형모 학생",
       username: "student",
       password: "password",
-      role: "student",
-      duty: "고3 / 예랑 찬양팀 드럼 세션",
+      role: "student_grade",
+      duty: "고3 분반 / 찬양팀 드럼 세션",
       birthday: "2008-04-22",
       phone: "010-3849-2918",
       avatar: "👦🏻",
@@ -631,7 +631,7 @@ const INITIAL_DATA = {
       name: "김하람 학생",
       username: "student2",
       password: "password",
-      role: "student",
+      role: "student_new",
       duty: "중2 / 새친구반 정착 학생",
       birthday: "2012-09-18",
       phone: "010-5678-9012",
@@ -710,7 +710,7 @@ function loadState() {
           }
         });
       }
-      // Upgrade teacher roles to teacher_grade or teacher_new
+      // Upgrade teacher and student roles
       if (parsed.users && Array.isArray(parsed.users)) {
         parsed.users.forEach(u => {
           if (u.id === "u3" || (u.duty && u.duty.includes("고3") && u.role === "teacher")) {
@@ -718,6 +718,12 @@ function loadState() {
           }
           if (u.id === "u4" || (u.duty && u.duty.includes("새친구") && u.role === "teacher")) {
             u.role = "teacher_new";
+          }
+          if (u.id === "u5" || (u.role === "student" && (!u.duty || !u.duty.includes("새친구")))) {
+            u.role = "student_grade";
+          }
+          if (u.id === "u6" || (u.role === "student" && u.duty && u.duty.includes("새친구"))) {
+            u.role = "student_new";
           }
         });
       }
@@ -874,7 +880,7 @@ function switchToTab(viewId) {
       showToast("공과 선생님은 공과반 메뉴만 열람할 수 있습니다 🔒", "warning");
       return;
     }
-    if (userRole === "student") {
+    if (isStudentRole(userRole)) {
       showToast("선생님 전용 메뉴입니다 🔒", "warning");
       return;
     }
@@ -885,7 +891,7 @@ function switchToTab(viewId) {
       showToast("새친구반 선생님은 새친구반 메뉴만 열람할 수 있습니다 🔒", "warning");
       return;
     }
-    if (userRole === "student") {
+    if (isStudentRole(userRole)) {
       showToast("선생님 전용 메뉴입니다 🔒", "warning");
       return;
     }
@@ -2285,7 +2291,7 @@ function initAttendanceEvents() {
   if (openAbsentBtn) {
     openAbsentBtn.addEventListener("click", () => {
       const currentUser = getCurrentUser();
-      const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
+      const isStudent = isStudentRole(currentRole) || (currentUser && isStudentRole(currentUser.role));
       const nameInput = document.getElementById("absentTeacherInput");
       if (nameInput) {
         nameInput.value = currentUser ? currentUser.name : (isStudent ? "학생" : "선생님");
@@ -2313,6 +2319,9 @@ function initAttendanceEvents() {
     const eta = document.getElementById("absentEtaInput")?.value?.trim() || "";
     const duty = currentUser ? (currentUser.duty || "") : "";
 
+    const isStudent = isStudentRole(currentRole) || (currentUser && isStudentRole(currentUser.role));
+    const studentAvatar = (currentRole === "student_new" || currentUser?.role === "student_new") ? "👧🏻" : "👦🏻";
+
     const newAtt = {
       id: Date.now(),
       userId: currentUser?.id || null,
@@ -2322,7 +2331,7 @@ function initAttendanceEvents() {
       memo: memo,
       eta: eta,
       duty: duty,
-      avatar: currentUser?.avatar || (currentRole === "student" ? "👦🏻" : "🧑🏻‍🏫")
+      avatar: currentUser?.avatar || (isStudent ? studentAvatar : "🧑🏻‍🏫")
     };
 
     appState.attendance.unshift(newAtt);
@@ -3656,12 +3665,44 @@ const ROLES = {
     defaultTab: "view-home",
     showAccountingAdmin: false
   },
+  student_grade: {
+    id: "student_grade",
+    name: "양형모 (고3)",
+    title: "예랑 청소년부 피드 (공과반)",
+    subtitle: "학생(공과반) · 고3 분반",
+    badge: "👦🏻 학생(공과반)",
+    tagClass: "tag-student",
+    activeClass: "active-student",
+    tabs: [
+      { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
+      { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
+    ],
+    defaultTab: "view-home",
+    showAccountingAdmin: false
+  },
+  student_new: {
+    id: "student_new",
+    name: "김하람 (중2)",
+    title: "예랑 새친구 환영 피드",
+    subtitle: "학생(새친구반) · 새친구 4주 적응",
+    badge: "🌱 학생(새친구반)",
+    tagClass: "tag-student",
+    activeClass: "active-student",
+    tabs: [
+      { target: "view-home", icon: "home", label: "홈", title: "예랑 새친구 환영 피드", subtitle: "새친구 환영 · 토요예배 섬김이 · 공지" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
+      { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "새친구 1:1 멘토링 & 심방 신청" }
+    ],
+    defaultTab: "view-home",
+    showAccountingAdmin: false
+  },
   student: {
     id: "student",
     name: "양형모 (고3)",
     title: "예랑 청소년부 피드",
-    subtitle: "양형모 (고3) · 찬양팀 세션",
-    badge: "👦🏻 학생 모드",
+    subtitle: "학생(공과반) · 고3 분반",
+    badge: "👦🏻 학생(공과반)",
     tagClass: "tag-student",
     activeClass: "active-student",
     tabs: [
@@ -3682,7 +3723,9 @@ const ROLE_NAMES = {
   teacher_grade: "선생님(공과반)",
   teacher_new: "선생님(새친구반)",
   teacher: "선생님(공과반)",
-  student: "학생"
+  student_grade: "학생(공과반)",
+  student_new: "학생(새친구반)",
+  student: "학생(공과반)"
 };
 
 const ROLE_BADGES = {
@@ -3692,7 +3735,9 @@ const ROLE_BADGES = {
   teacher_grade: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님(공과반)</span>',
   teacher_new: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🌱 선생님(새친구반)</span>',
   teacher: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님(공과반)</span>',
-  student: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>'
+  student_grade: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생(공과반)</span>',
+  student_new: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px; background:#e8f5e9; color:#2e7d32; border:1px solid #c8e6c9;">🌱 학생(새친구반)</span>',
+  student: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생(공과반)</span>'
 };
 
 const DEFAULT_AVATARS = {
@@ -3702,10 +3747,16 @@ const DEFAULT_AVATARS = {
   teacher_grade: "🧑🏻‍🏫",
   teacher_new: "🌱",
   teacher: "🧑🏻‍🏫",
+  student_grade: "👦🏻",
+  student_new: "👧🏻",
   student: "👦🏻"
 };
 
 let currentRole = "pastor";
+
+function isStudentRole(role) {
+  return role === "student" || role === "student_grade" || role === "student_new";
+}
 
 function isCurrentRolePastor() {
   const currentUser = getCurrentUser();
@@ -3789,12 +3840,29 @@ function renderUserSwitchGrid() {
   });
 }
 
-function renderUserManagerSection() {
+function renderUserManagerSection(filterCategory = "ALL") {
   const container = document.getElementById("userMgmtListContainer");
   if (!container) return;
   container.innerHTML = "";
 
-  appState.users.forEach(user => {
+  const users = appState.users || [];
+  const filteredUsers = users.filter(user => {
+    if (filterCategory === "ALL") return true;
+    if (filterCategory === "TEACHERS") return !isStudentRole(user.role);
+    if (filterCategory === "STUDENT_GRADE") return user.role === "student_grade" || (user.role === "student" && user.id !== "u6");
+    if (filterCategory === "STUDENT_NEW") return user.role === "student_new" || (user.role === "student" && user.id === "u6");
+    return true;
+  });
+
+  if (filteredUsers.length === 0) {
+    const emptyEl = document.createElement("div");
+    emptyEl.className = "py-8 text-center text-text-muted text-sm font-bold";
+    emptyEl.textContent = "해당 분류의 계정이 없습니다.";
+    container.appendChild(emptyEl);
+    return;
+  }
+
+  filteredUsers.forEach(user => {
     const isCurrent = user.id === appState.currentUserId;
     const card = document.createElement("div");
     card.className = "user-mgmt-card";
@@ -3807,6 +3875,7 @@ function renderUserManagerSection() {
           <div class="user-mgmt-name" style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
             <span>${user.name}</span>
             ${pendingBadge}
+            ${ROLE_BADGES[user.role] || ""}
             ${isCurrent ? '<span style="font-size:10px; background:#e8def8; color:#4a148c; padding:2px 6px; border-radius:4px; margin-left:2px;">현재 본인</span>' : ''}
           </div>
           <div class="user-mgmt-duty">${user.duty || "-"} · ${user.phone || ""}</div>
@@ -3828,7 +3897,8 @@ function renderUserManagerSection() {
           <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 선생님(회계)</option>
           <option value="teacher_grade" ${(user.role === "teacher_grade" || user.role === "teacher") ? "selected" : ""}>🧑🏻‍🏫 선생님(공과반)</option>
           <option value="teacher_new" ${user.role === "teacher_new" ? "selected" : ""}>🌱 선생님(새친구반)</option>
-          <option value="student" ${user.role === "student" ? "selected" : ""}>👦🏻 학생</option>
+          <option value="student_grade" ${(user.role === "student_grade" || (user.role === "student" && user.id !== "u6")) ? "selected" : ""}>👦🏻 학생(공과반)</option>
+          <option value="student_new" ${(user.role === "student_new" || (user.role === "student" && user.id === "u6")) ? "selected" : ""}>🌱 학생(새친구반)</option>
         </select>
         <button type="button" class="edit-user-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:12px; font-weight:700; background:#f5efff; color:#6c35c4; border-radius:8px; border:1.5px solid #e0c8ff; cursor:pointer; display:flex; align-items:center; gap:3px; white-space:nowrap;" title="계정 정보 수정">
           <span>✏️</span> <span>수정</span>
@@ -4107,6 +4177,11 @@ function changeUserRole(userId, newRole) {
 
   user.role = newRole;
   user.isAdmin = (newRole === "pastor");
+  if (newRole === "student_new") {
+    user.avatar = user.avatar || "👧🏻";
+  } else if (newRole === "student_grade") {
+    user.avatar = user.avatar || "👦🏻";
+  }
   saveState();
 
   // If the user being modified is currently logged in, switch the master role view immediately
@@ -4201,7 +4276,7 @@ function switchMasterRole(roleKey, notify = true) {
   // 6-1. 사역자 소통함: 학생에게는 숨김 (전도사·회계쌤·선생님에게 노출)
   const staffBoxBtn = document.getElementById("openStaffBoxBtn");
   if (staffBoxBtn) {
-    staffBoxBtn.style.display = (roleKey === "student") ? "none" : "";
+    staffBoxBtn.style.display = isStudentRole(roleKey) ? "none" : "";
   }
 
   // 6-2. 회원승인: 전도사에게만 노출
@@ -4239,7 +4314,9 @@ function switchMasterRole(roleKey, notify = true) {
       teacher_grade: "🧑🏻‍🏫 선생님(공과반) 모드로 전환되었습니다. (분반 지도 권한)",
       teacher_new: "🌱 선생님(새친구반) 모드로 전환되었습니다. (새친구 전담 지도)",
       teacher: "🧑🏻‍🏫 선생님 모드로 전환되었습니다. (교사 지도 권한)",
-      student: "👦🏻 학생 모드로 전환되었습니다. (예랑 청소년부 포털)"
+      student_grade: "👦🏻 학생(공과반) 모드로 전환되었습니다. (고3 분반 포털)",
+      student_new: "🌱 학생(새친구반) 모드로 전환되었습니다. (새친구 환영 포털)",
+      student: "👦🏻 학생(공과반) 모드로 전환되었습니다. (예랑 청소년부 포털)"
     };
     showToast(toastMsgMap[roleKey] || "역할이 변경되었습니다.");
   }
@@ -4348,6 +4425,16 @@ function initUserManagementEvents() {
       openModal("userManagementModal");
     });
   }
+
+  // Filter chips in User Management Modal
+  document.querySelectorAll("#userMgmtFilterBar button").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#userMgmtFilterBar button").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      const filter = chip.dataset.filter || "ALL";
+      renderUserManagerSection(filter);
+    });
+  });
 
   // Open Add New User Modal from Admin Management Modal
   const openAddUserBtn = document.getElementById("openAddNewUserBtn");
@@ -4711,8 +4798,9 @@ window.openEditWorshipDutyModalDirect = function() {
     selectEl.appendChild(defOpt);
 
     // Group users into Teachers/Leaders and Students
-    const teachers = activeUsers.filter(u => u.role !== "student");
-    const students = activeUsers.filter(u => u.role === "student");
+    const teachers = activeUsers.filter(u => !isStudentRole(u.role));
+    const gradeStudents = activeUsers.filter(u => u.role === "student_grade" || u.role === "student");
+    const newStudents = activeUsers.filter(u => u.role === "student_new");
 
     if (teachers.length > 0) {
       const optGroupT = document.createElement("optgroup");
@@ -4727,17 +4815,30 @@ window.openEditWorshipDutyModalDirect = function() {
       selectEl.appendChild(optGroupT);
     }
 
-    if (students.length > 0) {
+    if (gradeStudents.length > 0) {
       const optGroupS = document.createElement("optgroup");
-      optGroupS.label = "👦🏻 학생";
-      students.forEach(u => {
+      optGroupS.label = "👦🏻 공과반 학생";
+      gradeStudents.forEach(u => {
         const opt = document.createElement("option");
         opt.value = u.name;
-        opt.dataset.role = u.duty || "학생";
+        opt.dataset.role = u.duty || "공과반 학생";
         opt.textContent = `${u.name} (${opt.dataset.role})`;
         optGroupS.appendChild(opt);
       });
       selectEl.appendChild(optGroupS);
+    }
+
+    if (newStudents.length > 0) {
+      const optGroupN = document.createElement("optgroup");
+      optGroupN.label = "🌱 새친구반 학생";
+      newStudents.forEach(u => {
+        const opt = document.createElement("option");
+        opt.value = u.name;
+        opt.dataset.role = u.duty || "새친구반 학생";
+        opt.textContent = `${u.name} (${opt.dataset.role})`;
+        optGroupN.appendChild(opt);
+      });
+      selectEl.appendChild(optGroupN);
     }
 
     // Common group presets (e.g. "교사 & 리더", "전체")
@@ -4928,7 +5029,7 @@ function initWorshipDutyEvents() {
 // --- Home Quick Actions (Role-Adaptive: Pastor vs Teacher) ---
 function renderHomeQuickActions() {
   const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
-  const isStudent = (currentRole === "student" || (getCurrentUser() && getCurrentUser().role === "student"));
+  const isStudent = isStudentRole(currentRole) || (getCurrentUser() && isStudentRole(getCurrentUser().role));
 
   const pastorActions = document.getElementById("pastorQuickActions");
   const teacherBox = document.getElementById("teacherSuggestionBox");
@@ -5243,7 +5344,7 @@ function renderUpcomingEventsSection() {
 
   const currentUser = getCurrentUser();
   const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
-  const isStudent = (role === "student" || currentRole === "student");
+  const isStudent = isStudentRole(role) || isStudentRole(currentRole);
 
   if (viewAllEventsBtn) {
     viewAllEventsBtn.style.display = isStudent ? "none" : "";
@@ -5399,7 +5500,7 @@ function getAvailableLeaders() {
   const leaderSet = new Set(defaultLeaders);
   if (appState.users && Array.isArray(appState.users)) {
     appState.users.forEach(u => {
-      if (u.role !== "student" && u.name) {
+      if (!isStudentRole(u.role) && u.name) {
         leaderSet.add(u.name);
       }
     });
@@ -6447,7 +6548,11 @@ function getAllCalendarBirthdays() {
       const roleDesc = (user.role === "pastor") ? "전도사"
         : (user.role === "accountant") ? "선생님(회계)"
         : (user.role === "deacon") ? "부장집사님"
-        : (user.role === "student") ? "학생" : "선생님";
+        : (user.role === "teacher_new") ? "선생님(새친구반)"
+        : (user.role === "teacher_grade" || user.role === "teacher") ? "선생님(공과반)"
+        : (user.role === "student_new") ? "학생(새친구반)"
+        : (user.role === "student_grade" || user.role === "student") ? "학생(공과반)"
+        : "선생님";
 
       if (existingIdx !== -1) {
         // 이미 캘린더에 항목이 있으면 사용자의 최신 생일(월/일), 역할, 아바타로 동기화
@@ -6465,7 +6570,7 @@ function getAllCalendarBirthdays() {
           day: d,
           name: user.name,
           roleDesc: roleDesc,
-          avatar: user.avatar || (user.role === "student" ? "👦🏻" : "🧑🏻‍🏫")
+          avatar: user.avatar || (isStudentRole(user.role) ? (user.role === "student_new" ? "👧🏻" : "👦🏻") : "🧑🏻‍🏫")
         });
       }
     });
@@ -7579,7 +7684,7 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
   }
 
   const currentUser = getCurrentUser();
-  const canManage = currentUser && (currentUser.role !== "student");
+  const canManage = currentUser && !isStudentRole(currentUser.role);
 
   listContainer.innerHTML = filtered.map(notice => {
     const isCurrent = !!notice.isCurrent;

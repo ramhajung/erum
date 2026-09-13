@@ -131,7 +131,7 @@
       }
     };
   </script>
-    <link rel="stylesheet" href="style.css?v=20260913_attendance_history">
+    <link rel="stylesheet" href="style.css?v=20260913_student_category">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -2044,8 +2044,17 @@
           <button class="sheet-close-btn" data-close="userManagementModal">✕</button>
         </div>
 
-        <div style="background:#f5efff; border:1px solid #dfc7fc; border-radius:10px; padding:10px 12px; font-size:11.5px; color:#5c24b8; line-height:1.4; margin-bottom:12px;">
-          ✓ 각 사용자의 역할을 변경하면 해당 사용자가 로그인할 때 화면과 접근 권한이 즉시 바뀝니다.
+        <div style="background:#f5efff; border:1px solid #dfc7fc; border-radius:10px; padding:10px 12px; font-size:11.5px; color:#5c24b8; line-height:1.4; margin-bottom:10px;">
+          ✓ 각 사용자의 역할을 변경하면 해당 사용자가 로그인할 때 화면과 접근 권한이 즉시 바뀝니다.<br>
+          ✓ 학생 계정도 <b>공과반 학생</b>과 <b>새친구반 학생</b>으로 세분화하여 분류·관리할 수 있습니다.
+        </div>
+
+        <!-- Filter Chips for User Management -->
+        <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-3 pt-0.5" id="userMgmtFilterBar">
+          <button type="button" class="attendance-filter-chip active text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-filter="ALL">전체</button>
+          <button type="button" class="attendance-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-filter="TEACHERS">교사/사역자</button>
+          <button type="button" class="attendance-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-filter="STUDENT_GRADE">학생(공과반)</button>
+          <button type="button" class="attendance-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-filter="STUDENT_NEW">학생(새친구반)</button>
         </div>
 
         <div class="user-mgmt-container" id="userMgmtListContainer">
@@ -2529,7 +2538,7 @@
 
   </div>
 
-  <script src="app.js?v=20260913_attendance_history"></script>
+  <script src="app.js?v=20260913_student_category"></script>
 </body>
 </html>
 
