@@ -1874,7 +1874,10 @@ function renderClassMinistrySection() {
 
       <!-- 해당 분반 학생 출결 & 목양 관리 -->
       <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span>${isStudent ? `👥 우리 분반 친구들 (${activeClass.grade})` : isTeacherSelf ? `👥 내 담당 분반 학생 관리 & 출결` : `👥 ${activeClass.grade} 학생 관리 & 출결`}</span>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span>${isStudent ? `👥 우리 분반 친구들 (${activeClass.grade})` : isTeacherSelf ? `👥 내 담당 분반 학생 관리 & 출결` : `👥 ${activeClass.grade} 학생 관리 & 출결`}</span>
+          ${!isStudent ? `<span style="font-size:11px; font-weight:700; color:#ea580c; background:#fff7ed; border:1px solid #fed7aa; padding:2px 7px; border-radius:8px;">💡 학생 터치 시 학생부 열람</span>` : ''}
+        </div>
         ${isPastor ? `
           <button type="button" onclick="openAddStudentToClassModal('${activeClass.id}')" style="font-size:11.5px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 6px;">
             ＋ 학생 추가
@@ -1890,39 +1893,39 @@ function renderClassMinistrySection() {
           let rightActionHtml = "";
           if (isStudent) {
             rightActionHtml = `
-              <div style="display:flex; align-items:center; gap:6px;">
+              <div style="display:flex; align-items:center; gap:6px;" onclick="event.stopPropagation();">
                 <span style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'};">
                   ${isAttended ? '출석 ✓' : '결석 ✕'}
                 </span>
-                <button class="timeline-icon-btn" onclick="showToast('${s.name} 친구에게 응원 인사를 건넵니다 👋🏻', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;" title="인사하기">
+                <button class="timeline-icon-btn" onclick="event.stopPropagation(); showToast('${s.name} 친구에게 응원 인사를 건넵니다 👋🏻', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;" title="인사하기">
                   👋🏻
                 </button>
               </div>
             `;
           } else if (isPastor) {
             rightActionHtml = `
-              <div style="display:flex; align-items:center; gap:5px;">
-                <button type="button" onclick="toggleStudentAttendance('${activeClass.id}', '${s.id}')" style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; border:none; cursor:pointer; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'}; transition:all 0.15s ease;">
+              <div style="display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation();">
+                <button type="button" onclick="event.stopPropagation(); toggleStudentAttendance('${activeClass.id}', '${s.id}')" style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; border:none; cursor:pointer; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'}; transition:all 0.15s ease;">
                   ${isAttended ? '출석 ✓' : '결석 ✕'}
                 </button>
-                <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:30px; height:30px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer;" title="1:1 톡">
+                <button class="timeline-icon-btn" onclick="event.stopPropagation(); showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:30px; height:30px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer;" title="1:1 톡">
                   💬
                 </button>
-                <button type="button" onclick="openTransferStudentModal('${activeClass.id}', '${s.id}')" style="width:30px; height:30px; border-radius:8px; background:#eff6ff; border:1px solid #bfdbfe; color:#2563eb; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; cursor:pointer; transition:all 0.15s ease;" title="다른 분반으로 이동">
+                <button type="button" onclick="event.stopPropagation(); openTransferStudentModal('${activeClass.id}', '${s.id}')" style="width:30px; height:30px; border-radius:8px; background:#eff6ff; border:1px solid #bfdbfe; color:#2563eb; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; cursor:pointer; transition:all 0.15s ease;" title="다른 분반으로 이동">
                   ⇄
                 </button>
-                <button type="button" onclick="removeStudentFromClass('${activeClass.id}', '${s.id}', '${s.name}')" style="width:30px; height:30px; border-radius:8px; background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; cursor:pointer; transition:all 0.15s ease;" title="분반에서 삭제">
+                <button type="button" onclick="event.stopPropagation(); removeStudentFromClass('${activeClass.id}', '${s.id}', '${s.name}')" style="width:30px; height:30px; border-radius:8px; background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; cursor:pointer; transition:all 0.15s ease;" title="분반에서 삭제">
                   ✕
                 </button>
               </div>
             `;
           } else {
             rightActionHtml = `
-              <div style="display:flex; align-items:center; gap:5px;">
-                <button type="button" onclick="toggleStudentAttendance('${activeClass.id}', '${s.id}')" style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; border:none; cursor:pointer; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'}; transition:all 0.15s ease;">
+              <div style="display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation();">
+                <button type="button" onclick="event.stopPropagation(); toggleStudentAttendance('${activeClass.id}', '${s.id}')" style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; border:none; cursor:pointer; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'}; transition:all 0.15s ease;">
                   ${isAttended ? '출석 ✓' : '결석 ✕'}
                 </button>
-                <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:30px; height:30px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer;" title="1:1 톡">
+                <button class="timeline-icon-btn" onclick="event.stopPropagation(); showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:30px; height:30px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer;" title="1:1 톡">
                   💬
                 </button>
               </div>
@@ -1930,15 +1933,16 @@ function renderClassMinistrySection() {
           }
 
           return `
-            <div class="timeline-item" style="background:${isMe ? '#fffbf5' : '#fff'}; border:${isMe ? '1.5px solid #fed7aa' : '1px solid #f1e9e0'}; border-radius:16px; padding:12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
+            <div class="timeline-item" ${!isStudent ? `onclick="openStudentDetailModal('${s.id}')"` : ''} style="background:${isMe ? '#fffbf5' : '#fff'}; border:${isMe ? '1.5px solid #fed7aa' : '1px solid #f1e9e0'}; border-radius:16px; padding:12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02); ${!isStudent ? 'cursor:pointer; transition:all 0.15s ease;' : ''}" ${!isStudent ? `title="${s.name} 학생부 보기"` : ''}>
               <div style="width:38px; height:38px; border-radius:12px; background:${isAttended ? '#e0f2fe' : '#fef2f2'}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
                 ${s.avatar || '👦🏻'}
               </div>
               <div class="timeline-content" style="flex:1; min-width:0;">
-                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px; flex-wrap:wrap;">
                   <span style="font-size:13.5px; font-weight:800; color:#2d261e;">${s.name}</span>
                   ${isMe ? '<span style="font-size:9.5px; background:#ea580c; color:#fff; font-weight:800; padding:1px 5px; border-radius:6px;">나</span>' : ''}
                   <span style="font-size:11px; color:#78716c;">(${s.roleInfo || s.grade})</span>
+                  ${!isStudent ? `<span style="font-size:10px; color:#c2410c; background:#fff7ed; border:1px solid #ffedd5; padding:1px 5px; border-radius:5px; font-weight:800; display:inline-flex; align-items:center; gap:2px;"><span>📋</span> 학생부</span>` : ''}
                 </div>
                 <div style="font-size:11.5px; color:#8c827a; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                   ${isStudent ? (s.roleInfo || `${activeClass.grade} 친구`) : s.recentVisit}
@@ -1958,7 +1962,7 @@ function renderClassMinistrySection() {
         </div>
       ` : isPastor ? `
         <div style="display:flex; gap:8px; margin-top:16px;">
-          <button class="btn-primary" style="flex:1; background:#e67e22;" onclick="openModal('visitModal')">
+          <button class="btn-primary" style="flex:1; background:#e67e22;" onclick="openAddVisitForClass('${activeClass.id}')">
             <span>＋</span> <span>새 심방 일지 등록</span>
           </button>
           <button class="btn-secondary" style="flex:1; border-color:#fad5b6; color:#9a3412; font-size:13px; font-weight:800;" onclick="openAddStudentToClassModal('${activeClass.id}')">
@@ -1967,7 +1971,7 @@ function renderClassMinistrySection() {
         </div>
       ` : `
         <div style="display:flex; gap:8px; margin-top:16px;">
-          <button class="btn-primary" style="flex:1; background:#e67e22;" onclick="openModal('visitModal')">
+          <button class="btn-primary" style="flex:1; background:#e67e22;" onclick="openAddVisitForClass('${activeClass.id}')">
             <span>＋</span> <span>새 심방 일지 등록</span>
           </button>
         </div>
@@ -2077,16 +2081,17 @@ function renderNewcomerMinistrySection() {
             <div class="newcomer-student-card" style="background:#fff; border:1.5px solid ${isDone ? '#bbf7d0' : '#fed7aa'}; border-radius:18px; padding:16px; box-shadow:0 3px 10px rgba(0,0,0,0.03);">
               <!-- Top Row: Avatar, Name, Grade, Mentor Badge, Target Class -->
               <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                <div style="display:flex; align-items:center; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="openStudentDetailModal('${s.id}')" title="${s.name} 학생부 보기">
                   <div style="width:36px; height:36px; border-radius:12px; background:${isDone ? '#dcfce7' : '#ffedd5'}; display:flex; align-items:center; justify-content:center; font-size:18px;">
                     ${s.avatar || '👦🏻'}
                   </div>
                   <div>
-                    <div style="font-size:14px; font-weight:800; color:#1f2937; display:flex; align-items:center; gap:6px;">
+                    <div style="font-size:14px; font-weight:800; color:#1f2937; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                       <span>${s.name} (${s.grade})</span>
                       <span style="font-size:10px; font-weight:800; padding:1px 6px; border-radius:6px; background:${isDone ? '#dcfce7' : '#fef3c7'}; color:${isDone ? '#166534' : '#92400e'};">
                         ${isDone ? '등반 수료 🎓' : `${completedCount}/${totalStudentSteps}주 진행중 ⏳`}
                       </span>
+                      <span style="font-size:10px; color:#15803d; background:#ecfdf5; border:1px solid #a7f3d0; padding:1px 5px; border-radius:5px; font-weight:800; display:inline-flex; align-items:center; gap:2px;"><span>📋</span> 학생부</span>
                     </div>
                     <div style="font-size:11px; color:#6b7280; margin-top:2px; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
                       ${isPastor ? `
@@ -2100,7 +2105,7 @@ function renderNewcomerMinistrySection() {
                     </div>
                   </div>
                 </div>
-                <button type="button" onclick="showToast('${s.name} 학생에게 환영 응원 톡을 보냅니다 💬', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;">
+                <button type="button" onclick="event.stopPropagation(); showToast('${s.name} 학생에게 환영 응원 톡을 보냅니다 💬', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;">
                   💬
                 </button>
               </div>
@@ -2344,9 +2349,22 @@ function incrementPrayerCount(studentId, prayerId) {
   showToast(`'${p.text}' 기도에 함께 동참했습니다! 🙏`);
 }
 
+function openAddVisitForClass(classId) {
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  const cls = classes.find(c => c.id === classId);
+  const targetNameInput = document.getElementById("visitTargetStudentNameInput");
+  const targetIdInput = document.getElementById("visitTargetStudentId");
+  if (cls && cls.students && cls.students.length > 0) {
+    const firstStudent = cls.students[0];
+    if (targetNameInput) targetNameInput.value = `${firstStudent.name} (${cls.grade})`;
+    if (targetIdInput) targetIdInput.value = firstStudent.id;
+  }
+  openModal("visitModal");
+}
+
 function openStudentDetailModal(studentId) {
   const all = getAllStudentsRoster();
-  const s = all.find(st => st.id === studentId) || all[0];
+  const s = all.find(st => st.id === studentId || st.name === studentId) || all[0];
   if (!s) return;
 
   currentDetailedStudentId = s.id;
@@ -2443,6 +2461,7 @@ function openStudentDetailModal(studentId) {
       const targetIdInput = document.getElementById("visitTargetStudentId");
       if (targetNameInput) targetNameInput.value = `${s.name} (${s.className || s.grade})`;
       if (targetIdInput) targetIdInput.value = s.id;
+      closeModal("studentDetailModal");
       openModal("visitModal");
     };
   }
@@ -2613,6 +2632,7 @@ function initStudentEvents() {
 }
 
 window.openStudentDetailModal = openStudentDetailModal;
+window.openAddVisitForClass = openAddVisitForClass;
 window.makePhoneCall = makePhoneCall;
 window.sendKakaoMessage = sendKakaoMessage;
 window.incrementPrayerCount = incrementPrayerCount;
