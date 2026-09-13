@@ -175,7 +175,23 @@ const INITIAL_DATA = {
           { week: 4, title: "새친구반 수료 축하 & 정규 등반", desc: "수료 완료 및 중2 여학생반 등반 완료 ✓", completed: true }
         ]
       }
-    ]
+    ],
+    curriculum: {
+      steps: [
+        { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓" },
+        { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔", desc: "학교 적응 및 첫 신앙생활 상담 완료 ✓" },
+        { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "이번 주 토요예배 후 떡볶이 파티 예정 ⏳" },
+        { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 학년 분반 정규 편성 예정" }
+      ]
+    }
+  },
+  curriculum: {
+    bibleStudy: {
+      weekBadge: "📖 5주차 공과: '믿음의 기초와 말씀 묵상'",
+      scripture: "시편 119:105",
+      teacherTip: "수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.",
+      studentQuestion: "“주의 말씀은 내 발에 등이요 내 길에 빛이니이다” (시편 119:105)\n이번 주 한 주 동안 나를 이끌어 주신 하나님의 말씀이나 분반 친구들과 나누고 싶은 감사 제목을 나누어 보세요."
+    }
   },
   agendas: {
     confirmed: [
@@ -926,6 +942,12 @@ function loadState() {
       if (!parsed.newcomerMinistry) {
         parsed.newcomerMinistry = JSON.parse(JSON.stringify(INITIAL_DATA.newcomerMinistry));
       }
+      if (!parsed.newcomerMinistry.curriculum || !Array.isArray(parsed.newcomerMinistry.curriculum.steps)) {
+        parsed.newcomerMinistry.curriculum = JSON.parse(JSON.stringify(INITIAL_DATA.newcomerMinistry.curriculum));
+      }
+      if (!parsed.curriculum || !parsed.curriculum.bibleStudy) {
+        parsed.curriculum = JSON.parse(JSON.stringify(INITIAL_DATA.curriculum));
+      }
       if (!parsed.currentSelectedClassId) {
         parsed.currentSelectedClassId = "class_high3";
       }
@@ -1447,6 +1469,15 @@ function addNewcomerStudent() {
   const interests = prompt("새친구의 관심사나 특기를 입력하세요 (예: 축구, 보컬):") || "새 신앙생활";
 
   const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+  const templateSteps = (data.curriculum && Array.isArray(data.curriculum.steps))
+    ? data.curriculum.steps
+    : [
+        { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 전달 완료 ✓" },
+        { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도나눔", desc: "학교 적응 및 첫 신앙생활 상담 예정" },
+        { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "토요예배 후 또래 친구 교제 예정" },
+        { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 정규 분반 편성 예정" }
+      ];
+
   data.students.unshift({
     id: "new_" + Date.now(),
     name: name.trim(),
@@ -1459,12 +1490,12 @@ function addNewcomerStudent() {
     progressPercent: 25,
     targetClass: `${grade.trim()} 분반`,
     graduated: false,
-    steps: [
-      { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 전달 완료 ✓", completed: true },
-      { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도나눔", desc: "학교 적응 및 첫 신앙생활 상담 예정", completed: false },
-      { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "토요예배 후 또래 친구 교제 예정", completed: false },
-      { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 정규 분반 편성 예정", completed: false }
-    ]
+    steps: templateSteps.map((st, idx) => ({
+      week: st.week || (idx + 1),
+      title: st.title,
+      desc: st.desc,
+      completed: idx === 0
+    }))
   });
   saveState();
   renderNewcomerMinistrySection();
@@ -1515,9 +1546,23 @@ function renderClassMinistrySection() {
       `;
     }
 
+    const bibleCurriculum = (appState.curriculum && appState.curriculum.bibleStudy) ? appState.curriculum.bibleStudy : (INITIAL_DATA.curriculum ? INITIAL_DATA.curriculum.bibleStudy : {
+      weekBadge: "📖 5주차 공과: '믿음의 기초와 말씀 묵상'",
+      scripture: "시편 119:105",
+      teacherTip: "수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.",
+      studentQuestion: "“주의 말씀은 내 발에 등이요 내 길에 빛이니이다” (시편 119:105)<br>이번 주 한 주 동안 나를 이끌어 주신 하나님의 말씀이나 분반 친구들과 나누고 싶은 감사 제목을 나누어 보세요."
+    });
+
     container.innerHTML = `
-      <div class="agenda-date-badge" style="background:#fef5ea; border-color:#fad5b6; color:#ad551b; margin-bottom:12px;">
-        📖 5주차 공과: '믿음의 기초와 말씀 묵상'
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px;">
+        <div class="agenda-date-badge" style="background:#fef5ea; border-color:#fad5b6; color:#ad551b; margin-bottom:0; flex:1;">
+          ${bibleCurriculum.weekBadge || "📖 5주차 공과: '믿음의 기초와 말씀 묵상'"}
+        </div>
+        ${isPastor ? `
+          <button type="button" onclick="openEditCurriculumModalDirect('bible')" style="padding:4px 10px; font-size:11.5px; font-weight:800; border-radius:10px; border:1px solid #fad5b6; background:#fff; color:#ea580c; cursor:pointer; display:inline-flex; align-items:center; gap:3px; white-space:nowrap; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+            <span>✏️</span> <span>커리큘럼 수정</span>
+          </button>
+        ` : ''}
       </div>
 
       ${chipsHtml}
@@ -1568,17 +1613,17 @@ function renderClassMinistrySection() {
       <div class="timeline-list" style="display:flex; flex-direction:column; gap:8px;">
         ${activeClass.students.map(s => {
           const isAttended = (s.attendance === "출석");
-          const isMe = currentUser && (s.name === currentUser.name || s.id === currentUser.id);
+          const isMe = (currentUser && (s.name === currentUser.name || s.id === currentUser.id));
 
           let rightActionHtml = "";
           if (isStudent) {
             rightActionHtml = `
               <div style="display:flex; align-items:center; gap:6px;">
-                <span style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; background:${isAttended ? '#dcfce7' : '#f1f5f9'}; color:${isAttended ? '#166534' : '#64748b'};">
-                  ${isAttended ? '출석 ✓' : '확인 중'}
+                <span style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'};">
+                  ${isAttended ? '출석 ✓' : '결석 ✕'}
                 </span>
-                <button class="timeline-icon-btn" onclick="showToast('${s.name} 친구에게 응원 톡을 보냅니다 💬', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;" title="응원 톡">
-                  💬
+                <button class="timeline-icon-btn" onclick="showToast('${s.name} 친구에게 응원 인사를 건넵니다 👋🏻', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;" title="인사하기">
+                  👋🏻
                 </button>
               </div>
             `;
@@ -1631,9 +1676,16 @@ function renderClassMinistrySection() {
       </div>
 
       <!-- Section 2: 이번 주 공과 교재 요약 -->
-      <div class="section-label" style="margin-top:20px;">
+      <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
         <span>📑 금주 공과 나눔 핵심 가이드</span>
-        <span style="font-size:11px; font-weight:700; color:#888;">시편 119:105</span>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:11px; font-weight:700; color:#888;">${bibleCurriculum.scripture || '시편 119:105'}</span>
+          ${isPastor ? `
+            <button type="button" onclick="openEditCurriculumModalDirect('bible')" style="font-size:11px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 4px;">
+              수정 ✏️
+            </button>
+          ` : ''}
+        </div>
       </div>
       <div class="card p-4" style="background:#faf8f5; border:1px solid #ebd9c8; border-radius:18px;">
         <div style="font-size:12.5px; font-weight:800; color:#9a3412; margin-bottom:4px;">
@@ -1641,8 +1693,8 @@ function renderClassMinistrySection() {
         </div>
         <p style="font-size:12px; color:#57534e; line-height:1.6; margin:0;">
           ${isStudent
-            ? '“주의 말씀은 내 발에 등이요 내 길에 빛이니이다” (시편 119:105)<br>이번 주 한 주 동안 나를 이끌어 주신 하나님의 말씀이나 분반 친구들과 나누고 싶은 감사 제목을 나누어 보세요.'
-            : '수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.'}
+            ? (bibleCurriculum.studentQuestion ? bibleCurriculum.studentQuestion.replace(/\n/g, '<br>') : '“주의 말씀은 내 발에 등이요 내 길에 빛이니이다” (시편 119:105)<br>이번 주 한 주 동안 나를 이끌어 주신 하나님의 말씀이나 분반 친구들과 나누고 싶은 감사 제목을 나누어 보세요.')
+            : (bibleCurriculum.teacherTip ? bibleCurriculum.teacherTip.replace(/\n/g, '<br>') : '수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.')}
         </p>
       </div>
 
@@ -1681,11 +1733,20 @@ function renderNewcomerMinistrySection() {
   if (containers.length === 0) return;
 
   const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
 
   containers.forEach(container => {
     container.innerHTML = `
-      <div class="agenda-date-badge" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:12px;">
-        🌱 새친구반 4주 적응 & 등반 관리
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px;">
+        <div class="agenda-date-badge" style="background:#f0fdf4; border-color:#bbf7d0; color:#166534; margin-bottom:0; flex:1;">
+          🌱 새친구반 4주 적응 & 등반 관리
+        </div>
+        ${isPastor ? `
+          <button type="button" onclick="openEditCurriculumModalDirect('newcomer')" style="padding:4px 10px; font-size:11.5px; font-weight:800; border-radius:10px; border:1px solid #bbf7d0; background:#fff; color:#16a34a; cursor:pointer; display:inline-flex; align-items:center; gap:3px; white-space:nowrap; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+            <span>✏️</span> <span>커리큘럼 수정</span>
+          </button>
+        ` : ''}
       </div>
 
       <!-- 새친구반 전담 교사 프로필 카드 -->
@@ -1722,9 +1783,16 @@ function renderNewcomerMinistrySection() {
       <!-- 새친구 학생별 4주 정착 과정 트래커 -->
       <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <span>🌱 새친구 4주 적응 & 등반 로드맵</span>
-        <button type="button" onclick="addNewcomerStudent()" style="font-size:11.5px; font-weight:800; color:#16a34a; background:none; border:none; cursor:pointer; padding:2px 6px;">
-          ＋ 새친구 등록
-        </button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          ${isPastor ? `
+            <button type="button" onclick="openEditCurriculumModalDirect('newcomer')" style="font-size:11.5px; font-weight:800; color:#059669; background:none; border:none; cursor:pointer; padding:2px 4px;">
+              ✏️ 로드맵 수정
+            </button>
+          ` : ''}
+          <button type="button" onclick="addNewcomerStudent()" style="font-size:11.5px; font-weight:800; color:#16a34a; background:none; border:none; cursor:pointer; padding:2px 6px;">
+            ＋ 새친구 등록
+          </button>
+        </div>
       </div>
 
       <div style="display:flex; flex-direction:column; gap:16px;">
@@ -1772,11 +1840,11 @@ function renderNewcomerMinistrySection() {
               <div style="display:flex; flex-direction:column; gap:6px; background:#fafaf9; padding:10px; border-radius:14px; border:1px solid #f5f5f4;">
                 ${s.steps.map(step => {
                   return `
-                    <div onclick="toggleNewcomerStep('${s.id}', ${step.week})" style="display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:10px; background:${step.completed ? '#f0fdf4' : '#fff'}; border:1px solid ${step.completed ? '#bbf7d0' : '#e7e5e4'}; cursor:pointer; transition:all 0.15s ease;">
-                      <div style="width:24px; height:24px; border-radius:8px; background:${step.completed ? '#22c55e' : '#e5e7eb'}; color:${step.completed ? '#fff' : '#6b7280'}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:10px; background:${step.completed ? '#f0fdf4' : '#fff'}; border:1px solid ${step.completed ? '#bbf7d0' : '#e7e5e4'}; transition:all 0.15s ease;">
+                      <div onclick="toggleNewcomerStep('${s.id}', ${step.week})" style="width:24px; height:24px; border-radius:8px; background:${step.completed ? '#22c55e' : '#e5e7eb'}; color:${step.completed ? '#fff' : '#6b7280'}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex-shrink:0; cursor:pointer;" title="완료 상태 변경">
                         ${step.completed ? '✓' : step.week}
                       </div>
-                      <div style="flex:1; min-width:0;">
+                      <div onclick="toggleNewcomerStep('${s.id}', ${step.week})" style="flex:1; min-width:0; cursor:pointer;">
                         <div style="font-size:12px; font-weight:700; color:${step.completed ? '#166534' : '#374151'};">
                           ${step.title}
                         </div>
@@ -1784,9 +1852,16 @@ function renderNewcomerMinistrySection() {
                           ${step.desc}
                         </div>
                       </div>
-                      <span style="font-size:11px; color:${step.completed ? '#16a34a' : '#9ca3af'}; font-weight:700;">
-                        ${step.completed ? '완료' : '진행전'}
-                      </span>
+                      <div style="display:flex; align-items:center; gap:4px;">
+                        <span onclick="toggleNewcomerStep('${s.id}', ${step.week})" style="font-size:11px; color:${step.completed ? '#16a34a' : '#9ca3af'}; font-weight:700; cursor:pointer;">
+                          ${step.completed ? '완료' : '진행전'}
+                        </span>
+                        ${isPastor ? `
+                          <button type="button" onclick="event.stopPropagation(); openEditStudentStepModal('${s.id}', ${step.week})" style="background:none; border:none; color:#78716c; cursor:pointer; padding:2px; font-size:11px; display:flex; align-items:center;" title="단계 세부내용 수정">
+                            ✏️
+                          </button>
+                        ` : ''}
+                      </div>
                     </div>
                   `;
                 }).join('')}
@@ -2625,7 +2700,255 @@ function initAgendaEvents() {
       showToast("✅ 회의 안건 내용이 성공적으로 수정되었습니다! (소통함 연동)");
     });
   }
+
+  // =========================================================================
+  // 커리큘럼 편집 (새친구 4주 로드맵 & 분반 공과 가이드) 이벤트 등록
+  // =========================================================================
+  const editNewcomerCurrForm = document.getElementById("editNewcomerCurriculumForm");
+  if (editNewcomerCurrForm) {
+    editNewcomerCurrForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!isCurrentRolePastor()) {
+        showToast("⚠️ 커리큘럼 수정은 전도사님만 가능합니다.", "warning");
+        return;
+      }
+
+      if (!appState.newcomerMinistry) {
+        appState.newcomerMinistry = JSON.parse(JSON.stringify(INITIAL_DATA.newcomerMinistry));
+      }
+      if (!appState.newcomerMinistry.curriculum) {
+        appState.newcomerMinistry.curriculum = { steps: [] };
+      }
+
+      const step1Title = document.getElementById("newcomerStepTitle1").value.trim();
+      const step1Desc = document.getElementById("newcomerStepDesc1").value.trim();
+      const step2Title = document.getElementById("newcomerStepTitle2").value.trim();
+      const step2Desc = document.getElementById("newcomerStepDesc2").value.trim();
+      const step3Title = document.getElementById("newcomerStepTitle3").value.trim();
+      const step3Desc = document.getElementById("newcomerStepDesc3").value.trim();
+      const step4Title = document.getElementById("newcomerStepTitle4").value.trim();
+      const step4Desc = document.getElementById("newcomerStepDesc4").value.trim();
+
+      const newSteps = [
+        { week: 1, title: step1Title, desc: step1Desc },
+        { week: 2, title: step2Title, desc: step2Desc },
+        { week: 3, title: step3Title, desc: step3Desc },
+        { week: 4, title: step4Title, desc: step4Desc }
+      ];
+
+      appState.newcomerMinistry.curriculum.steps = newSteps;
+
+      // 동기화 체크박스가 켜져있으면 기존 학생들의 스텝 제목/설명도 업데이트 (완료 여부는 유지)
+      const syncExisting = document.getElementById("syncExistingStudentsCheckbox")?.checked;
+      if (syncExisting && Array.isArray(appState.newcomerMinistry.students)) {
+        appState.newcomerMinistry.students.forEach(s => {
+          if (Array.isArray(s.steps)) {
+            newSteps.forEach(ns => {
+              const targetSt = s.steps.find(st => st.week === ns.week);
+              if (targetSt) {
+                targetSt.title = ns.title;
+                // 이전 완료 체크 상태는 보존하면서 새 설명 텍스트 동기화
+                targetSt.desc = ns.desc;
+              } else {
+                s.steps.push({
+                  week: ns.week,
+                  title: ns.title,
+                  desc: ns.desc,
+                  completed: false
+                });
+              }
+            });
+          }
+        });
+      }
+
+      saveState();
+      renderNewcomerMinistrySection();
+      closeModal("editCurriculumModal");
+      showToast("🌱 새친구 4주 적응 & 등반 로드맵 커리큘럼이 성공적으로 수정되었습니다! ✓");
+    });
+  }
+
+  const editBibleCurrForm = document.getElementById("editBibleCurriculumForm");
+  if (editBibleCurrForm) {
+    editBibleCurrForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!isCurrentRolePastor()) {
+        showToast("⚠️ 커리큘럼 수정은 전도사님만 가능합니다.", "warning");
+        return;
+      }
+
+      if (!appState.curriculum) {
+        appState.curriculum = JSON.parse(JSON.stringify(INITIAL_DATA.curriculum || {}));
+      }
+      if (!appState.curriculum.bibleStudy) {
+        appState.curriculum.bibleStudy = {};
+      }
+
+      const weekBadge = document.getElementById("bibleStudyWeekBadgeInput").value.trim();
+      const scripture = document.getElementById("bibleStudyScriptureInput").value.trim();
+      const teacherTip = document.getElementById("bibleStudyTeacherTipInput").value.trim();
+      const studentQuestion = document.getElementById("bibleStudyStudentQuestionInput").value.trim();
+
+      appState.curriculum.bibleStudy = {
+        weekBadge,
+        scripture,
+        teacherTip,
+        studentQuestion
+      };
+
+      saveState();
+      renderClassMinistrySection();
+      closeModal("editCurriculumModal");
+      showToast("📖 이번 주 분반 공과 나눔 가이드가 성공적으로 수정되었습니다! ✓");
+    });
+  }
+
+  // 개별 새친구 학생 로드맵 단계 수정 폼
+  const editStudentStepForm = document.getElementById("editStudentStepForm");
+  if (editStudentStepForm) {
+    editStudentStepForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const studentId = document.getElementById("editStudentStepStudentId").value;
+      const week = Number(document.getElementById("editStudentStepWeek").value);
+      const newTitle = document.getElementById("editStudentStepTitleInput").value.trim();
+      const newDesc = document.getElementById("editStudentStepDescInput").value.trim();
+      const isCompleted = document.getElementById("editStudentStepCompletedInput").checked;
+
+      const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+      const student = data.students.find(s => s.id === studentId);
+      if (!student) return;
+
+      const step = student.steps.find(st => st.week === week);
+      if (step) {
+        step.title = newTitle;
+        step.desc = newDesc;
+        step.completed = isCompleted;
+
+        const completedCount = student.steps.filter(st => st.completed).length;
+        student.progressPercent = Math.round((completedCount / student.steps.length) * 100);
+        student.graduated = (student.progressPercent === 100);
+
+        saveState();
+        renderNewcomerMinistrySection();
+        closeModal("editStudentStepModal");
+        showToast(`✅ ${student.name} 학생의 ${week}주차 과정이 수정되었습니다.`);
+      }
+    });
+  }
 }
+
+// 탭 전환 헬퍼: 새친구 로드맵 vs 공과 가이드
+window.switchCurriculumEditTab = function(tab) {
+  const newcomerForm = document.getElementById("editNewcomerCurriculumForm");
+  const bibleForm = document.getElementById("editBibleCurriculumForm");
+  const newcomerBtn = document.getElementById("curriculumTabNewcomerBtn");
+  const bibleBtn = document.getElementById("curriculumTabBibleBtn");
+
+  if (tab === "newcomer") {
+    if (newcomerForm) newcomerForm.style.display = "block";
+    if (bibleForm) bibleForm.style.display = "none";
+    if (newcomerBtn) {
+      newcomerBtn.className = "flex-1 py-2 text-[12px] font-extrabold rounded-lg transition-all bg-white text-emerald-700 shadow-xs";
+    }
+    if (bibleBtn) {
+      bibleBtn.className = "flex-1 py-2 text-[12px] font-bold rounded-lg transition-all text-text-muted hover:text-text-primary";
+    }
+  } else {
+    if (newcomerForm) newcomerForm.style.display = "none";
+    if (bibleForm) bibleForm.style.display = "block";
+    if (newcomerBtn) {
+      newcomerBtn.className = "flex-1 py-2 text-[12px] font-bold rounded-lg transition-all text-text-muted hover:text-text-primary";
+    }
+    if (bibleBtn) {
+      bibleBtn.className = "flex-1 py-2 text-[12px] font-extrabold rounded-lg transition-all bg-white text-primary shadow-xs";
+    }
+  }
+};
+
+// 커리큘럼 편집 모달 열기 (전도사용)
+window.openEditCurriculumModalDirect = function(initialTab = 'newcomer') {
+  if (!isCurrentRolePastor()) {
+    showToast("⚠️ 커리큘럼 수정은 전도사님만 가능합니다 🔒", "warning");
+    return;
+  }
+
+  // 새친구 커리큘럼 채우기
+  const newcomerData = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+  const currSteps = (newcomerData.curriculum && Array.isArray(newcomerData.curriculum.steps))
+    ? newcomerData.curriculum.steps
+    : [
+        { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓" },
+        { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔", desc: "학교 적응 및 첫 신앙생활 상담 완료 ✓" },
+        { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "이번 주 토요예배 후 떡볶이 파티 예정 ⏳" },
+        { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 고1 남학생반 정규 편성 예정" }
+      ];
+
+  const st1 = currSteps.find(s => s.week === 1) || currSteps[0] || {};
+  const st2 = currSteps.find(s => s.week === 2) || currSteps[1] || {};
+  const st3 = currSteps.find(s => s.week === 3) || currSteps[2] || {};
+  const st4 = currSteps.find(s => s.week === 4) || currSteps[3] || {};
+
+  const t1 = document.getElementById("newcomerStepTitle1");
+  const d1 = document.getElementById("newcomerStepDesc1");
+  const t2 = document.getElementById("newcomerStepTitle2");
+  const d2 = document.getElementById("newcomerStepDesc2");
+  const t3 = document.getElementById("newcomerStepTitle3");
+  const d3 = document.getElementById("newcomerStepDesc3");
+  const t4 = document.getElementById("newcomerStepTitle4");
+  const d4 = document.getElementById("newcomerStepDesc4");
+
+  if (t1) t1.value = st1.title || "새친구 등록 & 환영 선물 증정";
+  if (d1) d1.value = st1.desc || "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓";
+  if (t2) t2.value = st2.title || "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔";
+  if (d2) d2.value = st2.desc || "학교 적응 및 첫 신앙생활 상담 완료 ✓";
+  if (t3) t3.value = st3.title || "분반 또래 친구 소개 & 간식 교제";
+  if (d3) d3.value = st3.desc || "이번 주 토요예배 후 떡볶이 파티 예정 ⏳";
+  if (t4) t4.value = st4.title || "새친구반 수료 축하 & 정규 분반 등반";
+  if (d4) d4.value = st4.desc || "수료패 증정 및 정규 분반 편성 예정";
+
+  // 공과 커리큘럼 채우기
+  const bibleCurr = (appState.curriculum && appState.curriculum.bibleStudy) ? appState.curriculum.bibleStudy : (INITIAL_DATA.curriculum ? INITIAL_DATA.curriculum.bibleStudy : {});
+  const badgeInp = document.getElementById("bibleStudyWeekBadgeInput");
+  const scripInp = document.getElementById("bibleStudyScriptureInput");
+  const tipInp = document.getElementById("bibleStudyTeacherTipInput");
+  const questInp = document.getElementById("bibleStudyStudentQuestionInput");
+
+  if (badgeInp) badgeInp.value = bibleCurr.weekBadge || "📖 5주차 공과: '믿음의 기초와 말씀 묵상'";
+  if (scripInp) scripInp.value = bibleCurr.scripture || "시편 119:105";
+  if (tipInp) tipInp.value = bibleCurr.teacherTip || "수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.";
+  if (questInp) questInp.value = bibleCurr.studentQuestion || "“주의 말씀은 내 발에 등이요 내 길에 빛이니이다” (시편 119:105)\n이번 주 한 주 동안 나를 이끌어 주신 하나님의 말씀이나 분반 친구들과 나누고 싶은 감사 제목을 나누어 보세요.";
+
+  switchCurriculumEditTab(initialTab);
+  openModal("editCurriculumModal");
+};
+
+// 개별 학생 단계 수정 모달 열기
+window.openEditStudentStepModal = function(studentId, week) {
+  const newcomerData = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+  const student = newcomerData.students.find(s => s.id === studentId);
+  if (!student) return;
+
+  const step = student.steps.find(st => st.week === week);
+  if (!step) return;
+
+  const titleEl = document.getElementById("editStudentStepModalTitle");
+  if (titleEl) titleEl.textContent = `✏️ ${student.name} 학생 ${week}주차 단계 수정`;
+
+  const sidInp = document.getElementById("editStudentStepStudentId");
+  const weekInp = document.getElementById("editStudentStepWeek");
+  const titleInp = document.getElementById("editStudentStepTitleInput");
+  const descInp = document.getElementById("editStudentStepDescInput");
+  const compInp = document.getElementById("editStudentStepCompletedInput");
+
+  if (sidInp) sidInp.value = studentId;
+  if (weekInp) weekInp.value = week;
+  if (titleInp) titleInp.value = step.title;
+  if (descInp) descInp.value = step.desc;
+  if (compInp) compInp.checked = !!step.completed;
+
+  openModal("editStudentStepModal");
+};
 
 // =============================================================================
 // 6. Screen 3: 예랑 스마트 스케줄러 (사전 출결 & 대타) Rendering & Events
@@ -8353,12 +8676,25 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
   currentNoticeFilterTag = filterTag;
   const listContainer = document.getElementById("noticesListContainer");
   const countBadge = document.getElementById("noticesTotalCountBadge");
+  const addBtn = document.getElementById("openAddNoticeBtn");
   if (!listContainer) return;
 
+  const currentUser = getCurrentUser();
+  const canManage = currentUser && !isStudentRole(currentUser.role);
+
+  if (addBtn) {
+    addBtn.style.display = canManage ? "flex" : "none";
+  }
+
   const notices = appState.notices || [];
+  const cleanFilter = filterTag === "ALL" ? "ALL" : filterTag.replace(/[^\uAC00-\uD7A3a-zA-Z0-9]/g, "");
+
   const filtered = filterTag === "ALL" 
     ? notices 
-    : notices.filter(n => n.tag === filterTag || (filterTag === "안내" && n.tag.includes("안내")));
+    : notices.filter(n => {
+        const cleanTag = (n.tag || "").replace(/[^\uAC00-\uD7A3a-zA-Z0-9]/g, "");
+        return cleanTag === cleanFilter || cleanTag.includes(cleanFilter) || cleanFilter.includes(cleanTag);
+      });
 
   if (countBadge) {
     countBadge.textContent = `${notices.length}개`;
@@ -8366,7 +8702,9 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
 
   // Update active filter chip UI
   document.querySelectorAll("#noticeTagFilterBar .notice-filter-chip").forEach(chip => {
-    if (chip.dataset.tag === filterTag) {
+    const chipTag = chip.dataset.tag;
+    const cleanChipTag = chipTag === "ALL" ? "ALL" : chipTag.replace(/[^\uAC00-\uD7A3a-zA-Z0-9]/g, "");
+    if (chipTag === filterTag || cleanChipTag === cleanFilter) {
       chip.classList.add("active");
     } else {
       chip.classList.remove("active");
@@ -8386,9 +8724,6 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
     return;
   }
 
-  const currentUser = getCurrentUser();
-  const canManage = currentUser && !isStudentRole(currentUser.role);
-
   listContainer.innerHTML = filtered.map(notice => {
     const isCurrent = !!notice.isCurrent;
     const tagClass = getNoticeTagClass(notice.tag);
@@ -8399,9 +8734,9 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="notice-tag-badge ${tagClass}">${notice.tag || "공지"}</span>
             ${isCurrent ? `
-              <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-primary text-white flex items-center gap-1 shadow-sm">
-                <span class="material-symbols-outlined text-[12px]">check_circle</span>
-                <span>현재 배너 공지</span>
+              <span class="text-[10.5px] font-black px-2.5 py-0.5 rounded-full bg-primary text-white flex items-center gap-1 shadow-xs">
+                <span class="material-symbols-outlined text-[13px]">push_pin</span>
+                <span>현재 홈 배너 게시 중 📌</span>
               </span>
             ` : ''}
             <span class="text-[11px] font-semibold text-text-muted flex items-center gap-1">
@@ -8423,22 +8758,22 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
         <div class="pt-2.5 border-t border-outline-variant/15 flex items-center justify-between gap-2">
           <div class="flex items-center gap-1.5 text-[11.5px] font-bold text-text-secondary">
             <span class="material-symbols-outlined text-[15px] text-primary">person</span>
-            <span>${notice.author || '교역자'}</span>
+            <span>작성: ${notice.author || '교역자'}</span>
           </div>
 
           ${canManage ? `
             <div class="flex items-center gap-1.5">
               ${!isCurrent ? `
-                <button type="button" class="set-current-notice-btn text-[11px] font-bold text-primary bg-primary-fixed/40 hover:bg-primary-fixed px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors" data-id="${notice.id}" title="메인 배너로 지정">
+                <button type="button" class="set-current-notice-btn text-[11px] font-extrabold text-primary bg-primary-fixed/40 hover:bg-primary-fixed px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer" data-id="${notice.id}" title="메인 배너로 지정">
                   <span class="material-symbols-outlined text-[13px]">push_pin</span>
                   <span>배너 지정</span>
                 </button>
               ` : ''}
-              <button type="button" class="edit-notice-btn text-[11px] font-bold text-text-secondary hover:text-primary bg-surface-container-low hover:bg-surface-container px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors" data-id="${notice.id}" title="공지 수정">
+              <button type="button" class="edit-notice-btn text-[11px] font-bold text-text-secondary hover:text-primary bg-surface-container-low hover:bg-surface-container px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer" data-id="${notice.id}" title="공지 수정">
                 <span class="material-symbols-outlined text-[13px]">edit</span>
                 <span>수정</span>
               </button>
-              <button type="button" class="delete-notice-btn text-[11px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors" data-id="${notice.id}" title="공지 삭제">
+              <button type="button" class="delete-notice-btn text-[11px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer" data-id="${notice.id}" title="공지 삭제">
                 <span class="material-symbols-outlined text-[13px]">delete</span>
               </button>
             </div>

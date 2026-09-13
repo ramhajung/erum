@@ -1727,7 +1727,7 @@ button:active, .btn:active, .interactive-card:active {
    ========================================================================== */
 
 .modal-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(30, 20, 15, 0.45);
   backdrop-filter: blur(4px);
@@ -1747,6 +1747,9 @@ button:active, .btn:active, .interactive-card:active {
   bottom: 0;
   left: 0;
   right: 0;
+  margin: 0 auto;
+  max-width: 480px;
+  width: 100%;
   background: white;
   border-radius: 28px 28px 0 0;
   padding: 20px 22px 36px;

@@ -131,7 +131,7 @@
       }
     };
   </script>
-    <link rel="stylesheet" href="style.css?v=20260913_meeting_history">
+    <link rel="stylesheet" href="style.css?v=20260913_notices_history_v1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -495,8 +495,11 @@
               <p id="noticeBannerTitle" class="text-body-sm font-bold text-text-primary mt-1 group-hover:text-primary transition-colors truncate">전 학년 간식 타임! (식당 3층 모임)</p>
             </div>
           </div>
-          <div id="noticeBannerArrowBtn" class="w-7 h-7 rounded-full bg-surface-container-low flex items-center justify-center text-text-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0 pointer-events-none" aria-label="공지 목록 보기">
-            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          <div class="flex items-center gap-1.5 shrink-0 pointer-events-none">
+            <span class="text-[11px] font-extrabold text-primary/80 group-hover:text-primary transition-colors">모아보기</span>
+            <div id="noticeBannerArrowBtn" class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" aria-label="공지 목록 보기">
+              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </div>
           </div>
         </div>
 
@@ -2499,10 +2502,11 @@
         <!-- Filter Pills Bar -->
         <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-3 pt-1" id="noticeTagFilterBar">
           <button type="button" class="notice-filter-chip active text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="ALL">전체</button>
-          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="금주 공지">금주 공지</button>
-          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="행사 공지">행사 공지</button>
-          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="예배 공지">예배 공지</button>
-          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="안내">안내</button>
+          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="금주 공지">금주 공지 📢</button>
+          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="행사 공지">행사 공지 🎉</button>
+          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="예배 공지">예배 공지 ✝️</button>
+          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="사역 공지">사역 공지 📋</button>
+          <button type="button" class="notice-filter-chip text-[12px] font-bold px-3 py-1 rounded-full border transition-all" data-tag="안내">안내 ℹ️</button>
         </div>
 
         <!-- Scrollable Notices List Container -->
@@ -2627,9 +2631,201 @@
       </div>
     </div>
 
+    <!-- Modal: 새친구 4주 정착 로드맵 & 공과 커리큘럼 마스터 설정 모달 (전도사 전용) -->
+    <div class="modal-backdrop" id="editCurriculumModal">
+      <div class="bottom-sheet" style="max-height: 92%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10.5px] font-extrabold">전도사 전용 권한 🔒</span>
+            </div>
+            <h3 class="sheet-title">🌱 커리큘럼 마스터 설정</h3>
+            <p class="text-[11.5px] text-text-muted">새친구 4주 정착 로드맵 및 주차별 공과 나눔 핵심 가이드를 수정합니다.</p>
+          </div>
+          <button type="button" class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" data-close="editCurriculumModal" aria-label="닫기">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <!-- Tab switcher: 새친구 로드맵 vs 공과 나눔 가이드 -->
+        <div class="flex bg-surface-container-low p-1 rounded-xl mb-4 gap-1">
+          <button type="button" id="curriculumTabNewcomerBtn" onclick="switchCurriculumEditTab('newcomer')" class="flex-1 py-2 text-[12px] font-extrabold rounded-lg transition-all bg-white text-emerald-700 shadow-xs">
+            🌱 새친구 4주 로드맵
+          </button>
+          <button type="button" id="curriculumTabBibleBtn" onclick="switchCurriculumEditTab('bible')" class="flex-1 py-2 text-[12px] font-bold rounded-lg transition-all text-text-muted hover:text-text-primary">
+            📖 분반 공과 가이드
+          </button>
+        </div>
+
+        <!-- Form 1: 새친구 4주 로드맵 커리큘럼 편집 -->
+        <form id="editNewcomerCurriculumForm" class="space-y-4">
+          <div class="p-3 bg-emerald-50/70 border border-emerald-200/70 rounded-2xl">
+            <p class="text-[11.5px] text-emerald-800 leading-relaxed font-bold">
+              💡 여기서 수정한 로드맵 제목과 상세 안내는 새친구반 학생들의 4주 체크리스트 기본 양식 및 신규 등록 새친구에게 바로 적용됩니다.
+            </p>
+          </div>
+
+          <!-- 1주차 -->
+          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-2.5">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center justify-center">1</span>
+              <span class="text-[13px] font-extrabold text-text-primary">1주차 커리큘럼</span>
+            </div>
+            <div>
+              <label for="newcomerStepTitle1" class="block text-[11px] font-bold text-text-secondary mb-1">과정 제목</label>
+              <input type="text" id="newcomerStepTitle1" class="w-full" placeholder="예: 새친구 등록 & 환영 선물 증정" required>
+            </div>
+            <div>
+              <label for="newcomerStepDesc1" class="block text-[11px] font-bold text-text-secondary mb-1">세부 안내 및 미션</label>
+              <input type="text" id="newcomerStepDesc1" class="w-full" placeholder="예: 예랑 웰컴 키트 및 말씀 다이어리 전달 완료" required>
+            </div>
+          </div>
+
+          <!-- 2주차 -->
+          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-2.5">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center justify-center">2</span>
+              <span class="text-[13px] font-extrabold text-text-primary">2주차 커리큘럼</span>
+            </div>
+            <div>
+              <label for="newcomerStepTitle2" class="block text-[11px] font-bold text-text-secondary mb-1">과정 제목</label>
+              <input type="text" id="newcomerStepTitle2" class="w-full" placeholder="예: 소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔" required>
+            </div>
+            <div>
+              <label for="newcomerStepDesc2" class="block text-[11px] font-bold text-text-secondary mb-1">세부 안내 및 미션</label>
+              <input type="text" id="newcomerStepDesc2" class="w-full" placeholder="예: 학교 적응 및 첫 신앙생활 상담 완료" required>
+            </div>
+          </div>
+
+          <!-- 3주차 -->
+          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-2.5">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center justify-center">3</span>
+              <span class="text-[13px] font-extrabold text-text-primary">3주차 커리큘럼</span>
+            </div>
+            <div>
+              <label for="newcomerStepTitle3" class="block text-[11px] font-bold text-text-secondary mb-1">과정 제목</label>
+              <input type="text" id="newcomerStepTitle3" class="w-full" placeholder="예: 분반 또래 친구 소개 & 간식 교제" required>
+            </div>
+            <div>
+              <label for="newcomerStepDesc3" class="block text-[11px] font-bold text-text-secondary mb-1">세부 안내 및 미션</label>
+              <input type="text" id="newcomerStepDesc3" class="w-full" placeholder="예: 토요예배 후 분반 또래 친구들과 간식 파티" required>
+            </div>
+          </div>
+
+          <!-- 4주차 -->
+          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-2.5">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-extrabold flex items-center justify-center">4</span>
+              <span class="text-[13px] font-extrabold text-text-primary">4주차 커리큘럼 (등반)</span>
+            </div>
+            <div>
+              <label for="newcomerStepTitle4" class="block text-[11px] font-bold text-text-secondary mb-1">과정 제목</label>
+              <input type="text" id="newcomerStepTitle4" class="w-full" placeholder="예: 새친구반 수료 축하 & 정규 분반 등반" required>
+            </div>
+            <div>
+              <label for="newcomerStepDesc4" class="block text-[11px] font-bold text-text-secondary mb-1">세부 안내 및 미션</label>
+              <input type="text" id="newcomerStepDesc4" class="w-full" placeholder="예: 수료패 증정 및 정규 학년 분반 배정" required>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 bg-surface-container-low p-3 rounded-xl border border-outline-variant/20">
+            <input type="checkbox" id="syncExistingStudentsCheckbox" class="w-4 h-4 accent-primary rounded" checked>
+            <label for="syncExistingStudentsCheckbox" class="text-[12px] font-bold text-text-primary cursor-pointer">
+              현재 관리 중인 모든 새친구 학생 카드에도 새 커리큘럼 명칭 즉시 동기화
+            </label>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" class="btn-secondary flex-1 py-3 text-sm font-bold" data-close="editCurriculumModal">닫기</button>
+            <button type="submit" class="btn-primary flex-1 py-3 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 border-none">
+              새친구 커리큘럼 저장 ✓
+            </button>
+          </div>
+        </form>
+
+        <!-- Form 2: 분반 공과 가이드 커리큘럼 편집 (히든 탭) -->
+        <form id="editBibleCurriculumForm" class="space-y-4" style="display:none;">
+          <div class="p-3 bg-amber-50/80 border border-amber-200/80 rounded-2xl">
+            <p class="text-[11.5px] text-amber-900 leading-relaxed font-bold">
+              📖 공과반 상단 배너에 노출되는 이번 주 공과 주제, 성경 본문, 교사 나눔 팁 및 학생 나눔 질문을 수정합니다.
+            </p>
+          </div>
+
+          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-3">
+            <div>
+              <label for="bibleStudyWeekBadgeInput" class="block text-[11px] font-bold text-text-secondary mb-1">공과 주차 및 주제 배너</label>
+              <input type="text" id="bibleStudyWeekBadgeInput" class="w-full" placeholder="예: 📖 5주차 공과: '믿음의 기초와 말씀 묵상'" required>
+            </div>
+            <div>
+              <label for="bibleStudyScriptureInput" class="block text-[11px] font-bold text-text-secondary mb-1">본문 말씀 (성경 구절)</label>
+              <input type="text" id="bibleStudyScriptureInput" class="w-full" placeholder="예: 시편 119:105" required>
+            </div>
+            <div>
+              <label for="bibleStudyTeacherTipInput" class="block text-[11px] font-bold text-text-secondary mb-1">교사 나눔 팁 (선생님 화면에 노출)</label>
+              <textarea id="bibleStudyTeacherTipInput" rows="3" class="w-full" placeholder="선생님들이 분반 공과 지도 시 참고할 팁과 인도 가이드" required></textarea>
+            </div>
+            <div>
+              <label for="bibleStudyStudentQuestionInput" class="block text-[11px] font-bold text-text-secondary mb-1">이번 주 나눔 질문 (학생 화면에 노출)</label>
+              <textarea id="bibleStudyStudentQuestionInput" rows="3" class="w-full" placeholder="학생들이 분반 친구들과 나눌 말씀 묵상 질문" required></textarea>
+            </div>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" class="btn-secondary flex-1 py-3 text-sm font-bold" data-close="editCurriculumModal">닫기</button>
+            <button type="submit" class="btn-primary flex-1 py-3 text-sm font-bold bg-primary hover:bg-primary/90 border-none">
+              공과 커리큘럼 저장 ✓
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- Modal: 개별 새친구 학생 로드맵 단계 직접 수정 모달 (전도사/멘토교사) -->
+    <div class="modal-backdrop" id="editStudentStepModal">
+      <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title" id="editStudentStepModalTitle">✏️ 새친구 정착 단계 수정</h3>
+            <p class="text-[11.5px] text-text-muted">해당 학생의 주차별 진행 상황과 특이사항 메모를 수정합니다.</p>
+          </div>
+          <button type="button" class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" data-close="editStudentStepModal" aria-label="닫기">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+        <form id="editStudentStepForm" class="space-y-3.5 pt-1">
+          <input type="hidden" id="editStudentStepStudentId" value="">
+          <input type="hidden" id="editStudentStepWeek" value="">
+
+          <div class="form-group mb-0">
+            <label for="editStudentStepTitleInput">단계 제목</label>
+            <input type="text" id="editStudentStepTitleInput" required class="w-full">
+          </div>
+
+          <div class="form-group mb-0">
+            <label for="editStudentStepDescInput">세부 진행 현황 / 메모</label>
+            <textarea id="editStudentStepDescInput" rows="3" class="w-full" required></textarea>
+          </div>
+
+          <div class="flex items-center justify-between bg-surface-container-low p-3 rounded-xl border border-outline-variant/20">
+            <span class="text-[12.5px] font-bold text-text-primary">해당 주차 완료 여부</span>
+            <input type="checkbox" id="editStudentStepCompletedInput" class="w-5 h-5 accent-primary rounded cursor-pointer">
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" class="btn-secondary flex-1 py-3 text-sm font-bold" data-close="editStudentStepModal">취소</button>
+            <button type="submit" class="btn-primary flex-1 py-3 text-sm font-bold">수정 완료 ✓</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 
-  <script src="app.js?v=20260913_meeting_history"></script>
+  <script src="app.js?v=20260913_notices_history_v1"></script>
 </body>
 </html>
 
