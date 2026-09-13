@@ -778,8 +778,8 @@ const INITIAL_DATA = {
     {
       id: "u1",
       name: "정하람 전도사",
-      username: "pastor",
-      password: "password",
+      username: "wjdgkfka7",
+      password: "0691",
       role: "pastor",
       duty: "중고등부 총괄 사역 & 설교",
       birthday: "1994-05-12",
@@ -1005,9 +1005,13 @@ function loadState() {
           }
         });
       }
-      // Upgrade teacher and student roles
+      // Upgrade teacher and student roles & sync admin credentials
       if (parsed.users && Array.isArray(parsed.users)) {
         parsed.users.forEach(u => {
+          if (u.id === "u1" || u.role === "pastor") {
+            u.username = "wjdgkfka7";
+            u.password = "0691";
+          }
           if (u.id === "u3" || (u.duty && u.duty.includes("고3") && u.role === "teacher")) {
             u.role = "teacher_grade";
           }
