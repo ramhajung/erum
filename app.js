@@ -1240,7 +1240,11 @@ function switchClassMinistrySubTab(tabKey) {
   const subtitleEl = document.getElementById("screenSubtitle");
   if (tabKey === "grade") {
     if (titleEl) titleEl.textContent = "공과공부 & 분반 목양";
-    if (subtitleEl) subtitleEl.textContent = "고3 분반 학생 출결 및 심방 지도";
+    const cu = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+    const gClasses = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+    const tClass = (cu && gClasses) ? gClasses.find(c => c.teacherName && cu.name && c.teacherName.includes(cu.name.replace("선생님", "").trim())) : null;
+    const gradeName = tClass ? tClass.grade : "분반";
+    if (subtitleEl) subtitleEl.textContent = `${gradeName} 학생 출결 및 심방 지도`;
     renderClassMinistrySection();
   } else if (tabKey === "newcomer") {
     if (titleEl) titleEl.textContent = "새친구반 적응 & 정착";
@@ -1545,6 +1549,7 @@ function renderClassMinistrySection() {
   const isStudent = isStudentRole(role) || isStudentRole(currentRole);
   const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
   const isPastorOrDeacon = !currentUser || currentUser.role === "pastor" || currentUser.role === "deacon";
+  const isTeacher = !isPastorOrDeacon && !isStudent;
 
   containers.forEach(container => {
     let activeClass;
@@ -1552,9 +1557,29 @@ function renderClassMinistrySection() {
       activeClass = classes.find(c => c.students && c.students.some(s => s.name === currentUser.name || s.id === currentUser.id))
         || classes.find(c => c.id === "class_high3")
         || classes[0];
+    } else if (isTeacher && currentUser) {
+      // 담임 교사 (김대한 선생님 등): 자신의 담당 분반만 고정으로 조회 (자기 것과 자기반 학생들만 보임)
+      const cleanUserName = (currentUser.name || "").replace("선생님", "").replace("T", "").trim();
+      const teacherClass = classes.find(c => {
+        const cleanTeacherName = (c.teacherName || "").replace("선생님", "").replace("T", "").trim();
+        if (cleanTeacherName && cleanUserName && (cleanTeacherName === cleanUserName || cleanTeacherName.includes(cleanUserName) || cleanUserName.includes(cleanTeacherName))) {
+          return true;
+        }
+        if (currentUser.duty && c.grade && currentUser.duty.includes(c.grade.replace("반", ""))) {
+          return true;
+        }
+        return false;
+      });
+      activeClass = teacherClass || classes.find(c => c.id === "class_high3") || classes[0];
+    } else if (isPastorOrDeacon) {
+      activeClass = classes.find(c => c.id === currentClassId) || classes[0];
     } else {
       activeClass = classes.find(c => c.id === currentClassId) || classes[0];
     }
+
+    const cleanTeacherName = (activeClass.teacherName || "").replace("선생님", "").replace("T", "").trim();
+    const cleanCurrentName = (currentUser && currentUser.name ? currentUser.name : "").replace("선생님", "").replace("T", "").trim();
+    const isTeacherSelf = isTeacher && cleanTeacherName && cleanCurrentName && (cleanTeacherName === cleanCurrentName || cleanTeacherName.includes(cleanCurrentName) || cleanCurrentName.includes(cleanTeacherName));
 
     let chipsHtml = "";
     if (isPastorOrDeacon) {
@@ -1580,10 +1605,10 @@ function renderClassMinistrySection() {
       <div class="teacher-profile-banner" style="background:linear-gradient(135deg, #fffcf9 0%, #fff7ed 100%); border:1.5px solid #fed7aa; border-radius:20px; padding:15px; margin-bottom:18px; box-shadow:0 4px 14px rgba(234,88,12,0.06);">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
           <div style="font-size:11px; font-weight:800; color:#ea580c; background:#ffedd5; padding:2px 8px; border-radius:6px; letter-spacing:-0.2px;">
-            ${isStudent ? `🏷️ 우리 반 (${activeClass.grade}) 담임 선생님` : `🏷️ ${activeClass.grade} 담당 교사`}
+            ${isStudent ? `🏷️ 우리 반 (${activeClass.grade}) 담임 선생님` : isTeacherSelf ? `🏷️ 내 담당 분반 (${activeClass.grade})` : `🏷️ ${activeClass.grade} 담당 교사`}
           </div>
           <span style="font-size:11px; color:#9a3412; font-weight:700;">
-            ${isStudent ? `우리 분반 친구들 ${activeClass.students.length}명` : `재적 ${activeClass.students.length}명 관리`}
+            ${isStudent ? `우리 분반 친구들 ${activeClass.students.length}명` : isTeacherSelf ? `우리 반 학생 ${activeClass.students.length}명 관리` : `재적 ${activeClass.students.length}명 관리`}
           </span>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
@@ -1603,15 +1628,21 @@ function renderClassMinistrySection() {
             </div>
           </div>
           <div style="display:flex; gap:6px;">
-            <a href="tel:${activeClass.teacherPhone}" class="btn-icon" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #fed7aa; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px;" title="전화걸기">📞</a>
-            <button type="button" class="btn-icon" onclick="showToast('${activeClass.teacherName} 선생님과의 1:1 카톡 상담창을 엽니다 💬', 'info')" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #fed7aa; display:flex; align-items:center; justify-content:center; font-size:16px;" title="카톡 대화">💬</button>
+            ${isTeacherSelf ? `
+              <span style="font-size:11px; font-weight:800; color:#15803d; background:#dcfce7; padding:5px 10px; border-radius:10px; border:1px solid #86efac; display:inline-flex; align-items:center; gap:3px;">
+                <span>🧑🏻‍🏫</span> <span>담임 교사</span>
+              </span>
+            ` : `
+              <a href="tel:${activeClass.teacherPhone}" class="btn-icon" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #fed7aa; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px;" title="전화걸기">📞</a>
+              <button type="button" class="btn-icon" onclick="showToast('${activeClass.teacherName} 선생님과의 1:1 카톡 상담창을 엽니다 💬', 'info')" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #fed7aa; display:flex; align-items:center; justify-content:center; font-size:16px;" title="카톡 대화">💬</button>
+            `}
           </div>
         </div>
       </div>
 
       <!-- 해당 분반 학생 출결 & 목양 관리 -->
       <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span>${isStudent ? `👥 우리 분반 친구들 (${activeClass.grade})` : `👥 ${activeClass.grade} 학생 관리 & 출결`}</span>
+        <span>${isStudent ? `👥 우리 분반 친구들 (${activeClass.grade})` : isTeacherSelf ? `👥 내 담당 분반 학생 관리 & 출결` : `👥 ${activeClass.grade} 학생 관리 & 출결`}</span>
         ${isPastor ? `
           <button type="button" onclick="openAddStudentToClassModal('${activeClass.id}')" style="font-size:11.5px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 6px;">
             ＋ 학생 추가
