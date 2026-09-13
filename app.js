@@ -1574,7 +1574,12 @@ function addNewcomerStudent() {
   });
   saveState();
   renderNewcomerMinistrySection();
-  showToast(`🌱 ${name.trim()} 학생이 등록되었습니다! (담당 멘토: ${assignedMentor})`);
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (isPastor) {
+    showToast(`🌱 ${name.trim()} 학생이 등록되었습니다! (담당 멘토: ${assignedMentor})`);
+  } else {
+    showToast(`🌱 ${name.trim()} 학생이 새친구반에 새로 등록되었습니다! 환영합니다!`);
+  }
 }
 
 function renderClassMinistrySection() {
@@ -1841,9 +1846,15 @@ function renderNewcomerMinistrySection() {
                   <div style="font-size:11px; color:#4b7a5a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px;">
                     ${m.duty}
                   </div>
-                  <div style="font-size:11px; color:#16a34a; font-weight:700; margin-top:2px;">
-                    담당 학생: <strong style="color:#15803d;">${assignedCount}명</strong>
-                  </div>
+                  ${isPastor ? `
+                    <div style="font-size:11px; color:#16a34a; font-weight:700; margin-top:2px;">
+                      담당 학생: <strong style="color:#15803d;">${assignedCount}명</strong>
+                    </div>
+                  ` : `
+                    <div style="font-size:11px; color:#16a34a; font-weight:700; margin-top:2px;">
+                      새친구 사역 전담 멘토
+                    </div>
+                  `}
                 </div>
                 <div style="display:flex; flex-direction:column; gap:4px;">
                   <a href="tel:${m.phone}" class="btn-icon" style="width:30px; height:30px; border-radius:9px; background:#f0fdf4; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:14px;" title="${m.name} 전화">📞</a>
@@ -1892,10 +1903,13 @@ function renderNewcomerMinistrySection() {
                       </span>
                     </div>
                     <div style="font-size:11px; color:#6b7280; margin-top:2px; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
-                      <span style="font-size:10.5px; font-weight:800; color:#15803d; background:#ecfdf5; border:1px solid #a7f3d0; padding:1px 6px; border-radius:6px; display:inline-flex; align-items:center; gap:3px;">
-                        <span>🌱</span> <span>담당: <strong>${s.mentorName || '소예진 선생님'}</strong></span>
-                      </span>
-                      <span>· 등록: ${s.registeredDate}</span>
+                      ${isPastor ? `
+                        <span style="font-size:10.5px; font-weight:800; color:#15803d; background:#ecfdf5; border:1px solid #a7f3d0; padding:1px 6px; border-radius:6px; display:inline-flex; align-items:center; gap:3px;">
+                          <span>🌱</span> <span>담당: <strong>${s.mentorName || '소예진 선생님'}</strong></span>
+                        </span>
+                        <span>·</span>
+                      ` : ''}
+                      <span>등록: ${s.registeredDate}</span>
                       <span>· 배정: <strong style="color:#0369a1;">${s.targetClass}</strong></span>
                     </div>
                   </div>
@@ -2952,11 +2966,14 @@ function initAgendaEvents() {
       const newInterests = document.getElementById("editNewcomerInterestsInput").value.trim();
       const newPrayerTopic = document.getElementById("editNewcomerPrayerTopicInput").value.trim();
 
+      const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+
       const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
       const student = data.students.find(s => s.id === studentId);
       if (!student) return;
 
-      if (newMentor) {
+      if (isPastor && newMentor) {
         student.mentorName = newMentor;
       }
       student.interests = newInterests;
@@ -2965,7 +2982,11 @@ function initAgendaEvents() {
       saveState();
       renderNewcomerMinistrySection();
       closeModal("editNewcomerInfoModal");
-      showToast(`🌱 ${student.name} 학생 정보(멘토: ${student.mentorName})가 성공적으로 수정되었습니다! ✓`);
+      if (isPastor) {
+        showToast(`🌱 ${student.name} 학생 정보(멘토: ${student.mentorName})가 성공적으로 수정되었습니다! ✓`);
+      } else {
+        showToast(`🌱 ${student.name} 학생의 관심사 및 기도제목이 성공적으로 수정되었습니다! ✓`);
+      }
     });
   }
 }
@@ -3143,18 +3164,27 @@ window.openEditNewcomerInfoModal = function(studentId) {
   if (!student) return;
 
   const titleEl = document.getElementById("editNewcomerInfoModalTitle");
-  if (titleEl) titleEl.textContent = `✏️ ${student.name} (${student.grade}) 멘토 & 양육 정보 수정`;
+  if (titleEl) {
+    titleEl.textContent = isPastor
+      ? `✏️ ${student.name} (${student.grade}) 멘토 & 양육 정보 수정`
+      : `✏️ ${student.name} (${student.grade}) 관심사 & 기도제목 수정`;
+  }
 
   const sidInp = document.getElementById("editNewcomerInfoStudentId");
   const intInp = document.getElementById("editNewcomerInterestsInput");
   const prayInp = document.getElementById("editNewcomerPrayerTopicInput");
   const mentorSelect = document.getElementById("editNewcomerMentorSelect");
+  const mentorGroup = document.getElementById("editNewcomerMentorGroup");
 
   if (sidInp) sidInp.value = student.id;
   if (intInp) intInp.value = student.interests || "";
   if (prayInp) prayInp.value = student.prayerTopic || "";
 
-  if (mentorSelect) {
+  if (mentorGroup) {
+    mentorGroup.style.display = isPastor ? "block" : "none";
+  }
+
+  if (isPastor && mentorSelect) {
     const teachers = getNewcomerTeachers();
     const currentMentor = student.mentorName || "소예진 선생님";
     mentorSelect.innerHTML = teachers.map(t => {
