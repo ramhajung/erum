@@ -1573,20 +1573,7 @@ function renderClassMinistrySection() {
       `;
     }
 
-    const bibleCurriculum = (appState.curriculum && appState.curriculum.bibleStudy) ? appState.curriculum.bibleStudy : (INITIAL_DATA.curriculum ? INITIAL_DATA.curriculum.bibleStudy : {
-      weekBadge: "📖 5주차 공과: '믿음의 기초와 말씀 묵상'",
-      scripture: "시편 119:105",
-      teacherTip: "수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.",
-      studentQuestion: "“주의 말씀은 내 발에 등이요 내 길에 빛이니이다” (시편 119:105)<br>이번 주 한 주 동안 나를 이끌어 주신 하나님의 말씀이나 분반 친구들과 나누고 싶은 감사 제목을 나누어 보세요."
-    });
-
     container.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px;">
-        <div class="agenda-date-badge" style="background:#fef5ea; border-color:#fad5b6; color:#ad551b; margin-bottom:0; flex:1;">
-          ${bibleCurriculum.weekBadge || "📖 5주차 공과: '믿음의 기초와 말씀 묵상'"}
-        </div>
-      </div>
-
       ${chipsHtml}
 
       <!-- 담임 선생님 프로필 카드 -->
