@@ -1585,11 +1585,6 @@ function renderClassMinistrySection() {
         <div class="agenda-date-badge" style="background:#fef5ea; border-color:#fad5b6; color:#ad551b; margin-bottom:0; flex:1;">
           ${bibleCurriculum.weekBadge || "📖 5주차 공과: '믿음의 기초와 말씀 묵상'"}
         </div>
-        ${isPastor ? `
-          <button type="button" onclick="openEditCurriculumModalDirect('bible')" style="padding:4px 10px; font-size:11.5px; font-weight:800; border-radius:10px; border:1px solid #fad5b6; background:#fff; color:#ea580c; cursor:pointer; display:inline-flex; align-items:center; gap:3px; white-space:nowrap; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-            <span>✏️</span> <span>커리큘럼 수정</span>
-          </button>
-        ` : ''}
       </div>
 
       ${chipsHtml}
@@ -2945,8 +2940,8 @@ window.switchCurriculumEditTab = function(tab) {
   }
 };
 
-// 커리큘럼 편집 모달 열기 (전도사용)
-window.openEditCurriculumModalDirect = function(initialTab = 'newcomer') {
+// 새친구 정착 로드맵 편집 모달 열기 (전도사용)
+window.openEditCurriculumModalDirect = function() {
   if (!isCurrentRolePastor()) {
     showToast("⚠️ 커리큘럼 수정은 전도사님만 가능합니다 🔒", "warning");
     return;
@@ -2969,20 +2964,6 @@ window.openEditCurriculumModalDirect = function(initialTab = 'newcomer') {
   }
 
   renderNewcomerStepsEditor(totalWeeks, currSteps);
-
-  // 공과 커리큘럼 채우기
-  const bibleCurr = (appState.curriculum && appState.curriculum.bibleStudy) ? appState.curriculum.bibleStudy : (INITIAL_DATA.curriculum ? INITIAL_DATA.curriculum.bibleStudy : {});
-  const badgeInp = document.getElementById("bibleStudyWeekBadgeInput");
-  const scripInp = document.getElementById("bibleStudyScriptureInput");
-  const tipInp = document.getElementById("bibleStudyTeacherTipInput");
-  const questInp = document.getElementById("bibleStudyStudentQuestionInput");
-
-  if (badgeInp) badgeInp.value = bibleCurr.weekBadge || "📖 5주차 공과: '믿음의 기초와 말씀 묵상'";
-  if (scripInp) scripInp.value = bibleCurr.scripture || "시편 119:105";
-  if (tipInp) tipInp.value = bibleCurr.teacherTip || "수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.";
-  if (questInp) questInp.value = bibleCurr.studentQuestion || "“주의 말씀은 내 발에 등이요 내 길에 빛이니이다” (시편 119:105)\n이번 주 한 주 동안 나를 이끌어 주신 하나님의 말씀이나 분반 친구들과 나누고 싶은 감사 제목을 나누어 보세요.";
-
-  switchCurriculumEditTab(initialTab);
   openModal("editCurriculumModal");
 };
 

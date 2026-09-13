@@ -2686,7 +2686,7 @@
       </div>
     </div>
 
-    <!-- Modal: 새친구 정착 로드맵 & 공과 커리큘럼 마스터 설정 모달 (전도사 전용) -->
+    <!-- Modal: 새친구 정착 로드맵 마스터 설정 모달 (전도사 전용) -->
     <div class="modal-backdrop" id="editCurriculumModal">
       <div class="bottom-sheet" style="max-height: 92%; overflow-y: auto;">
         <div class="sheet-handle"></div>
@@ -2695,21 +2695,11 @@
             <div class="flex items-center gap-1.5 mb-1">
               <span class="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10.5px] font-extrabold">전도사 전용 권한 🔒</span>
             </div>
-            <h3 class="sheet-title">🌱 커리큘럼 마스터 설정</h3>
-            <p class="text-[11.5px] text-text-muted">새친구 정착 로드맵(2~6주 설정) 및 주차별 공과 나눔 핵심 가이드를 수정합니다.</p>
+            <h3 class="sheet-title">🌱 새친구 정착 로드맵 설정</h3>
+            <p class="text-[11.5px] text-text-muted">새친구반 적응 & 등반 교육 기간(2~6주) 및 주차별 세부 과정을 수정합니다.</p>
           </div>
           <button type="button" class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" data-close="editCurriculumModal" aria-label="닫기">
             <span class="material-symbols-outlined text-[18px]">close</span>
-          </button>
-        </div>
-
-        <!-- Tab switcher: 새친구 로드맵 vs 공과 나눔 가이드 -->
-        <div class="flex bg-surface-container-low p-1 rounded-xl mb-4 gap-1">
-          <button type="button" id="curriculumTabNewcomerBtn" onclick="switchCurriculumEditTab('newcomer')" class="flex-1 py-2 text-[12px] font-extrabold rounded-lg transition-all bg-white text-emerald-700 shadow-xs">
-            🌱 새친구 로드맵
-          </button>
-          <button type="button" id="curriculumTabBibleBtn" onclick="switchCurriculumEditTab('bible')" class="flex-1 py-2 text-[12px] font-bold rounded-lg transition-all text-text-muted hover:text-text-primary">
-            📖 분반 공과 가이드
           </button>
         </div>
 
@@ -2757,41 +2747,6 @@
             <button type="button" class="btn-secondary flex-1 py-3 text-sm font-bold" data-close="editCurriculumModal">닫기</button>
             <button type="submit" class="btn-primary flex-1 py-3 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 border-none">
               새친구 커리큘럼 저장 ✓
-            </button>
-          </div>
-        </form>
-
-        <!-- Form 2: 분반 공과 가이드 커리큘럼 편집 (히든 탭) -->
-        <form id="editBibleCurriculumForm" class="space-y-4" style="display:none;">
-          <div class="p-3 bg-amber-50/80 border border-amber-200/80 rounded-2xl">
-            <p class="text-[11.5px] text-amber-900 leading-relaxed font-bold">
-              📖 공과반 상단 배너에 노출되는 이번 주 공과 주제, 성경 본문, 교사 나눔 팁 및 학생 나눔 질문을 수정합니다.
-            </p>
-          </div>
-
-          <div class="p-3.5 bg-surface-card rounded-2xl border border-outline-variant/30 space-y-3">
-            <div>
-              <label for="bibleStudyWeekBadgeInput" class="block text-[11px] font-bold text-text-secondary mb-1">공과 주차 및 주제 배너</label>
-              <input type="text" id="bibleStudyWeekBadgeInput" class="w-full" placeholder="예: 📖 5주차 공과: '믿음의 기초와 말씀 묵상'" required>
-            </div>
-            <div>
-              <label for="bibleStudyScriptureInput" class="block text-[11px] font-bold text-text-secondary mb-1">본문 말씀 (성경 구절)</label>
-              <input type="text" id="bibleStudyScriptureInput" class="w-full" placeholder="예: 시편 119:105" required>
-            </div>
-            <div>
-              <label for="bibleStudyTeacherTipInput" class="block text-[11px] font-bold text-text-secondary mb-1">교사 나눔 팁 (선생님 화면에 노출)</label>
-              <textarea id="bibleStudyTeacherTipInput" rows="3" class="w-full" placeholder="선생님들이 분반 공과 지도 시 참고할 팁과 인도 가이드" required></textarea>
-            </div>
-            <div>
-              <label for="bibleStudyStudentQuestionInput" class="block text-[11px] font-bold text-text-secondary mb-1">이번 주 나눔 질문 (학생 화면에 노출)</label>
-              <textarea id="bibleStudyStudentQuestionInput" rows="3" class="w-full" placeholder="학생들이 분반 친구들과 나눌 말씀 묵상 질문" required></textarea>
-            </div>
-          </div>
-
-          <div class="pt-2 flex gap-2">
-            <button type="button" class="btn-secondary flex-1 py-3 text-sm font-bold" data-close="editCurriculumModal">닫기</button>
-            <button type="submit" class="btn-primary flex-1 py-3 text-sm font-bold bg-primary hover:bg-primary/90 border-none">
-              공과 커리큘럼 저장 ✓
             </button>
           </div>
         </form>
@@ -2872,7 +2827,7 @@
 
   </div>
 
-  <script src="app.js?v=20260913_dynamic_weeks_v1"></script>
+  <script src="app.js?v=20260913_remove_bible_curr_v1"></script>
 </body>
 </html>
 
