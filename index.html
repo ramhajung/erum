@@ -2171,9 +2171,21 @@
             <label>이름</label>
             <input type="text" id="editUserNameInput" placeholder="이름" required>
           </div>
-          <div class="form-group">
-            <label>담당 사역 / 직분</label>
-            <input type="text" id="editUserDutyInput" placeholder="예: 중고등부 회계 & 재정 장부 결산" required>
+          <div class="form-group" id="editUserDutyTeacherGroup">
+            <label id="editUserDutyLabel">담당 사역</label>
+            <input type="text" id="editUserDutyInput" placeholder="예: 고3 담임 / 방송실 자막 & 미디어">
+          </div>
+          <div class="form-group" id="editUserGradeStudentGroup" style="display:none;">
+            <label>학년 / 구분</label>
+            <select id="editUserGradeSelect" style="width:100%; border:1.5px solid #d1d5db; border-radius:10px; padding:9px 12px; font-size:14px; font-weight:700; color:#1f2937; background:#fff;">
+              <option value="중1">중1</option>
+              <option value="중2">중2</option>
+              <option value="중3">중3</option>
+              <option value="고1">고1</option>
+              <option value="고2">고2</option>
+              <option value="고3">고3</option>
+              <option value="새친구반">새친구반</option>
+            </select>
           </div>
           <div class="form-group">
             <label>생년월일 (생일) 🎂</label>
@@ -2927,7 +2939,7 @@
 
   </div>
 
-  <script src="app.js?v=20260914_login_btn_text_v1"></script>
+  <script src="app.js?v=20260914_duty_grade_select_v1"></script>
 </body>
 </html>
 

@@ -6691,9 +6691,39 @@ function openEditUserModal(userId) {
   const user = appState.users.find(u => u.id === userId);
   if (!user) return;
 
+  const isStudent = typeof isStudentRole === "function" ? isStudentRole(user.role) : (user.role && user.role.includes("student"));
+  const teacherGroup = document.getElementById("editUserDutyTeacherGroup");
+  const studentGroup = document.getElementById("editUserGradeStudentGroup");
+  const dutyInput = document.getElementById("editUserDutyInput");
+  const gradeSelect = document.getElementById("editUserGradeSelect");
+
   document.getElementById("editUserIdInput").value = user.id;
   document.getElementById("editUserNameInput").value = user.name || "";
-  document.getElementById("editUserDutyInput").value = user.duty || "";
+  
+  if (isStudent) {
+    if (teacherGroup) teacherGroup.style.display = "none";
+    if (studentGroup) studentGroup.style.display = "block";
+    
+    // Determine existing grade from duty or role
+    let matchedGrade = "고3";
+    if (user.duty) {
+      if (user.duty.includes("중1")) matchedGrade = "중1";
+      else if (user.duty.includes("중2")) matchedGrade = "중2";
+      else if (user.duty.includes("중3")) matchedGrade = "중3";
+      else if (user.duty.includes("고1")) matchedGrade = "고1";
+      else if (user.duty.includes("고2")) matchedGrade = "고2";
+      else if (user.duty.includes("고3")) matchedGrade = "고3";
+      else if (user.duty.includes("새친구")) matchedGrade = "새친구반";
+    } else if (user.role === "student_new") {
+      matchedGrade = "새친구반";
+    }
+    if (gradeSelect) gradeSelect.value = matchedGrade;
+  } else {
+    if (teacherGroup) teacherGroup.style.display = "block";
+    if (studentGroup) studentGroup.style.display = "none";
+    if (dutyInput) dutyInput.value = user.duty || "";
+  }
+
   const bdayInput = document.getElementById("editUserBirthdayInput");
   if (bdayInput) bdayInput.value = user.birthday || "";
   document.getElementById("editUserPhoneInput").value = user.phone || "";
@@ -6710,8 +6740,19 @@ function initEditUserEvents() {
       const user = appState.users.find(u => u.id === userId);
       if (!user) return;
 
+      const isStudent = typeof isStudentRole === "function" ? isStudentRole(user.role) : (user.role && user.role.includes("student"));
       const name = document.getElementById("editUserNameInput").value.trim();
-      const duty = document.getElementById("editUserDutyInput").value.trim();
+      
+      let duty = "";
+      if (isStudent) {
+        const gradeSelect = document.getElementById("editUserGradeSelect");
+        const selectedGrade = gradeSelect ? gradeSelect.value : "고3";
+        duty = selectedGrade === "새친구반" ? "새친구반 학생" : `${selectedGrade} 학생`;
+      } else {
+        const dutyInput = document.getElementById("editUserDutyInput");
+        duty = dutyInput ? dutyInput.value.trim() : "";
+      }
+
       const birthday = document.getElementById("editUserBirthdayInput") ? document.getElementById("editUserBirthdayInput").value.trim() : "";
       const phone = document.getElementById("editUserPhoneInput").value.trim();
 
