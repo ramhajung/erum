@@ -232,6 +232,112 @@ const INITIAL_DATA = {
       avatar: "👩🏻‍💼"
     }
   ],
+  attendanceHistory: [
+    {
+      id: "att_hist_20260912",
+      date: "2026.09.12 (토)",
+      month: 9,
+      title: "토요예배 9월 2주차",
+      presentCount: 8,
+      absentCount: 1,
+      lateCount: 0,
+      totalCount: 9,
+      records: [
+        {
+          name: "소예진 선생님",
+          role: "학업 / 시험 📖",
+          status: "사전 결석",
+          memo: "대학원 교육학 세미나 발표 참석으로 사전 결석합니다.",
+          duty: "고3 분반",
+          substitute: "정하람 전도사 대행 ✅",
+          avatar: "👩🏻‍🏫"
+        }
+      ]
+    },
+    {
+      id: "att_hist_20260905",
+      date: "2026.09.05 (토)",
+      month: 9,
+      title: "토요예배 9월 1주차 (개강 전 기도회)",
+      presentCount: 9,
+      absentCount: 0,
+      lateCount: 0,
+      totalCount: 9,
+      records: []
+    },
+    {
+      id: "att_hist_20260829",
+      date: "2026.08.29 (토)",
+      month: 8,
+      title: "토요예배 8월 5주차",
+      presentCount: 7,
+      absentCount: 1,
+      lateCount: 1,
+      totalCount: 9,
+      records: [
+        {
+          name: "김대한 선생님",
+          role: "교통 정체 🚗",
+          status: "지각",
+          memo: "강변북로 접촉사고 정체로 인해 11:15 도착했습니다.",
+          duty: "방송실 음향",
+          substitute: "자체 소화 (장비 사전 세팅)",
+          avatar: "👨🏻‍💼"
+        },
+        {
+          name: "김희순 집사님",
+          role: "건강 / 병원 🏥",
+          status: "사전 결석",
+          memo: "환절기 급성 독감으로 인해 불참 양해 부탁드립니다.",
+          duty: "회계/간식",
+          substitute: "나하은T 지정됨 ✅",
+          avatar: "👩🏻‍💼"
+        }
+      ]
+    },
+    {
+      id: "att_hist_20260822",
+      date: "2026.08.22 (토)",
+      month: 8,
+      title: "토요예배 8월 4주차",
+      presentCount: 8,
+      absentCount: 0,
+      lateCount: 1,
+      totalCount: 9,
+      records: [
+        {
+          name: "나하은 선생님",
+          role: "직장 근무 💼",
+          status: "지각",
+          memo: "병원 야간 교대 근무 퇴근 지연으로 11:10 도착했습니다.",
+          duty: "중등부 분반",
+          substitute: "자체 소화",
+          avatar: "👩🏻‍💼"
+        }
+      ]
+    },
+    {
+      id: "att_hist_20260815",
+      date: "2026.08.15 (토)",
+      month: 8,
+      title: "광복절 기념 특별 토요예배",
+      presentCount: 8,
+      absentCount: 1,
+      lateCount: 0,
+      totalCount: 9,
+      records: [
+        {
+          name: "김대한 선생님",
+          role: "가족 행사 🚗",
+          status: "사전 결석",
+          memo: "광복절 연휴 가족 행사 일정으로 사전 불참합니다.",
+          duty: "방송실",
+          substitute: "김신원T 지정됨 ✅",
+          avatar: "👨🏻‍💼"
+        }
+      ]
+    }
+  ],
   receiptPresets: [
     {
       name: "다이소 (멀티탭)",
@@ -627,6 +733,9 @@ function loadState() {
       }
       if (!parsed.notices || !Array.isArray(parsed.notices) || parsed.notices.length === 0) {
         parsed.notices = JSON.parse(JSON.stringify(INITIAL_DATA.notices));
+      }
+      if (!parsed.attendanceHistory || !Array.isArray(parsed.attendanceHistory) || parsed.attendanceHistory.length === 0) {
+        parsed.attendanceHistory = JSON.parse(JSON.stringify(INITIAL_DATA.attendanceHistory));
       }
       // Migrate worship duty and notices to Saturday worship basis
       if (parsed.worshipDuty) {
@@ -1870,6 +1979,12 @@ function renderAttendanceSection() {
     openAbsentBtn.style.display = isPastor ? "none" : "";
   }
 
+  // 4. 지난 출결 기록 버튼: 전도사에게만 노출 (선생님/학생에게는 비노출 🔒)
+  const openHistoryBtn = document.getElementById("openAttendanceHistoryBtn");
+  if (openHistoryBtn) {
+    openHistoryBtn.style.display = isPastor ? "inline-flex" : "none";
+  }
+
   if (filteredAttendance.length === 0) {
     const emptyEl = document.createElement("div");
     emptyEl.style.cssText = "padding: 36px 16px; text-align: center; background: #ffffff; border-radius: 16px; border: 1.5px dashed #f1ddd2; color: #94a3b8; margin: 12px 0;";
@@ -1996,25 +2111,197 @@ function handleDeleteAttendance(attId, closeModAfter = false) {
   }
 }
 
-function initAttendanceEvents() {
-  document.getElementById("openAbsentModalBtn").addEventListener("click", () => {
-    const currentUser = getCurrentUser();
-    const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
-    const nameInput = document.getElementById("absentTeacherInput");
-    if (nameInput) {
-      nameInput.value = currentUser ? currentUser.name : (isStudent ? "학생" : "선생님");
-    }
-    // 라벨 동적 변경: 학생이면 '이름', 선생님/집사이면 '성함'
-    const nameLabel = document.getElementById("absentNameLabel");
-    if (nameLabel) {
-      nameLabel.textContent = isStudent ? "이름" : "성함";
-    }
-    const memoInput = document.getElementById("absentMemoInput");
-    if (memoInput) memoInput.value = "";
-    const etaInput = document.getElementById("absentEtaInput");
-    if (etaInput) etaInput.value = "";
-    openModal("absentModal");
+// --- 지난 교사 출결 히스토리 (Pastor only) ---
+function openAttendanceHistoryModal(filterMonth = "ALL") {
+  const currentUser = getCurrentUser();
+  const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
+  if (!isPastor) {
+    showToast("전도사 전용 관리 기능입니다 🔒", "warn");
+    return;
+  }
+
+  // Active filter chip sync
+  document.querySelectorAll("#attendanceMonthFilterBar .attendance-filter-chip").forEach(c => {
+    c.classList.toggle("active", c.dataset.month === filterMonth);
   });
+
+  renderAttendanceHistoryList(filterMonth);
+  openModal("attendanceHistoryModal");
+}
+
+function renderAttendanceHistoryList(filterMonth = "ALL") {
+  const container = document.getElementById("attendanceHistoryListContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const history = appState.attendanceHistory || [];
+  const filtered = (filterMonth === "ALL")
+    ? history
+    : history.filter(item => String(item.month) === String(filterMonth));
+
+  // Count badge
+  const badge = document.getElementById("attendanceHistoryCountBadge");
+  if (badge) {
+    badge.textContent = `${filtered.length}주 기록`;
+  }
+
+  // Calculate stats
+  let totalPresent = 0;
+  let totalCap = 0;
+  history.forEach(item => {
+    totalPresent += (item.presentCount || 0);
+    totalCap += (item.totalCount || 9);
+  });
+  const avgRate = totalCap > 0 ? ((totalPresent / totalCap) * 100).toFixed(1) : "100.0";
+  const avgEl = document.getElementById("attendanceAvgRateDisplay");
+  if (avgEl) {
+    avgEl.textContent = `${avgRate}% (평균 ${Math.round(totalPresent / Math.max(history.length, 1))}명 출석)`;
+  }
+
+  if (filtered.length === 0) {
+    const emptyEl = document.createElement("div");
+    emptyEl.className = "py-10 text-center text-text-muted";
+    emptyEl.innerHTML = `
+      <div class="text-3xl mb-2">📋</div>
+      <p class="font-bold text-sm text-text-primary">해당 기간의 출결 기록이 없습니다.</p>
+    `;
+    container.appendChild(emptyEl);
+    return;
+  }
+
+  filtered.forEach(week => {
+    const total = week.totalCount || 9;
+    const rate = ((week.presentCount / total) * 100).toFixed(0);
+    const hasIssues = week.records && week.records.length > 0;
+
+    const card = document.createElement("div");
+    card.className = "att-history-card space-y-3";
+
+    let recordsHtml = "";
+    if (!hasIssues) {
+      recordsHtml = `
+        <div class="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200/80 text-emerald-800 text-[12px] font-bold">
+          <span class="text-[15px]">🎉</span>
+          <span>전원 출석 완료 (교사 ${total}명 정시 출석 · 사역 공백 없음)</span>
+        </div>
+      `;
+    } else {
+      recordsHtml = `
+        <div class="space-y-2 pt-1 border-t border-surface-container/60">
+          <div class="text-[11px] font-bold text-text-muted flex items-center gap-1">
+            <span>⚠️</span> <span>사전 결석 및 지각 특이사항 (${week.records.length}건)</span>
+          </div>
+          ${week.records.map(rec => {
+            const isLate = rec.status === "지각";
+            return `
+              <div class="p-2.5 rounded-xl ${isLate ? 'bg-amber-50/70 border border-amber-200/70' : 'bg-rose-50/70 border border-rose-200/70'} flex flex-col gap-1.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[17px]">${rec.avatar || '🧑🏻‍🏫'}</span>
+                    <span class="text-[13px] font-bold text-text-primary">${rec.name}</span>
+                    <span class="text-[10.5px] px-2 py-0.5 rounded-md bg-white/80 font-bold ${isLate ? 'text-amber-800' : 'text-rose-800'} border ${isLate ? 'border-amber-200' : 'border-rose-200'}">${rec.role}</span>
+                  </div>
+                  <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full ${isLate ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'}">
+                    ${rec.status} ${isLate ? '⏰' : '✕'}
+                  </span>
+                </div>
+                <div class="text-[12px] text-text-secondary bg-white/90 p-2 rounded-lg border border-slate-100/80 font-medium leading-relaxed">
+                  "${rec.memo}"
+                </div>
+                <div class="flex items-center justify-between text-[11px] font-semibold text-text-muted pt-0.5">
+                  <span>담당: ${rec.duty || '사역 담당'}</span>
+                  <span class="text-primary font-bold">대타: ${rec.substitute || '지정 대행'}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    card.innerHTML = `
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-[14px]">
+            📅
+          </div>
+          <div>
+            <div class="text-[14px] font-extrabold text-text-primary">${week.date}</div>
+            <div class="text-[11px] font-semibold text-text-muted">${week.title}</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[11.5px] font-black px-2.5 py-1 rounded-full ${rate >= 90 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-orange-100 text-orange-800 border border-orange-200'}">
+            출석률 ${rate}%
+          </span>
+        </div>
+      </div>
+
+      <!-- Mini Stats Row -->
+      <div class="grid grid-cols-3 gap-2 py-2 px-3 rounded-xl bg-surface-container/50 text-center text-[12px] font-bold">
+        <div class="text-emerald-700">
+          <span class="text-text-muted font-normal text-[10.5px] block">출석</span>
+          <span class="text-[14px] font-extrabold">${week.presentCount}</span>명
+        </div>
+        <div class="text-rose-600 border-x border-slate-200/60">
+          <span class="text-text-muted font-normal text-[10.5px] block">사전 결석</span>
+          <span class="text-[14px] font-extrabold">${week.absentCount}</span>명
+        </div>
+        <div class="text-amber-600">
+          <span class="text-text-muted font-normal text-[10.5px] block">지각</span>
+          <span class="text-[14px] font-extrabold">${week.lateCount}</span>명
+        </div>
+      </div>
+
+      ${recordsHtml}
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+window.openAttendanceHistoryModal = openAttendanceHistoryModal;
+
+function initAttendanceEvents() {
+  // 지난 출결 기록 모달 열기 (전도사 전용)
+  const openHistoryBtn = document.getElementById("openAttendanceHistoryBtn");
+  if (openHistoryBtn) {
+    openHistoryBtn.addEventListener("click", () => {
+      openAttendanceHistoryModal();
+    });
+  }
+
+  // 월별 필터 칩
+  document.querySelectorAll("#attendanceMonthFilterBar .attendance-filter-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll("#attendanceMonthFilterBar .attendance-filter-chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      const month = chip.dataset.month;
+      renderAttendanceHistoryList(month);
+    });
+  });
+
+  const openAbsentBtn = document.getElementById("openAbsentModalBtn");
+  if (openAbsentBtn) {
+    openAbsentBtn.addEventListener("click", () => {
+      const currentUser = getCurrentUser();
+      const isStudent = (currentRole === "student" || (currentUser && currentUser.role === "student"));
+      const nameInput = document.getElementById("absentTeacherInput");
+      if (nameInput) {
+        nameInput.value = currentUser ? currentUser.name : (isStudent ? "학생" : "선생님");
+      }
+      // 라벨 동적 변경: 학생이면 '이름', 선생님/집사이면 '성함'
+      const nameLabel = document.getElementById("absentNameLabel");
+      if (nameLabel) {
+        nameLabel.textContent = isStudent ? "이름" : "성함";
+      }
+      const memoInput = document.getElementById("absentMemoInput");
+      if (memoInput) memoInput.value = "";
+      const etaInput = document.getElementById("absentEtaInput");
+      if (etaInput) etaInput.value = "";
+      openModal("absentModal");
+    });
+  }
 
   document.getElementById("absentForm").addEventListener("submit", (e) => {
     e.preventDefault();
