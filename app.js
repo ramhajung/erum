@@ -637,6 +637,78 @@ const INITIAL_DATA = {
       phone: "010-5678-9012",
       avatar: "👧🏻",
       isAdmin: false
+    },
+    {
+      id: "u7",
+      name: "이유리 학생",
+      username: "student3",
+      password: "password",
+      role: "student_grade",
+      duty: "고3 분반 / 예배 헌금위원",
+      birthday: "2008-07-14",
+      phone: "010-9876-5432",
+      avatar: "👧🏻",
+      isAdmin: false
+    },
+    {
+      id: "u8",
+      name: "김예원 학생",
+      username: "student4",
+      password: "password",
+      role: "student_grade",
+      duty: "고2 분반 / 대표기도 섬김이",
+      birthday: "2009-10-13",
+      phone: "010-2233-4455",
+      avatar: "👧🏻",
+      isAdmin: false
+    },
+    {
+      id: "u9",
+      name: "박성준 학생",
+      username: "student5",
+      password: "password",
+      role: "student_grade",
+      duty: "고3 분반 / 수험생",
+      birthday: "2008-11-20",
+      phone: "010-5555-1234",
+      avatar: "👦🏻",
+      isAdmin: false
+    },
+    {
+      id: "u10",
+      name: "최민서 학생",
+      username: "student6",
+      password: "password",
+      role: "student_grade",
+      duty: "고2 분반 / 방송실 음향",
+      birthday: "2009-06-08",
+      phone: "010-4444-2222",
+      avatar: "👧🏻",
+      isAdmin: false
+    },
+    {
+      id: "u11",
+      name: "정도윤 학생",
+      username: "student7",
+      password: "password",
+      role: "student_grade",
+      duty: "고2 분반 / 찬양팀 베이스",
+      birthday: "2009-02-17",
+      phone: "010-3333-1111",
+      avatar: "👦🏻",
+      isAdmin: false
+    },
+    {
+      id: "u12",
+      name: "강태우 학생",
+      username: "student8",
+      password: "password",
+      role: "student_grade",
+      duty: "중등부반 / 중등부 회장",
+      birthday: "2011-05-30",
+      phone: "010-6666-7777",
+      avatar: "👦🏻",
+      isAdmin: false
     }
   ],
   currentUserId: "u1",
@@ -724,6 +796,13 @@ function loadState() {
           }
           if (u.id === "u6" || (u.role === "student" && u.duty && u.duty.includes("새친구"))) {
             u.role = "student_new";
+          }
+        });
+
+        // Ensure all registered initial youth students exist
+        INITIAL_DATA.users.forEach(initU => {
+          if (!parsed.users.some(u => u.id === initU.id || u.name === initU.name)) {
+            parsed.users.push(JSON.parse(JSON.stringify(initU)));
           }
         });
       }
@@ -1013,29 +1092,196 @@ function toggleStudentAttendance(classId, studentId) {
   }
 }
 
-function addNewStudentToClass(classId) {
-  const name = prompt("추가할 분반 학생의 이름을 입력하세요 (예: 이민호):");
-  if (!name || !name.trim()) return;
-  const roleInfo = prompt("학생의 분반/역할 정보를 입력하세요 (예: 고3 / 찬양팀):") || "학생";
+function openAddStudentToClassModal(classId) {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("전도사님만 분반 학생을 추가/배정할 수 있습니다 🔒", "warning");
+    return;
+  }
+
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  const cls = classes.find(c => c.id === classId) || classes[0];
+  if (!cls) return;
+
+  const targetClassInput = document.getElementById("addStudentTargetClassId");
+  if (targetClassInput) targetClassInput.value = cls.id;
+
+  const modalTitle = document.getElementById("addStudentClassModalTitle");
+  if (modalTitle) modalTitle.textContent = `👥 ${cls.grade} 학생 배정 및 추가`;
+
+  const selectEl = document.getElementById("addStudentSelectUser");
+  if (selectEl) {
+    selectEl.innerHTML = `<option value="">-- 회원가입된 학생 목록에서 선택 --</option>`;
+
+    // Get all registered students from appState.users
+    const registeredStudents = (appState.users || []).filter(u => 
+      isStudentRole(u.role) || (u.duty && u.duty.includes("학생")) || (u.name && u.name.includes("학생"))
+    );
+
+    // List of student names already in THIS class
+    const existingNames = new Set((cls.students || []).map(s => s.name.replace(/\s*학생$/, "").trim()));
+
+    registeredStudents.forEach(u => {
+      const cleanName = u.name.replace(/\s*학생$/, "").trim();
+      const isAlreadyIn = existingNames.has(cleanName);
+      const opt = document.createElement("option");
+      opt.value = u.id;
+      opt.dataset.name = cleanName;
+      opt.dataset.duty = u.duty || `${cls.grade} 학생`;
+      opt.dataset.avatar = u.avatar || "👦🏻";
+      opt.dataset.phone = u.phone || "010-0000-0000";
+      opt.textContent = `${cleanName} (${u.duty || '학생'})${isAlreadyIn ? ' [현재 반에 이미 배정됨]' : ''}`;
+      if (isAlreadyIn) {
+        opt.style.color = "#999";
+      }
+      selectEl.appendChild(opt);
+    });
+
+    const directOpt = document.createElement("option");
+    directOpt.value = "__DIRECT__";
+    directOpt.textContent = "✏️ 직접 이름 입력 (신규 학생)";
+    selectEl.appendChild(directOpt);
+  }
+
+  const nameInput = document.getElementById("addStudentNameInput");
+  const roleInput = document.getElementById("addStudentRoleInfoInput");
+  if (nameInput) nameInput.value = "";
+  if (roleInput) roleInput.value = "";
+
+  openModal("addStudentToClassModal");
+}
+
+function submitAddStudentToClass() {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("전도사님만 분반 학생을 추가/배정할 수 있습니다 🔒", "warning");
+    return;
+  }
+
+  const targetClassInput = document.getElementById("addStudentTargetClassId");
+  const classId = targetClassInput ? targetClassInput.value : "";
+  const nameInput = document.getElementById("addStudentNameInput");
+  const roleInput = document.getElementById("addStudentRoleInfoInput");
+  const selectEl = document.getElementById("addStudentSelectUser");
+
+  const name = nameInput ? nameInput.value.trim() : "";
+  const roleInfo = (roleInput && roleInput.value.trim()) ? roleInput.value.trim() : "분반 학생";
+
+  if (!name) {
+    showToast("⚠️ 학생 이름을 입력하거나 선택해주세요.", "warn");
+    return;
+  }
 
   const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
   const cls = classes.find(c => c.id === classId);
-  if (cls) {
-    cls.students.push({
-      id: "s_" + Date.now(),
-      name: name.trim(),
-      roleInfo: roleInfo.trim(),
-      grade: cls.grade,
-      avatar: "👦🏻",
-      attendance: "출석",
-      recentVisit: "신규 등록됨 · 첫 분반 모임 진행 예정",
-      phone: "010-0000-0000"
-    });
+  if (!cls) {
+    showToast("⚠️ 분반을 찾을 수 없습니다.", "warn");
+    return;
+  }
+
+  const cleanName = name.replace(/\s*학생$/, "").trim();
+  const exists = cls.students.some(s => s.name.replace(/\s*학생$/, "").trim() === cleanName);
+  if (exists) {
+    showToast(`⚠️ ${cleanName} 학생은 이미 ${cls.grade}에 등록되어 있습니다!`, "warn");
+    return;
+  }
+
+  let avatar = "👦🏻";
+  let phone = "010-0000-0000";
+  if (selectEl && selectEl.value && selectEl.value !== "__DIRECT__") {
+    const user = (appState.users || []).find(u => u.id === selectEl.value);
+    if (user) {
+      avatar = user.avatar || avatar;
+      phone = user.phone || phone;
+      if (user.role === "student" || user.role === "student_new") {
+        user.role = "student_grade";
+      }
+      user.duty = `${cls.grade} / ${roleInfo}`;
+    }
+  }
+
+  cls.students.push({
+    id: "s_" + Date.now(),
+    name: cleanName,
+    roleInfo: roleInfo,
+    grade: cls.grade,
+    avatar: avatar,
+    attendance: "출석",
+    recentVisit: "신규 분반 배정 완료",
+    phone: phone
+  });
+
+  saveState();
+  renderClassMinistrySection();
+  closeModal("addStudentToClassModal");
+  showToast(`🎉 ${cleanName} 학생이 ${cls.grade}에 성공적으로 배정되었습니다!`, "success");
+}
+
+function removeStudentFromClass(classId, studentId, studentName) {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("전도사님만 분반 학생을 삭제할 수 있습니다 🔒", "warning");
+    return;
+  }
+
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  const cls = classes.find(c => c.id === classId);
+  if (!cls) return;
+
+  if (!confirm(`'${studentName}' 학생을 ${cls.grade}에서 삭제하시겠습니까?`)) {
+    return;
+  }
+
+  const idx = cls.students.findIndex(s => s.id === studentId);
+  if (idx !== -1) {
+    cls.students.splice(idx, 1);
     saveState();
     renderClassMinistrySection();
-    showToast(`${name.trim()} 학생이 ${cls.grade}에 등록되었습니다! 🎉`);
+    showToast(`🗑️ ${studentName} 학생이 ${cls.grade}에서 삭제되었습니다.`, "info");
   }
 }
+
+function addNewStudentToClass(classId) {
+  openAddStudentToClassModal(classId);
+}
+
+function initAddStudentToClassEvents() {
+  const selectEl = document.getElementById("addStudentSelectUser");
+  if (selectEl) {
+    selectEl.addEventListener("change", () => {
+      const selectedOpt = selectEl.options[selectEl.selectedIndex];
+      const nameInput = document.getElementById("addStudentNameInput");
+      const roleInput = document.getElementById("addStudentRoleInfoInput");
+      if (!selectedOpt || !selectedOpt.value || selectedOpt.value === "__DIRECT__") {
+        if (nameInput) nameInput.value = "";
+        if (roleInput) roleInput.value = "";
+        return;
+      }
+      if (nameInput && selectedOpt.dataset.name) {
+        nameInput.value = selectedOpt.dataset.name;
+      }
+      if (roleInput && selectedOpt.dataset.duty) {
+        roleInput.value = selectedOpt.dataset.duty;
+      }
+    });
+  }
+
+  const form = document.getElementById("addStudentToClassForm");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitAddStudentToClass();
+    });
+  }
+}
+
+window.openAddStudentToClassModal = openAddStudentToClassModal;
+window.submitAddStudentToClass = submitAddStudentToClass;
+window.removeStudentFromClass = removeStudentFromClass;
+window.addNewStudentToClass = addNewStudentToClass;
 
 function toggleNewcomerStep(studentId, week) {
   const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
@@ -1105,6 +1351,7 @@ function renderClassMinistrySection() {
   const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
   const role = currentUser ? currentUser.role : currentRole;
   const isStudent = isStudentRole(role) || isStudentRole(currentRole);
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
   const isPastorOrDeacon = !currentUser || currentUser.role === "pastor" || currentUser.role === "deacon";
 
   containers.forEach(container => {
@@ -1177,8 +1424,8 @@ function renderClassMinistrySection() {
       <!-- 해당 분반 학생 출결 & 목양 관리 -->
       <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <span>${isStudent ? `👥 우리 분반 친구들 (${activeClass.grade})` : `👥 ${activeClass.grade} 학생 관리 & 출결`}</span>
-        ${!isStudent ? `
-          <button type="button" onclick="addNewStudentToClass('${activeClass.id}')" style="font-size:11.5px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 6px;">
+        ${isPastor ? `
+          <button type="button" onclick="openAddStudentToClassModal('${activeClass.id}')" style="font-size:11.5px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 6px;">
             ＋ 학생 추가
           </button>
         ` : ''}
@@ -1201,13 +1448,27 @@ function renderClassMinistrySection() {
                 </button>
               </div>
             `;
+          } else if (isPastor) {
+            rightActionHtml = `
+              <div style="display:flex; align-items:center; gap:5px;">
+                <button type="button" onclick="toggleStudentAttendance('${activeClass.id}', '${s.id}')" style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; border:none; cursor:pointer; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'}; transition:all 0.15s ease;">
+                  ${isAttended ? '출석 ✓' : '결석 ✕'}
+                </button>
+                <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:30px; height:30px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer;" title="1:1 톡">
+                  💬
+                </button>
+                <button type="button" onclick="removeStudentFromClass('${activeClass.id}', '${s.id}', '${s.name}')" style="width:30px; height:30px; border-radius:8px; background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; cursor:pointer; transition:all 0.15s ease;" title="분반에서 삭제">
+                  ✕
+                </button>
+              </div>
+            `;
           } else {
             rightActionHtml = `
               <div style="display:flex; align-items:center; gap:6px;">
                 <button type="button" onclick="toggleStudentAttendance('${activeClass.id}', '${s.id}')" style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; border:none; cursor:pointer; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'}; transition:all 0.15s ease;">
                   ${isAttended ? '출석 ✓' : '결석 ✕'}
                 </button>
-                <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;">
+                <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;" title="1:1 톡">
                   💬
                 </button>
               </div>
@@ -1257,13 +1518,19 @@ function renderClassMinistrySection() {
             <span>💬</span> <span>선생님께 1:1 고민 상담하기</span>
           </button>
         </div>
-      ` : `
+      ` : isPastor ? `
         <div style="display:flex; gap:8px; margin-top:16px;">
           <button class="btn-primary" style="flex:1; background:#e67e22;" onclick="openModal('visitModal')">
             <span>＋</span> <span>새 심방 일지 등록</span>
           </button>
-          <button class="btn-secondary" style="flex:1; border-color:#fad5b6; color:#9a3412; font-size:13px; font-weight:800;" onclick="addNewStudentToClass('${activeClass.id}')">
+          <button class="btn-secondary" style="flex:1; border-color:#fad5b6; color:#9a3412; font-size:13px; font-weight:800;" onclick="openAddStudentToClassModal('${activeClass.id}')">
             <span>👤</span> <span>학생 추가</span>
+          </button>
+        </div>
+      ` : `
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <button class="btn-primary" style="flex:1; background:#e67e22;" onclick="openModal('visitModal')">
+            <span>＋</span> <span>새 심방 일지 등록</span>
           </button>
         </div>
       `}
@@ -8039,6 +8306,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initFrameSwitcher();
   initClock();
   initAuthScreen();
+  initAddStudentToClassEvents();
   initPullToRefresh();
 
   renderAll();

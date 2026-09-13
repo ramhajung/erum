@@ -131,7 +131,7 @@
       }
     };
   </script>
-    <link rel="stylesheet" href="style.css?v=20260913_student_grade_tab">
+    <link rel="stylesheet" href="style.css?v=20260913_class_student_mgmt">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -2536,9 +2536,51 @@
       </div>
     </div>
 
+    <!-- Modal: 분반 학생 배정 및 추가 모달 (전도사 전용) -->
+    <div class="modal-backdrop" id="addStudentToClassModal">
+      <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title" id="addStudentClassModalTitle">👥 분반 학생 배정 및 추가</h3>
+            <p class="text-[11px] text-text-muted font-bold">회원가입된 학생 목록에서 선택하여 분반에 배정합니다 (전도사 권한 🔒)</p>
+          </div>
+          <button type="button" class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-text-muted hover:text-text-primary transition-colors" data-close="addStudentToClassModal" aria-label="닫기">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+        <form id="addStudentToClassForm" class="space-y-3.5 pt-1">
+          <input type="hidden" id="addStudentTargetClassId" value="">
+
+          <div class="form-group mb-0">
+            <label for="addStudentSelectUser">회원가입된 학생 선택 <span class="text-primary font-bold">*</span></label>
+            <select id="addStudentSelectUser" required class="w-full">
+              <!-- Populated dynamically with registered students from appState.users -->
+            </select>
+            <p class="text-[11px] text-text-muted mt-1">※ 목록에서 학생을 선택하면 이름과 분반 정보가 자동 입력됩니다.</p>
+          </div>
+
+          <div class="form-group mb-0">
+            <label for="addStudentNameInput">학생 이름 <span class="text-primary font-bold">*</span></label>
+            <input type="text" id="addStudentNameInput" placeholder="학생 이름" required>
+          </div>
+
+          <div class="form-group mb-0">
+            <label for="addStudentRoleInfoInput">분반 내 역할 / 소개</label>
+            <input type="text" id="addStudentRoleInfoInput" placeholder="예: 예랑 찬양팀 (드럼), 고3 수험생">
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" class="btn-secondary flex-1 py-3 text-sm font-bold" data-close="addStudentToClassModal">취소</button>
+            <button type="submit" class="btn-primary flex-1 py-3 text-sm font-bold">분반에 배정하기 ✓</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 
-  <script src="app.js?v=20260913_student_grade_tab"></script>
+  <script src="app.js?v=20260913_class_student_mgmt"></script>
 </body>
 </html>
 
