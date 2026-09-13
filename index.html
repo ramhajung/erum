@@ -694,47 +694,33 @@
           <div id="pastorNewcomerRoot"></div>
         </div>
 
-        <!-- 3) 학생부 서브 패널 -->
+        <!-- 3) 학생부 서브 패널 (전체 학생 명단 리스트 ↔ 상세 바텀시트 모달) -->
         <div id="panel-ministry-students" class="ministry-sub-panel" style="display:none;">
-          <!-- Student Hero Card -->
-          <div class="student-hero-card">
-            <div class="student-info-box">
-              <div class="student-avatar">👦🏻</div>
-              <div>
-                <div class="student-name">
-                  <span id="currentStudentName">양형모</span>
-                </div>
-                <div class="student-grade" id="currentStudentGrade">고3 · 예랑 찬양팀</div>
+          <!-- Top Stat & Filter Bar -->
+          <div class="p-3 bg-white border border-stone-200/70 rounded-2xl mb-3 shadow-xs">
+            <div class="flex items-center justify-between gap-2 mb-2.5">
+              <div class="flex items-center gap-1.5">
+                <span class="text-base">👥</span>
+                <h3 class="text-[14px] font-black text-stone-900 tracking-tight">청소년부 학생부 명단</h3>
+                <span id="studentsRosterCountBadge" class="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary">0명</span>
               </div>
+              <span class="text-[11px] font-bold text-stone-500">학생 터치 시 심방/기도 상세 열람</span>
             </div>
-            <div class="quick-contact-btns">
-              <button class="contact-btn" id="callBtn" title="전화걸기">📞</button>
-              <button class="contact-btn" id="msgBtn" title="문자/카톡 보내기">💬</button>
+
+            <!-- Grade Filter Pills -->
+            <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pt-1" id="studentRosterFilterBar">
+              <button type="button" class="student-roster-filter-chip active text-[12px] font-extrabold px-3 py-1 rounded-full bg-primary text-white border border-primary transition-all shadow-xs" data-grade="ALL">전체</button>
+              <button type="button" class="student-roster-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer" data-grade="고3">고3반</button>
+              <button type="button" class="student-roster-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer" data-grade="고2">고2반</button>
+              <button type="button" class="student-roster-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer" data-grade="중등부">중등부</button>
+              <button type="button" class="student-roster-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer" data-grade="새친구">새친구반 🌱</button>
             </div>
           </div>
 
-          <!-- Section 1: 최근 심방 기록 -->
-          <div class="section-label">
-            <span>1) 최근 심방 기록</span>
-            <span style="font-size:11px; font-weight:600; color:var(--accent-mint);">실시간 업데이트됨</span>
+          <!-- Students List Container -->
+          <div class="space-y-2.5 pb-6" id="studentsRosterListContainer">
+            <!-- Rendered by JS renderStudentRosterList() -->
           </div>
-          <div class="timeline-list" id="visitationList">
-            <!-- Populated by JS -->
-          </div>
-
-          <!-- Section 2: 나의 기도제목 -->
-          <div class="section-label" style="margin-top: 22px;">
-            <span>2) 나의 기도제목 💕</span>
-            <span style="font-size:11px; font-weight:600; color:var(--text-sub);">기도 시 터치</span>
-          </div>
-          <div id="prayerList">
-            <!-- Populated by JS -->
-          </div>
-
-          <!-- Action Button -->
-          <button class="btn-primary" id="openAddVisitModalBtn">
-            <span>＋</span> <span>새 심방 기록 등록</span>
-          </button>
         </div>
 
       </section>
@@ -1372,6 +1358,54 @@
          MODALS & BOTTOM SHEETS
          =================================================================== -->
 
+    <!-- Modal 0: 학생부 개별 학생 상세 바텀시트 모달 (심방 타임라인 & 기도제목 관리) -->
+    <div class="modal-backdrop" id="studentDetailModal">
+      <div class="bottom-sheet" style="max-height: 88%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="margin-bottom: 14px;">
+          <div>
+            <div class="flex items-center gap-1.5 mb-1">
+              <span id="detailModalGradeBadge" class="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10.5px] font-extrabold">고3반</span>
+              <span id="detailModalTeacherBadge" class="text-[11px] font-semibold text-stone-500">담임: 김대한 선생님</span>
+            </div>
+            <h3 class="sheet-title flex items-center gap-2 text-[18px]">
+              <span id="detailModalAvatar">👦🏻</span>
+              <span id="detailModalName">양형모</span>
+            </h3>
+            <p id="detailModalDuty" class="text-[11.5px] font-medium text-stone-500 mt-0.5">예랑 찬양팀 (드럼)</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button type="button" id="detailModalCallBtn" class="w-8 h-8 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm transition-colors cursor-pointer" title="전화걸기">📞</button>
+            <button type="button" id="detailModalMsgBtn" class="w-8 h-8 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-700 flex items-center justify-center text-sm transition-colors cursor-pointer" title="문자/카톡">💬</button>
+            <button class="sheet-close-btn" data-close="studentDetailModal">✕</button>
+          </div>
+        </div>
+
+        <!-- Section 1: 최근 심방 기록 -->
+        <div class="section-label mt-2">
+          <span>1) 최근 심방 기록</span>
+          <span style="font-size:11px; font-weight:600; color:var(--accent-mint);">실시간 업데이트</span>
+        </div>
+        <div class="timeline-list" id="detailModalVisitationList">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Section 2: 나의 기도제목 -->
+        <div class="section-label" style="margin-top: 20px;">
+          <span>2) 나의 기도제목 💕</span>
+          <span style="font-size:11px; font-weight:600; color:var(--text-sub);">기도 시 터치</span>
+        </div>
+        <div id="detailModalPrayerList" class="space-y-2">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Action Button -->
+        <button type="button" class="btn-primary w-full mt-4 py-3 text-sm font-black flex items-center justify-center gap-1.5 cursor-pointer" id="detailModalOpenAddVisitBtn">
+          <span>＋</span> <span>새 심방 기록 등록</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Modal 1: 새 심방 기록 등록 바텀시트 -->
     <div class="modal-backdrop" id="visitModal">
       <div class="bottom-sheet">
@@ -1381,9 +1415,10 @@
           <button class="sheet-close-btn" data-close="visitModal">✕</button>
         </div>
         <form id="visitForm">
+          <input type="hidden" id="visitTargetStudentId" value="">
           <div class="form-group">
             <label>대상 학생</label>
-            <input type="text" value="양형모 (고3)" readonly>
+            <input type="text" id="visitTargetStudentNameInput" value="양형모 (고3)" readonly class="bg-surface-canvas font-bold text-text-primary">
           </div>
           <div class="form-group">
             <label>심방 일자</label>
@@ -2974,7 +3009,7 @@
 
   </div>
 
-  <script src="app.js?v=20260914_remove_new_meeting_btn_v1"></script>
+  <script src="app.js?v=20260914_student_roster_v1"></script>
 </body>
 </html>
 

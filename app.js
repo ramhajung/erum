@@ -2185,98 +2185,437 @@ function renderNewcomerMinistrySection() {
   });
 }
 
-function renderStudentSection() {
-  const student = appState.student;
+// =============================================================================
+// 4. Screen 1: 학생부 전체 명단 대시보드 & 개별 심방/기도 상세 바텀시트
+// =============================================================================
 
-  // Student info
-  document.getElementById("currentStudentName").textContent = student.name;
-  document.getElementById("currentStudentGrade").textContent = student.grade;
+let currentStudentRosterFilter = "ALL";
+let currentDetailedStudentId = "s_high3_1";
+
+function ensureStudentProfileData(s, classInfo) {
+  if (s.name === "양형모") {
+    if (appState.student) {
+      if ((!s.visits || s.visits.length === 0) && appState.student.visits) s.visits = appState.student.visits;
+      if ((!s.prayers || s.prayers.length === 0) && appState.student.prayers) s.prayers = appState.student.prayers;
+    }
+  }
+
+  if (!Array.isArray(s.visits) || s.visits.length === 0) {
+    if (s.name === "이유리") {
+      s.visits = [
+        { id: 11, date: "9/8", title: "전화 심방: 헌금위원 섬김 및 학업 상담", desc: "고3 2학기 내신 및 수능 준비 격려, 헌금위원 순서 안내.", icon: "📞" }
+      ];
+    } else if (s.name === "박성준") {
+      s.visits = [
+        { id: 21, date: "9/10", title: "대면 심방: 수험생 응원 간식 전달", desc: "예랑 스카에서 자습 중 간식 전달 및 1:1 기도.", icon: "☕" }
+      ];
+    } else if (s.name === "최민서") {
+      s.visits = [
+        { id: 31, date: "9/7", title: "카톡 심방: 방송실 음향 봉사 격려", desc: "음향 세팅 섬김 감사 인사 및 2학기 내신 스트레스 상담.", icon: "💬" }
+      ];
+    } else if (s.name === "정도윤") {
+      s.visits = [
+        { id: 41, date: "9/9", title: "대면 심방: 찬양팀 베이스 파트 연습 후 교제", desc: "새 찬양곡 코드 연습 지도 및 학교 생활 나눔.", icon: "🎸" }
+      ];
+    } else if (s.name === "김하람") {
+      s.visits = [
+        { id: 51, date: "9/6", title: "카톡 심방: 중등부 정착 축하", desc: "새친구 수료 후 중등부 공과반 첫 주 적응 소감 나눔.", icon: "💬" }
+      ];
+    } else if (s.name === "강태우") {
+      s.visits = [
+        { id: 61, date: "9/11", title: "대면 심방: 중등부 학생 임원 회의", desc: "친구초청 토요예배 레크리에이션 게임 아이디어 협의.", icon: "☕" }
+      ];
+    } else if (s.name === "한민준") {
+      s.visits = [
+        { id: 71, date: "9/4", title: "카톡 심방: 웰컴 키트 선물 확인", desc: "교회 첫 방문 감사 인사 및 다음 주 토요예배 기대 나눔.", icon: "💬" }
+      ];
+    } else {
+      s.visits = [
+        { id: Date.now() + Math.floor(Math.random()*100), date: "9/3", title: "정기 심방: 안부 및 학업 상담", desc: "신앙생활 격려 및 분반 공과 나눔.", icon: "💬" }
+      ];
+    }
+  }
+
+  if (!Array.isArray(s.prayers) || s.prayers.length === 0) {
+    if (s.name === "이유리") {
+      s.prayers = [
+        { id: 11, text: "지혜로운 시간 관리와 수능 집중력", count: 15, prayed: false },
+        { id: 12, text: "믿음의 대학 진학 및 평안한 마음", count: 20, prayed: true }
+      ];
+    } else if (s.name === "박성준") {
+      s.prayers = [
+        { id: 21, text: "수능 당일까지 영육의 건강과 평안", count: 12, prayed: false },
+        { id: 22, text: "수시 면접 가운데 담대한 믿음", count: 18, prayed: true }
+      ];
+    } else if (s.name === "최민서") {
+      s.prayers = [
+        { id: 31, text: "예배 방송실 충성된 섬김과 학업 병행", count: 9, prayed: false },
+        { id: 32, text: "가족들과의 사랑 넘치는 대화", count: 14, prayed: true }
+      ];
+    } else if (s.name === "정도윤") {
+      s.prayers = [
+        { id: 41, text: "찬양팀 베이스 연주를 통한 은혜 통로", count: 14, prayed: false },
+        { id: 42, text: "좋은 믿음의 친구들과의 교제", count: 11, prayed: true }
+      ];
+    } else if (s.name === "김하람") {
+      s.prayers = [
+        { id: 51, text: "중등부 친구들과의 친밀한 교제", count: 16, prayed: true },
+        { id: 52, text: "매주 토요예배 사모하는 마음", count: 21, prayed: false }
+      ];
+    } else if (s.name === "강태우") {
+      s.prayers = [
+        { id: 61, text: "중등부 회장으로서 본이 되는 리더십", count: 22, prayed: true },
+        { id: 62, text: "친구초청예배를 통한 전도의 열매", count: 19, prayed: false }
+      ];
+    } else if (s.name === "한민준") {
+      s.prayers = [
+        { id: 71, text: "교회 처음인데 친구들과 잘 어울리고 정착하도록", count: 28, prayed: true }
+      ];
+    } else {
+      s.prayers = [
+        { id: Date.now() + Math.floor(Math.random()*100), text: "날마다 하나님과 동행하는 삶", count: 10, prayed: false }
+      ];
+    }
+  }
+}
+
+function getAllStudentsRoster() {
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  const newcomerData = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+  const list = [];
+
+  classes.forEach(c => {
+    (c.students || []).forEach(s => {
+      ensureStudentProfileData(s, c);
+      list.push({
+        ...s,
+        classId: c.id,
+        className: c.grade,
+        teacherName: c.teacherName,
+        isNewcomer: false
+      });
+    });
+  });
+
+  (newcomerData.students || []).forEach(ns => {
+    if (!list.some(s => s.name === ns.name)) {
+      ensureStudentProfileData(ns, { grade: "새친구반", teacherName: ns.mentorName || "소예진 선생님", id: "class_newcomer" });
+      list.push({
+        ...ns,
+        classId: "class_newcomer",
+        className: "새친구반 🌱",
+        teacherName: ns.mentorName || "소예진 선생님",
+        roleInfo: ns.interests ? `관심사: ${ns.interests}` : "새친구반 등반 중",
+        phone: ns.phone || "010-7111-2345",
+        isNewcomer: true
+      });
+    }
+  });
+
+  return list;
+}
+
+function makePhoneCall(phone, name) {
+  const cleanPhone = phone || "010-0000-0000";
+  showToast(`${name} 학생(${cleanPhone})에게 전화를 연결합니다 📞`, "info");
+}
+
+function sendKakaoMessage(name) {
+  showToast(`${name} 학생에게 1:1 심방 톡을 보냅니다 💬`, "info");
+}
+
+function incrementPrayerCount(studentId, prayerId) {
+  const all = getAllStudentsRoster();
+  const s = all.find(st => st.id === studentId);
+  if (!s || !Array.isArray(s.prayers)) return;
+  const p = s.prayers.find(pr => pr.id === prayerId);
+  if (!p) return;
+  p.count = (p.count || 0) + 1;
+  p.prayed = true;
+
+  if (s.name === "양형모" && appState.student && appState.student.prayers) {
+    const origP = appState.student.prayers.find(pr => pr.id === prayerId);
+    if (origP) origP.count = p.count;
+  }
+
+  saveState();
+  openStudentDetailModal(studentId);
+  renderStudentRosterList();
+  showToast(`'${p.text}' 기도에 함께 동참했습니다! 🙏`);
+}
+
+function openStudentDetailModal(studentId) {
+  const all = getAllStudentsRoster();
+  const s = all.find(st => st.id === studentId) || all[0];
+  if (!s) return;
+
+  currentDetailedStudentId = s.id;
+
+  const gradeBadge = document.getElementById("detailModalGradeBadge");
+  const teacherBadge = document.getElementById("detailModalTeacherBadge");
+  const avatar = document.getElementById("detailModalAvatar");
+  const name = document.getElementById("detailModalName");
+  const duty = document.getElementById("detailModalDuty");
+  const callBtn = document.getElementById("detailModalCallBtn");
+  const msgBtn = document.getElementById("detailModalMsgBtn");
+  const visitListEl = document.getElementById("detailModalVisitationList");
+  const prayerListEl = document.getElementById("detailModalPrayerList");
+  const addVisitBtn = document.getElementById("detailModalOpenAddVisitBtn");
+
+  if (gradeBadge) gradeBadge.textContent = s.className || s.grade;
+  if (teacherBadge) teacherBadge.textContent = `담당: ${s.teacherName || '교역자'}`;
+  if (avatar) avatar.textContent = s.avatar || '👦🏻';
+  if (name) name.textContent = s.name;
+  if (duty) duty.textContent = s.roleInfo || s.duty || `${s.grade} 학생`;
+
+  if (callBtn) {
+    callBtn.onclick = () => makePhoneCall(s.phone, s.name);
+  }
+  if (msgBtn) {
+    msgBtn.onclick = () => sendKakaoMessage(s.name);
+  }
 
   // Render Visits
-  const visitListEl = document.getElementById("visitationList");
-  visitListEl.innerHTML = "";
-
-  student.visits.forEach(item => {
-    const el = document.createElement("div");
-    el.className = "timeline-item";
-    el.innerHTML = `
-      <div class="date-badge">${item.date}</div>
-      <div class="timeline-content">
-        <div class="timeline-title">${item.title}</div>
-        <div class="timeline-desc">${item.desc}</div>
-      </div>
-      <div class="timeline-icon-btn">${item.icon}</div>
-    `;
-    visitListEl.appendChild(el);
-  });
+  if (visitListEl) {
+    visitListEl.innerHTML = "";
+    const visits = s.visits || [];
+    if (visits.length === 0) {
+      visitListEl.innerHTML = `
+        <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:12.5px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+          등록된 심방 기록이 없습니다.
+        </div>
+      `;
+    } else {
+      visits.forEach(item => {
+        const el = document.createElement("div");
+        el.className = "timeline-item";
+        el.innerHTML = `
+          <div class="date-badge">${item.date}</div>
+          <div class="timeline-content">
+            <div class="timeline-title">${item.title}</div>
+            <div class="timeline-desc">${item.desc}</div>
+          </div>
+          <div class="timeline-icon-btn">${item.icon || '💬'}</div>
+        `;
+        visitListEl.appendChild(el);
+      });
+    }
+  }
 
   // Render Prayers
-  const prayerListEl = document.getElementById("prayerList");
-  prayerListEl.innerHTML = "";
+  if (prayerListEl) {
+    prayerListEl.innerHTML = "";
+    const prayers = s.prayers || [];
+    if (prayers.length === 0) {
+      prayerListEl.innerHTML = `
+        <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:12.5px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+          등록된 기도제목이 없습니다.
+        </div>
+      `;
+    } else {
+      prayers.forEach(prayer => {
+        const el = document.createElement("div");
+        el.className = "prayer-card";
+        el.innerHTML = `
+          <div class="prayer-left">
+            <div class="prayer-heart-icon">♥</div>
+            <span>${prayer.text}</span>
+          </div>
+          <div class="prayer-hands" title="기도 동참하기">
+            🙏 <span style="font-size:12px; font-weight:800; color:#5c4e44;">${prayer.count || 0}</span>
+          </div>
+        `;
+        const handsBtn = el.querySelector(".prayer-hands");
+        if (handsBtn) {
+          handsBtn.onclick = (e) => {
+            e.stopPropagation();
+            incrementPrayerCount(s.id, prayer.id);
+          };
+        }
+        prayerListEl.appendChild(el);
+      });
+    }
+  }
 
-  student.prayers.forEach((prayer, idx) => {
-    const el = document.createElement("div");
-    el.className = "prayer-card";
-    el.innerHTML = `
-      <div class="prayer-left">
-        <div class="prayer-heart-icon">♥</div>
-        <span>${prayer.text}</span>
-      </div>
-      <div class="prayer-hands" title="기도 동참하기" data-prayer-id="${prayer.id}">
-        🙏 <span style="font-size:12px; font-weight:800; color:#5c4e44;">${prayer.count}</span>
+  if (addVisitBtn) {
+    addVisitBtn.onclick = () => {
+      const targetNameInput = document.getElementById("visitTargetStudentNameInput");
+      const targetIdInput = document.getElementById("visitTargetStudentId");
+      if (targetNameInput) targetNameInput.value = `${s.name} (${s.className || s.grade})`;
+      if (targetIdInput) targetIdInput.value = s.id;
+      openModal("visitModal");
+    };
+  }
+
+  openModal("studentDetailModal");
+}
+
+function renderStudentRosterList(filterGrade = currentStudentRosterFilter) {
+  currentStudentRosterFilter = filterGrade;
+  const listContainer = document.getElementById("studentsRosterListContainer");
+  const countBadge = document.getElementById("studentsRosterCountBadge");
+  if (!listContainer) return;
+
+  const allStudents = getAllStudentsRoster();
+
+  // Filter chips active state
+  document.querySelectorAll("#studentRosterFilterBar .student-roster-filter-chip").forEach(chip => {
+    const grade = chip.dataset.grade;
+    if (grade === filterGrade) {
+      chip.className = "student-roster-filter-chip active text-[12px] font-extrabold px-3 py-1 rounded-full bg-primary text-white border border-primary transition-all shadow-xs";
+    } else {
+      chip.className = "student-roster-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer";
+    }
+  });
+
+  const filtered = filterGrade === "ALL" 
+    ? allStudents 
+    : allStudents.filter(s => {
+        if (filterGrade === "새친구") return s.isNewcomer || s.className.includes("새친구");
+        return s.grade.includes(filterGrade) || s.className.includes(filterGrade);
+      });
+
+  if (countBadge) {
+    countBadge.textContent = `${filtered.length}명`;
+  }
+
+  if (filtered.length === 0) {
+    listContainer.innerHTML = `
+      <div class="py-12 text-center text-stone-400 bg-white rounded-2xl border border-stone-200/60">
+        <span class="text-2xl block mb-1">🔍</span>
+        <p class="text-xs font-bold text-stone-600">해당 학년의 학생이 없습니다.</p>
       </div>
     `;
+    return;
+  }
 
-    // Click on prayer hands
-    const handsBtn = el.querySelector(".prayer-hands");
-    handsBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      prayer.count += 1;
-      saveState();
-      renderStudentSection();
-      showToast(`'${prayer.text}' 기도에 함께 동참했습니다! 🙏`);
-    });
+  listContainer.innerHTML = filtered.map(s => {
+    const latestVisit = (s.visits && s.visits[0]) ? s.visits[0] : null;
+    const prayersCount = (s.prayers || []).length;
+    const dutyText = s.roleInfo || s.duty || `${s.grade} 학생`;
 
-    prayerListEl.appendChild(el);
-  });
+    return `
+      <div class="student-roster-card bg-white border border-stone-200/70 hover:border-primary/40 rounded-2xl p-3.5 shadow-xs transition-all active:scale-[0.99] cursor-pointer" onclick="openStudentDetailModal('${s.id}')">
+        <div class="flex items-start justify-between gap-2.5">
+          <!-- Left: Avatar & Info -->
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-11 h-11 rounded-2xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-2xl flex-shrink-0 shadow-xs">
+              ${s.avatar || '👦🏻'}
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[14.5px] font-black text-stone-900 tracking-tight">${s.name}</span>
+                <span class="text-[10.5px] font-extrabold px-1.5 py-0.5 rounded-md ${s.isNewcomer ? 'bg-emerald-100 text-emerald-800' : 'bg-primary/10 text-primary'}">
+                  ${s.className || s.grade}
+                </span>
+                ${s.attendance === '출석' ? '<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">출석</span>' : ''}
+              </div>
+              <div class="text-[11.5px] font-medium text-stone-500 truncate mt-0.5">
+                ${dutyText}
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Quick actions -->
+          <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+            <button type="button" class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm transition-colors cursor-pointer" onclick="makePhoneCall('${s.phone}', '${s.name}')" title="전화걸기">
+              📞
+            </button>
+            <button type="button" class="w-8 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 flex items-center justify-center text-sm transition-colors cursor-pointer" onclick="sendKakaoMessage('${s.name}')" title="카톡/문자">
+              💬
+            </button>
+          </div>
+        </div>
+
+        <!-- Card Footer: Recent Visit & Prayers preview -->
+        <div class="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500 gap-2">
+          <div class="flex items-center gap-1.5 min-w-0 truncate">
+            <span class="text-stone-400">최근 심방:</span>
+            <span class="font-bold text-stone-700 truncate">
+              ${latestVisit ? `${latestVisit.icon || '💬'} ${latestVisit.date} ${latestVisit.title}` : (s.recentVisit || '등록된 심방 없음')}
+            </span>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0 text-stone-400">
+            <span class="font-bold text-stone-600">🙏 기도 ${prayersCount}건</span>
+            <span class="text-primary font-bold text-[11.5px]">상세보기 →</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderStudentSection() {
+  renderStudentRosterList();
 }
 
 function initStudentEvents() {
-  // Call / Message quick contact buttons
-  document.getElementById("callBtn").addEventListener("click", () => {
-    showToast(`양형모 학생(${appState.student.phone})에게 전화를 연결합니다 📞`, "info");
+  // Filter chips in Roster
+  document.querySelectorAll("#studentRosterFilterBar .student-roster-filter-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const grade = chip.dataset.grade || "ALL";
+      renderStudentRosterList(grade);
+    });
   });
 
-  document.getElementById("msgBtn").addEventListener("click", () => {
-    showToast("카카오톡 학생 심방 대화방을 엽니다 💬", "info");
-  });
+  // Visit Form submit
+  const visitForm = document.getElementById("visitForm");
+  if (visitForm) {
+    visitForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const targetStudentId = document.getElementById("visitTargetStudentId").value || currentDetailedStudentId;
+      const date = document.getElementById("visitDateInput").value;
+      const type = document.getElementById("visitTypeInput").value;
+      const content = document.getElementById("visitContentInput").value;
 
-  // Add Visit Form
-  document.getElementById("openAddVisitModalBtn").addEventListener("click", () => {
-    openModal("visitModal");
-  });
+      const newVisit = {
+        id: Date.now(),
+        date: date || "오늘",
+        title: `${type}: ${content.slice(0, 20)}...`,
+        desc: content,
+        icon: type.includes("카톡") ? "💬" : type.includes("전화") ? "📞" : type.includes("기타") ? "🎸" : "☕"
+      };
 
-  document.getElementById("visitForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const date = document.getElementById("visitDateInput").value;
-    const type = document.getElementById("visitTypeInput").value;
-    const content = document.getElementById("visitContentInput").value;
+      const all = getAllStudentsRoster();
+      const targetStudent = all.find(st => st.id === targetStudentId);
 
-    const newVisit = {
-      id: Date.now(),
-      date: date || "오늘",
-      title: `${type}: ${content.slice(0, 20)}...`,
-      desc: content,
-      icon: type.includes("카톡") ? "💬" : type.includes("전화") ? "📞" : "☕"
-    };
+      if (targetStudent) {
+        if (!Array.isArray(targetStudent.visits)) {
+          targetStudent.visits = [];
+        }
+        targetStudent.visits.unshift(newVisit);
+        targetStudent.recentVisit = `${newVisit.date} ${newVisit.title}`;
 
-    appState.student.visits.unshift(newVisit);
-    saveState();
-    renderStudentSection();
-    closeModal("visitModal");
-    showToast("새 심방 기록이 정상 등록되었습니다! ✨");
-  });
+        // Also sync in gradeClasses or newcomerMinistry
+        const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+        classes.forEach(c => {
+          const fs = (c.students || []).find(s => s.id === targetStudentId);
+          if (fs) {
+            if (!Array.isArray(fs.visits)) fs.visits = [];
+            fs.visits.unshift(newVisit);
+            fs.recentVisit = targetStudent.recentVisit;
+          }
+        });
+
+        if (targetStudent.name === "양형모" && appState.student) {
+          if (!Array.isArray(appState.student.visits)) appState.student.visits = [];
+          appState.student.visits.unshift(newVisit);
+        }
+
+        saveState();
+        closeModal("visitModal");
+        openStudentDetailModal(targetStudent.id);
+        renderStudentRosterList();
+        showToast(`🎉 ${targetStudent.name} 학생의 새 심방 기록이 등록되었습니다! ✨`);
+      }
+    });
+  }
 }
+
+window.openStudentDetailModal = openStudentDetailModal;
+window.makePhoneCall = makePhoneCall;
+window.sendKakaoMessage = sendKakaoMessage;
+window.incrementPrayerCount = incrementPrayerCount;
 
 function isAgendaAuthor(item, user) {
   if (!item || !user) return false;
