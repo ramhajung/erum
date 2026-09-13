@@ -1570,6 +1570,13 @@ window.removeStudentFromClass = removeStudentFromClass;
 window.addNewStudentToClass = addNewStudentToClass;
 
 function openTransferStudentModal(fromClassId, studentId) {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("⚠️ 분반 이동은 전도사님 고유 권한입니다 🔒", "warning");
+    return;
+  }
+
   const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
   const sourceClass = classes.find(c => c.id === fromClassId);
   if (!sourceClass) {
@@ -1614,6 +1621,13 @@ function initTransferStudentEvents() {
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+      if (!isPastor) {
+        showToast("⚠️ 분반 이동은 전도사님 고유 권한입니다 🔒", "warning");
+        return;
+      }
+
       const fromClassId = document.getElementById("transferFromClassId").value;
       const studentId = document.getElementById("transferStudentId").value;
       const targetSelect = document.getElementById("transferTargetClassSelect");
@@ -1910,9 +1924,6 @@ function renderClassMinistrySection() {
                 </button>
                 <button class="timeline-icon-btn" onclick="showToast('${s.name} 학생에게 1:1 응원 톡을 보냅니다 💬', 'info')" style="width:30px; height:30px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer;" title="1:1 톡">
                   💬
-                </button>
-                <button type="button" onclick="openTransferStudentModal('${activeClass.id}', '${s.id}')" style="width:30px; height:30px; border-radius:8px; background:#eff6ff; border:1px solid #bfdbfe; color:#2563eb; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:bold; cursor:pointer; transition:all 0.15s ease;" title="다른 분반으로 이동">
-                  ⇄
                 </button>
               </div>
             `;
