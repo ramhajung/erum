@@ -841,7 +841,13 @@ const INITIAL_DATA = {
     }
   ],
   currentUserId: "u1",
-  isAuthenticated: false
+  isAuthenticated: false,
+  viewAsState: {
+    isActive: false,
+    viewRole: null,
+    targetUserId: null,
+    adminUserId: "u1"
+  }
 };
 
 // State storage
@@ -852,6 +858,14 @@ function loadState() {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
+      if (!parsed.viewAsState) {
+        parsed.viewAsState = {
+          isActive: false,
+          viewRole: null,
+          targetUserId: null,
+          adminUserId: "u1"
+        };
+      }
       if (!parsed.users || parsed.users.length === 0) {
         parsed.users = JSON.parse(JSON.stringify(INITIAL_DATA.users));
       } else {
@@ -4799,6 +4813,224 @@ function getCurrentUser() {
   return user || appState.users[0];
 }
 
+function isViewAsMode() {
+  return !!(appState.viewAsState && appState.viewAsState.isActive);
+}
+
+function startViewAs(roleKey, targetUserId = null) {
+  // Find fallback target user if not specified
+  if (!targetUserId) {
+    const user = appState.users.find(u => u.role === roleKey);
+    if (user) targetUserId = user.id;
+  }
+
+  const currentUser = getCurrentUser();
+  const adminId = (currentUser && (currentUser.role === "pastor" || currentUser.isAdmin))
+    ? currentUser.id
+    : (appState.viewAsState?.adminUserId || "u1");
+
+  appState.viewAsState = {
+    isActive: true,
+    viewRole: roleKey,
+    targetUserId: targetUserId,
+    adminUserId: adminId
+  };
+
+  if (targetUserId) {
+    appState.currentUserId = targetUserId;
+  }
+  saveState();
+
+  switchMasterRole(roleKey, false);
+  renderUserHeaderBar();
+  renderViewAsBanner();
+  renderUserSwitchGrid();
+
+  closeModal("viewAsRoleModal");
+  closeModal("userSwitchModal");
+
+  const targetUser = targetUserId ? appState.users.find(u => u.id === targetUserId) : null;
+  const targetName = targetUser ? `${targetUser.name}` : (ROLE_NAMES[roleKey] || roleKey);
+  showToast(`👁️ '${targetName}' (${ROLE_NAMES[roleKey] || roleKey}) 시점 시뮬레이션을 시작합니다!`, "info");
+}
+
+function exitViewAs() {
+  const adminId = appState.viewAsState?.adminUserId || "u1";
+  appState.viewAsState = {
+    isActive: false,
+    viewRole: null,
+    targetUserId: null,
+    adminUserId: adminId
+  };
+  appState.currentUserId = adminId;
+  saveState();
+
+  switchMasterRole("pastor", false);
+  renderUserHeaderBar();
+  renderViewAsBanner();
+  renderUserSwitchGrid();
+
+  closeModal("viewAsRoleModal");
+  showToast("✝️ 전도사(총괄 관리자) 본래 계정으로 복귀하였습니다.", "success");
+}
+
+function renderViewAsBanner() {
+  const banner = document.getElementById("viewAsTopBanner");
+  if (!banner) return;
+
+  if (isViewAsMode()) {
+    banner.classList.remove("hidden");
+    const roleTextEl = document.getElementById("viewAsRoleNameText");
+    if (roleTextEl) {
+      const user = getCurrentUser();
+      const roleTitle = ROLE_NAMES[appState.viewAsState.viewRole] || ROLE_NAMES[currentRole] || "역할";
+      roleTextEl.textContent = `${roleTitle} (${user.name}) 시점 열람 중`;
+    }
+  } else {
+    banner.classList.add("hidden");
+  }
+}
+
+function renderViewAsRoleModal() {
+  const container = document.getElementById("viewAsRoleCardContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const rolesList = [
+    {
+      roleKey: "student_grade",
+      title: "공과반 학생 시점",
+      icon: "👦🏻",
+      badge: "공과반 학생",
+      badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      fallbackUserId: "u5",
+      tabs: ["홈", "공과반", "캘린더", "1:1상담"],
+      desc: "홈 대시보드, 나의 분반 성경공부/기도제목, 1:1 심방 신청 포털",
+      borderHover: "hover:border-emerald-300"
+    },
+    {
+      roleKey: "student_new",
+      title: "새친구반 학생 시점",
+      icon: "🌱",
+      badge: "새친구반 학생",
+      badgeClass: "bg-teal-50 text-teal-700 border-teal-200",
+      fallbackUserId: "u6",
+      tabs: ["홈", "새친구", "캘린더", "1:1상담"],
+      desc: "새친구 환영 대시보드, 4주 정착 양육 현황 및 달란트 스탬프 포털",
+      borderHover: "hover:border-teal-300"
+    },
+    {
+      roleKey: "teacher_grade",
+      title: "공과반 담임 교사 시점",
+      icon: "🧑🏻‍🏫",
+      badge: "공과반 담임",
+      badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200",
+      fallbackUserId: "u3",
+      tabs: ["홈", "회의", "스케줄", "재정"],
+      desc: "사역자 회의 안건 제안, 담당 분반 출석부 & 학생 심방 일지 관리",
+      borderHover: "hover:border-indigo-300"
+    },
+    {
+      roleKey: "teacher_new",
+      title: "새친구반 전담 교사 시점",
+      icon: "👩🏻‍🏫",
+      badge: "새친구반 담임",
+      badgeClass: "bg-rose-50 text-rose-700 border-rose-200",
+      fallbackUserId: "u4",
+      tabs: ["홈", "회의", "스케줄", "재정"],
+      desc: "새친구 등록 및 4주 정착 커리큘럼 양육/심방 관리",
+      borderHover: "hover:border-rose-300"
+    },
+    {
+      roleKey: "deacon",
+      title: "부장집사님 시점",
+      icon: "👔",
+      badge: "부장집사",
+      badgeClass: "bg-amber-50 text-amber-700 border-amber-200",
+      fallbackUserId: null,
+      tabs: ["홈", "회의", "스케줄", "재정"],
+      desc: "청소년부 사역 지도, 회의 안건 전체 열람/의결, 전체 분반 현황 열람",
+      borderHover: "hover:border-amber-300"
+    },
+    {
+      roleKey: "accountant",
+      title: "회계 선생님 시점",
+      icon: "💼",
+      badge: "재정/회계",
+      badgeClass: "bg-sky-50 text-sky-700 border-sky-200",
+      fallbackUserId: "u2",
+      tabs: ["홈", "회의", "스케줄", "재정"],
+      desc: "재정 출납 장부 마스터 권한, 결산서 작성, 지출결의/영수증 승인",
+      borderHover: "hover:border-sky-300"
+    }
+  ];
+
+  const inViewAs = isViewAsMode();
+  const currentViewRole = inViewAs ? appState.viewAsState.viewRole : (currentRole === "pastor" ? null : currentRole);
+
+  rolesList.forEach(item => {
+    let targetUser = null;
+    if (item.fallbackUserId) {
+      targetUser = appState.users.find(u => u.id === item.fallbackUserId);
+    }
+    if (!targetUser) {
+      targetUser = appState.users.find(u => u.role === item.roleKey);
+    }
+
+    const isActive = (currentViewRole === item.roleKey);
+    const targetUserId = targetUser ? targetUser.id : item.fallbackUserId;
+    const targetUserName = targetUser ? `${targetUser.name} (${targetUser.duty || ""})` : "시뮬레이션 전용 권한";
+
+    const card = document.createElement("div");
+    card.className = `p-3.5 rounded-2xl border transition-all cursor-pointer bg-white ${
+      isActive 
+        ? "border-amber-500 ring-2 ring-amber-400 bg-amber-50/40 shadow-sm" 
+        : `border-gray-200/80 ${item.borderHover} hover:shadow-sm active:scale-98`
+    }`;
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-[20px] shrink-0 shadow-inner">
+            ${item.icon}
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="font-extrabold text-[13.5px] text-gray-900 leading-tight">${item.title}</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${item.badgeClass}">${item.badge}</span>
+              ${isActive ? '<span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500 text-white shadow-xs">현재 열람 중 ✓</span>' : ''}
+            </div>
+            <div class="text-[11px] text-gray-500 mt-0.5 truncate">
+              시뮬레이션 대상: <strong class="text-gray-700">${targetUserName}</strong>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="shrink-0 px-2.5 py-1.5 rounded-lg text-[11.5px] font-bold transition-all ${
+          isActive 
+            ? "bg-amber-500 text-white cursor-default" 
+            : "bg-gray-100 hover:bg-primary hover:text-white text-gray-700"
+        }">
+          ${isActive ? "열람 중" : "시점 전환"}
+        </button>
+      </div>
+
+      <div class="mt-2.5 pt-2 border-t border-gray-100 text-[11px] text-gray-600 flex flex-col gap-1.5">
+        <div>${item.desc}</div>
+        <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400 flex-wrap">
+          <span>하단 탭 바:</span>
+          ${item.tabs.map(t => `<span class="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700 font-semibold">${t}</span>`).join(" ")}
+        </div>
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      startViewAs(item.roleKey, targetUserId);
+    });
+
+    container.appendChild(card);
+  });
+}
+
 function renderUserHeaderBar() {
   const user = getCurrentUser();
   const avatarEl = document.getElementById("userHeaderAvatar");
@@ -4814,6 +5046,8 @@ function renderUserHeaderBar() {
   if (adminBanner) {
     adminBanner.style.display = (currentRole === "pastor") ? "flex" : "none";
   }
+
+  renderViewAsBanner();
 }
 
 function renderUserSwitchGrid() {
@@ -4821,6 +5055,57 @@ function renderUserSwitchGrid() {
   if (!container) return;
   container.innerHTML = "";
 
+  const currentUser = getCurrentUser();
+  const isPastor = (currentRole === "pastor" || (currentUser && currentUser.role === "pastor") || (currentUser && currentUser.isAdmin));
+  const inViewAs = isViewAsMode();
+  const canSwitch = isPastor || inViewAs;
+
+  // View-As banner in userSwitchModal
+  const viewAsModalBannerBox = document.getElementById("viewAsModalBannerBox");
+  if (viewAsModalBannerBox) {
+    viewAsModalBannerBox.style.display = canSwitch ? "flex" : "none";
+  }
+
+  // Security Check: If normal user (not pastor and not in View-As mode)
+  if (!canSwitch) {
+    const notice = document.createElement("div");
+    notice.className = "col-span-2 p-3.5 mb-2 rounded-xl bg-amber-50/70 border border-amber-200/80 text-[12px] text-amber-900 leading-relaxed";
+    notice.innerHTML = `
+      <div class="flex items-center gap-1.5 font-extrabold text-amber-950 mb-1">
+        <span class="material-symbols-outlined text-[17px] text-amber-700">lock</span>
+        <span>사용자 계정 보안 안내</span>
+      </div>
+      현재 <strong>${currentUser.name} (${ROLE_NAMES[currentUser.role] || currentUser.duty || ""})</strong> 계정으로 로그인되어 있습니다.<br>
+      <span class="text-amber-800 text-[11px]">다른 역할 화면 둘러보기(View-As) 및 계정 전환은 총괄 관리자(전도사) 전용 기능입니다.</span>
+    `;
+    container.appendChild(notice);
+
+    // Render only the current user's profile card
+    const card = document.createElement("div");
+    card.className = "col-span-2 user-switch-card active-user";
+    card.innerHTML = `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="user-mgmt-avatar">${currentUser.avatar || "👤"}</div>
+        <div>
+          <div style="font-size:13.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+            <span>${currentUser.name}</span>
+            ${ROLE_BADGES[currentUser.role] || ""}
+          </div>
+          <div class="user-mgmt-duty">${currentUser.duty || ""}</div>
+          <div style="font-size:11px; color:#888; display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
+            <span>📞 ${currentUser.phone || "-"}</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span style="font-size:12px; font-weight:700; color:var(--primary); padding:6px 10px; background:#f0e8fc; border-radius:8px;">접속중 ✓</span>
+      </div>
+    `;
+    container.appendChild(card);
+    return;
+  }
+
+  // Pastor or View-As mode: allow switching
   const activeUsers = appState.users.filter(u => !u.isPending);
 
   activeUsers.forEach(user => {
@@ -4845,7 +5130,7 @@ function renderUserSwitchGrid() {
       <div>
         ${isCurrent 
           ? '<span style="font-size:12px; font-weight:700; color:var(--primary); padding:6px 10px; background:#f0e8fc; border-radius:8px;">접속중 ✓</span>' 
-          : `<button class="btn-secondary switch-to-user-btn" style="padding:6px 12px; font-size:12px;" data-user-id="${user.id}">전환하기</button>`
+          : `<button class="btn-secondary switch-to-user-btn" style="padding:6px 12px; font-size:12px;" data-user-id="${user.id}">${user.role === "pastor" ? "복귀하기" : "시점 전환"}</button>`
         }
       </div>
     `;
@@ -4853,7 +5138,11 @@ function renderUserSwitchGrid() {
     const btn = card.querySelector(".switch-to-user-btn");
     if (btn) {
       btn.addEventListener("click", () => {
-        switchCurrentUser(user.id);
+        if (user.role === "pastor") {
+          exitViewAs();
+        } else {
+          startViewAs(user.role, user.id);
+        }
       });
     }
 
@@ -5429,6 +5718,46 @@ function renderRoleTabBar(roleConfig) {
 }
 
 function initUserManagementEvents() {
+  // View-As Simulator Triggers
+  const openViewAsBannerBtn = document.getElementById("openViewAsBannerBtn");
+  if (openViewAsBannerBtn) {
+    openViewAsBannerBtn.addEventListener("click", () => {
+      renderViewAsRoleModal();
+      openModal("viewAsRoleModal");
+    });
+  }
+
+  const openViewAsModalBtn = document.getElementById("openViewAsModalBtn");
+  if (openViewAsModalBtn) {
+    openViewAsModalBtn.addEventListener("click", () => {
+      closeModal("userSwitchModal");
+      renderViewAsRoleModal();
+      openModal("viewAsRoleModal");
+    });
+  }
+
+  const viewAsChangeRoleBtn = document.getElementById("viewAsChangeRoleBtn");
+  if (viewAsChangeRoleBtn) {
+    viewAsChangeRoleBtn.addEventListener("click", () => {
+      renderViewAsRoleModal();
+      openModal("viewAsRoleModal");
+    });
+  }
+
+  const viewAsExitBtn = document.getElementById("viewAsExitBtn");
+  if (viewAsExitBtn) {
+    viewAsExitBtn.addEventListener("click", () => {
+      exitViewAs();
+    });
+  }
+
+  const viewAsModalRestoreAdminBtn = document.getElementById("viewAsModalRestoreAdminBtn");
+  if (viewAsModalRestoreAdminBtn) {
+    viewAsModalRestoreAdminBtn.addEventListener("click", () => {
+      exitViewAs();
+    });
+  }
+
   // Open User Switch Modal
   const openSwitchBtn = document.getElementById("openUserSwitchModalBtn");
   if (openSwitchBtn) {
@@ -8247,6 +8576,14 @@ function loginUser(userId) {
 
   appState.currentUserId = userId;
   appState.isAuthenticated = true;
+  if (appState.viewAsState) {
+    appState.viewAsState.isActive = false;
+    appState.viewAsState.viewRole = null;
+    appState.viewAsState.targetUserId = null;
+    if (user.role === "pastor" || user.isAdmin) {
+      appState.viewAsState.adminUserId = user.id;
+    }
+  }
   saveState();
 
   switchMasterRole(user.role, false);
@@ -8264,6 +8601,11 @@ function loginUser(userId) {
 
 function logoutUser() {
   appState.isAuthenticated = false;
+  if (appState.viewAsState) {
+    appState.viewAsState.isActive = false;
+    appState.viewAsState.viewRole = null;
+    appState.viewAsState.targetUserId = null;
+  }
   saveState();
 
   const authScreen = document.getElementById("authGateScreen");
@@ -8273,6 +8615,7 @@ function logoutUser() {
 
   populateLoginUserSelect();
   closeModal("userSwitchModal");
+  closeModal("viewAsRoleModal");
   showToast("🚪 로그아웃되었습니다. 다시 로그인해주세요.", "info");
 }
 
