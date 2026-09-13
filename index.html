@@ -131,7 +131,7 @@
       }
     };
   </script>
-    <link rel="stylesheet" href="style.css?v=20260913_class_student_mgmt">
+    <link rel="stylesheet" href="style.css?v=20260913_meeting_history">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -702,9 +702,27 @@
            TAB 2: 이번 주 교사 회의 안건 (Image 2)
            =================================================================== -->
       <section class="screen-view" id="view-agenda">
-        <div class="agenda-date-badge">
-          📅 2026.09.12 토요 교사 회의
+        <!-- 회의 일자 네비게이션 & 스위처 (1안: 상단 회의 일자 선택 및 칩 스크롤) -->
+        <div class="meeting-header-bar flex items-center justify-between gap-2 mb-2.5">
+          <div class="relative flex-1 min-w-0">
+            <select id="meetingDateSelect" class="w-full text-xs font-bold px-3 py-2 rounded-xl border border-primary/30 bg-surface-container/60 text-primary focus:bg-white focus:border-primary outline-none transition-all cursor-pointer appearance-none pr-7">
+              <!-- Populated dynamically by JS -->
+            </select>
+            <span class="material-symbols-outlined text-[18px] text-primary absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+          </div>
+          <!-- 전도사 전용 새 회의 개설 버튼 -->
+          <button type="button" id="openNewMeetingBtn" class="px-2.5 py-1.5 text-[11.5px] font-bold bg-primary text-white rounded-xl shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-1 flex-shrink-0" style="display:none;" title="새 회의 개설">
+            <span>＋</span> <span>새 회의</span>
+          </button>
         </div>
+
+        <!-- 빠른 날짜 선택 가로 칩 스크롤 바 -->
+        <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-3 pt-0.5" id="meetingDateChipsBar">
+          <!-- Populated dynamically by JS -->
+        </div>
+
+        <!-- 지난 회의 열람 알림 바 (과거 회의 선택 시 노출) -->
+        <div id="meetingArchiveNoticeRoot"></div>
 
         <!-- Section: 확정된 회의 안건 -->
         <div class="section-label">
@@ -715,7 +733,7 @@
         </div>
 
         <!-- Section: 승인 대기 안건 -->
-        <div class="section-label" style="margin-top: 20px;">
+        <div class="section-label" style="margin-top: 20px;" id="pendingAgendaSectionLabel">
           <span>⏳ 승인 대기 안건 (교사 제안 <span id="pendingAgendaCount">1</span>건)</span>
         </div>
         <div id="pendingAgendaList">
@@ -1398,6 +1416,37 @@
           <div style="display:flex; gap:8px; margin-top:16px;">
             <button type="button" class="btn-secondary" data-close="editAgendaModal" style="flex:1; font-weight:700;">취소</button>
             <button type="submit" class="btn-orange" style="flex:1.5; margin-top:0;">수정 저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 2-2: 새 회의 개설 모달 (전도사 전용) -->
+    <div class="modal-backdrop" id="newMeetingModal">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">📅 새 교사 회의 개설</h3>
+            <p style="font-size:11px; color:#c2410c; font-weight:700;">기존 진행 중이던 회의는 의결 완료되어 보관됩니다.</p>
+          </div>
+          <button class="sheet-close-btn" data-close="newMeetingModal">✕</button>
+        </div>
+        <form id="newMeetingForm" style="padding-top:6px;">
+          <div class="form-group">
+            <label>회의 일자 (YYYY.MM.DD)</label>
+            <input type="text" id="newMeetingDateInput" placeholder="예: 2026.09.19" required>
+          </div>
+          <div class="form-group">
+            <label>회의 명칭</label>
+            <input type="text" id="newMeetingTitleInput" placeholder="예: 2026.09.19 토요 교사 회의" required>
+          </div>
+          <div class="p-3 bg-amber-50 rounded-xl border border-amber-200/70 text-xs text-amber-800 leading-relaxed mb-3">
+            💡 새 회의를 개설하면 현재 열려 있는 회의는 <strong>'지난 회의 보관함'</strong>으로 안전하게 보관되고, 새 회의에서 새 안건들을 확정할 수 있습니다.
+          </div>
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <button type="button" class="btn-secondary" data-close="newMeetingModal" style="flex:1; font-weight:700;">취소</button>
+            <button type="submit" class="btn-orange" style="flex:1.5; margin-top:0;">새 회의 시작하기 🚀</button>
           </div>
         </form>
       </div>
@@ -2580,7 +2629,7 @@
 
   </div>
 
-  <script src="app.js?v=20260913_class_student_mgmt"></script>
+  <script src="app.js?v=20260913_meeting_history"></script>
 </body>
 </html>
 

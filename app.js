@@ -210,6 +210,119 @@ const INITIAL_DATA = {
       }
     ]
   },
+  currentMeetingId: "meet_20260912",
+  meetings: [
+    {
+      id: "meet_20260912",
+      date: "2026.09.12",
+      title: "2026.09.12 토요 교사 회의",
+      isCurrent: true,
+      status: "active",
+      confirmed: [
+        {
+          id: 1,
+          title: "[안건 1] 예랑 스카(자습실) 운영 및 간식 당번표 확정",
+          author: "작성: 정하람 전도사",
+          statusBadge: null,
+          type: "cyan"
+        },
+        {
+          id: 2,
+          title: "[안건 2] 5주차 신앙기초 공과 지도법 나눔",
+          author: "작성: 정하람 전도사",
+          statusBadge: null,
+          type: "yellow"
+        },
+        {
+          id: 3,
+          title: "[안건 3] 10월 생일자 선물 및 파티 기획",
+          author: "제안: 김희순 집사",
+          statusBadge: null,
+          type: "peach"
+        }
+      ],
+      pending: [
+        {
+          id: 101,
+          title: "[제안] 찬양팀 토요 연습시간 변경의 건",
+          author: "제안자: 소예진 선생님",
+          desc: "기존 토요 16시에서 17시로 1시간 늦춰 참석률을 높이고자 합니다."
+        }
+      ]
+    },
+    {
+      id: "meet_20260905",
+      date: "2026.09.05",
+      title: "2026.09.05 토요 교사 회의",
+      isCurrent: false,
+      status: "closed",
+      confirmed: [
+        {
+          id: 201,
+          title: "[안건 1] 2학기 개강예배 찬양팀 및 안내팀 배정",
+          author: "작성: 정하람 전도사",
+          statusBadge: "의결 완료 ✓",
+          type: "cyan"
+        },
+        {
+          id: 202,
+          title: "[안건 2] 9월 생일자 축하 간식비 예산 편성",
+          author: "작성: 나하은 선생님",
+          statusBadge: "의결 완료 ✓",
+          type: "yellow"
+        },
+        {
+          id: 203,
+          title: "[안건 3] 고3 수험생 격려 찹쌀떡 및 응원 키트 제작",
+          author: "작성: 김대한 선생님",
+          statusBadge: "의결 완료 ✓",
+          type: "peach"
+        }
+      ],
+      pending: []
+    },
+    {
+      id: "meet_20260829",
+      date: "2026.08.29",
+      title: "2026.08.29 토요 교사 회의",
+      isCurrent: false,
+      status: "closed",
+      confirmed: [
+        {
+          id: 301,
+          title: "[안건 1] 여름 수련회 결산 보고 및 피드백 나눔",
+          author: "작성: 정하람 전도사",
+          statusBadge: "의결 완료 ✓",
+          type: "cyan"
+        },
+        {
+          id: 302,
+          title: "[안건 2] 새친구반 등반식 진행 일정 논의",
+          author: "작성: 소예진 선생님",
+          statusBadge: "의결 완료 ✓",
+          type: "peach"
+        }
+      ],
+      pending: []
+    },
+    {
+      id: "meet_20260822",
+      date: "2026.08.22",
+      title: "2026.08.22 토요 교사 회의",
+      isCurrent: false,
+      status: "closed",
+      confirmed: [
+        {
+          id: 401,
+          title: "[안건 1] 하반기 분반 교사 사역 배치안 검토",
+          author: "작성: 정하람 전도사",
+          statusBadge: "의결 완료 ✓",
+          type: "cyan"
+        }
+      ],
+      pending: []
+    }
+  ],
   attendance: [
     {
       id: 1,
@@ -822,6 +935,17 @@ function loadState() {
       if (!parsed.attendanceHistory || !Array.isArray(parsed.attendanceHistory) || parsed.attendanceHistory.length === 0) {
         parsed.attendanceHistory = JSON.parse(JSON.stringify(INITIAL_DATA.attendanceHistory));
       }
+      if (!parsed.meetings || !Array.isArray(parsed.meetings) || parsed.meetings.length === 0) {
+        parsed.meetings = JSON.parse(JSON.stringify(INITIAL_DATA.meetings));
+      }
+      if (!parsed.currentMeetingId) {
+        parsed.currentMeetingId = "meet_20260912";
+      }
+      const activeMeet = parsed.meetings.find(m => m.id === parsed.currentMeetingId || m.isCurrent);
+      if (activeMeet && parsed.agendas) {
+        activeMeet.confirmed = parsed.agendas.confirmed;
+        activeMeet.pending = parsed.agendas.pending;
+      }
       // Migrate worship duty and notices to Saturday worship basis
       if (parsed.worshipDuty) {
         if (!parsed.worshipDuty.date || parsed.worshipDuty.date === "10/18") {
@@ -852,7 +976,17 @@ function loadState() {
   return JSON.parse(JSON.stringify(INITIAL_DATA));
 }
 
+function syncCurrentMeetingAgendas() {
+  if (!appState || !appState.meetings || !Array.isArray(appState.meetings)) return;
+  const curMeet = appState.meetings.find(m => m.id === appState.currentMeetingId || m.isCurrent);
+  if (curMeet && (curMeet.isCurrent || curMeet.status === "active") && appState.agendas) {
+    curMeet.confirmed = appState.agendas.confirmed;
+    curMeet.pending = appState.agendas.pending;
+  }
+}
+
 function saveState() {
+  syncCurrentMeetingAgendas();
   localStorage.setItem("yerang_app_state_v1", JSON.stringify(appState));
 }
 
@@ -1791,209 +1925,418 @@ function isAgendaAuthor(item, user) {
 // 5. Screen 2: 이번 주 교사 회의 안건 Rendering & Events
 // =============================================================================
 
+function getActiveOrCurrentMeeting() {
+  if (!appState.meetings || !Array.isArray(appState.meetings) || appState.meetings.length === 0) {
+    appState.meetings = JSON.parse(JSON.stringify(INITIAL_DATA.meetings));
+  }
+  let meet = appState.meetings.find(m => m.id === appState.currentMeetingId);
+  if (!meet) {
+    meet = appState.meetings.find(m => m.isCurrent) || appState.meetings[0];
+    appState.currentMeetingId = meet.id;
+  }
+  return meet;
+}
+
+function selectMeeting(meetingId) {
+  syncCurrentMeetingAgendas();
+  appState.currentMeetingId = meetingId;
+  saveState();
+  renderAgendaSection();
+}
+
+function openCreateNewMeetingModal() {
+  const modal = document.getElementById("newMeetingModal");
+  if (!modal) return;
+  const dateInput = document.getElementById("newMeetingDateInput");
+  const titleInput = document.getElementById("newMeetingTitleInput");
+
+  let nextDateStr = "2026.09.19";
+  if (appState.meetings && appState.meetings.length > 0) {
+    const latestMeet = appState.meetings[0];
+    if (latestMeet && latestMeet.date) {
+      const parts = latestMeet.date.split(".").map(Number);
+      if (parts.length === 3) {
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        d.setDate(d.getDate() + 7);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        nextDateStr = `${y}.${m}.${day}`;
+      }
+    }
+  }
+
+  if (dateInput) dateInput.value = nextDateStr;
+  if (titleInput) titleInput.value = `${nextDateStr} 토요 교사 회의`;
+
+  openModal("newMeetingModal");
+}
+
+function handleNewMeetingSubmit(e) {
+  e.preventDefault();
+  const dateInput = document.getElementById("newMeetingDateInput");
+  const titleInput = document.getElementById("newMeetingTitleInput");
+  const dateVal = (dateInput ? dateInput.value.trim() : "") || "2026.09.19";
+  const titleVal = (titleInput ? titleInput.value.trim() : "") || `${dateVal} 토요 교사 회의`;
+
+  syncCurrentMeetingAgendas();
+
+  if (Array.isArray(appState.meetings)) {
+    appState.meetings.forEach(m => {
+      if (m.isCurrent || m.status === "active") {
+        m.isCurrent = false;
+        m.status = "closed";
+        if (Array.isArray(m.confirmed)) {
+          m.confirmed.forEach(c => {
+            if (!c.statusBadge) c.statusBadge = "의결 완료 ✓";
+          });
+        }
+      }
+    });
+  }
+
+  const newMeetingId = `meet_${dateVal.replace(/\./g, "")}_${Date.now().toString().slice(-4)}`;
+  const newMeeting = {
+    id: newMeetingId,
+    date: dateVal,
+    title: titleVal,
+    isCurrent: true,
+    status: "active",
+    confirmed: [],
+    pending: []
+  };
+
+  if (!Array.isArray(appState.meetings)) {
+    appState.meetings = [];
+  }
+  appState.meetings.unshift(newMeeting);
+  appState.currentMeetingId = newMeetingId;
+  appState.agendas = {
+    confirmed: [],
+    pending: []
+  };
+
+  saveState();
+  closeModal("newMeetingModal");
+  renderAgendaSection();
+  updateMeetingNavBadge();
+  showToast(`📅 '${titleVal}' 새 회의 세션이 시작되었습니다!`, "success");
+}
+
 function renderAgendaSection() {
   const confirmedList = document.getElementById("confirmedAgendaList");
   const pendingList = document.getElementById("pendingAgendaList");
   const confirmedCountEl = document.getElementById("confirmedAgendaCount");
   const pendingCountEl = document.getElementById("pendingAgendaCount");
   const openModalBtn = document.getElementById("openAddAgendaModalBtn");
+  const meetingSelect = document.getElementById("meetingDateSelect");
+  const meetingChipsBar = document.getElementById("meetingDateChipsBar");
+  const archiveNoticeRoot = document.getElementById("meetingArchiveNoticeRoot");
+  const pendingSectionLabel = document.getElementById("pendingAgendaSectionLabel");
+  const newMeetingBtn = document.getElementById("openNewMeetingBtn");
 
   const isPastor = (currentRole === "pastor");
   const currentUser = getCurrentUser();
 
-  // 버튼 문구 동적 변경 (전도사: 바로 회의 안건 추가 / 선생님: 안건 제안하기)
-  if (openModalBtn) {
-    if (isPastor) {
-      openModalBtn.innerHTML = `<span>＋</span> <span>회의 안건 추가 (전도사 즉시 확정)</span>`;
-    } else {
-      openModalBtn.innerHTML = `<span>＋</span> <span>안건 제안하기</span>`;
-    }
+  const activeMeet = getActiveOrCurrentMeeting();
+  const isCurrentMeeting = Boolean(activeMeet && (activeMeet.isCurrent || activeMeet.status === "active"));
+
+  // 전도사 전용 새 회의 개설 버튼 노출 여부
+  if (newMeetingBtn) {
+    newMeetingBtn.style.display = isPastor ? "flex" : "none";
   }
 
-  confirmedList.innerHTML = "";
-  pendingList.innerHTML = "";
+  // 상단 셀렉트박스 렌더링
+  if (meetingSelect && Array.isArray(appState.meetings)) {
+    meetingSelect.innerHTML = appState.meetings.map(m => {
+      const isCur = m.isCurrent || m.status === "active";
+      const isSel = m.id === activeMeet.id;
+      const label = `${m.date} (${isCur ? "진행 중" : "보관/의결완료"}) - ${m.title}`;
+      return `<option value="${m.id}" ${isSel ? "selected" : ""}>${label}</option>`;
+    }).join("");
+  }
 
-  // Render Confirmed
-  appState.agendas.confirmed.forEach((agenda, index) => {
-    const card = document.createElement("div");
-    card.className = "agenda-card default-border";
-    if (agenda.type === "cyan") card.classList.add("cyan-border");
-    if (agenda.type === "yellow") card.classList.add("yellow-border");
-
-    let badgeHtml = "";
-    if (agenda.statusBadge) {
-      badgeHtml = `<span class="approval-badge">${agenda.statusBadge}</span>`;
-    }
-
-    // 전도사(pastor)인 경우 순서 변경(위/아래) 버튼 + 수정/삭제 버튼 제공
-    let actionButtonsHtml = "";
-    if (isPastor) {
-      const isFirst = (index === 0);
-      const isLast = (index === appState.agendas.confirmed.length - 1);
-      actionButtonsHtml = `
-        <div style="display:flex; align-items:center; gap:4px; margin-left:auto;">
-          <!-- 순서 이동 버튼 -->
-          <div style="display:flex; align-items:center; gap:2px; margin-right:4px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:2px;">
-            <button type="button" class="move-up-agenda-btn" data-agenda-id="${agenda.id}" ${isFirst ? "disabled" : ""} style="width:26px; height:24px; font-size:11px; font-weight:800; border-radius:6px; border:none; background:${isFirst ? "transparent" : "#ffffff"}; color:${isFirst ? "#cbd5e1" : "#475569"}; cursor:${isFirst ? "default" : "pointer"}; box-shadow:${isFirst ? "none" : "0 1px 2px rgba(0,0,0,0.05)"}; display:flex; align-items:center; justify-content:center;" title="위로 이동">
-              ▲
-            </button>
-            <button type="button" class="move-down-agenda-btn" data-agenda-id="${agenda.id}" ${isLast ? "disabled" : ""} style="width:26px; height:24px; font-size:11px; font-weight:800; border-radius:6px; border:none; background:${isLast ? "transparent" : "#ffffff"}; color:${isLast ? "#cbd5e1" : "#475569"}; cursor:${isLast ? "default" : "pointer"}; box-shadow:${isLast ? "none" : "0 1px 2px rgba(0,0,0,0.05)"}; display:flex; align-items:center; justify-content:center;" title="아래로 이동">
-              ▼
-            </button>
-          </div>
-          <button type="button" class="edit-confirmed-agenda-btn" data-agenda-id="${agenda.id}" style="padding:4px 8px; font-size:11px; font-weight:700; background:#f5efff; color:#6c35c4; border-radius:6px; border:1px solid #e0c8ff; cursor:pointer;" title="안건 수정">
-            ✏️ 수정
+  // 상단 가로 칩 스크롤 바 렌더링
+  if (meetingChipsBar && Array.isArray(appState.meetings)) {
+    meetingChipsBar.innerHTML = appState.meetings.map(m => {
+      const isCur = m.isCurrent || m.status === "active";
+      const isSel = m.id === activeMeet.id;
+      if (isSel) {
+        return `
+          <button type="button" class="meeting-chip-btn px-3 py-1.5 text-xs font-bold rounded-full bg-primary text-white shadow-sm flex items-center gap-1.5 flex-shrink-0 transition-all cursor-pointer" data-meet-id="${m.id}">
+            <span>${m.date}</span>
+            ${isCur ? '<span class="text-[10px] bg-white/25 px-1.5 py-0.2 rounded-full">진행 중</span>' : '<span class="text-[10px] bg-black/20 px-1.5 py-0.2 rounded-full">보관됨</span>'}
           </button>
-          <button type="button" class="delete-confirmed-agenda-btn" data-agenda-id="${agenda.id}" style="padding:4px 7px; font-size:11px; background:#fff0f0; color:#ef4444; border-radius:6px; border:1px solid #fecaca; cursor:pointer;" title="안건 삭제">
-            🗑️
+        `;
+      } else {
+        return `
+          <button type="button" class="meeting-chip-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-surface-container/80 hover:bg-surface-container text-secondary border border-outline-variant/30 flex items-center gap-1 flex-shrink-0 transition-all cursor-pointer" data-meet-id="${m.id}">
+            <span>${m.date}</span>
+            ${isCur ? '<span class="text-[10px] text-primary font-bold">진행</span>' : ''}
           </button>
-        </div>
-      `;
-    }
+        `;
+      }
+    }).join("");
 
-    card.dataset.agendaId = agenda.id;
-    card.innerHTML = `
-      <div class="agenda-title">${agenda.title}</div>
-      <div class="agenda-author" style="margin-top:6px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
-        <div style="display:flex; align-items:center; gap:6px;">
-          <span>(${agenda.author})</span>
-          ${badgeHtml}
-        </div>
-        ${actionButtonsHtml}
-      </div>
-    `;
-
-    // 위로 이동 버튼 이벤트
-    const moveUpBtn = card.querySelector(".move-up-agenda-btn");
-    if (moveUpBtn && !moveUpBtn.disabled) {
-      moveUpBtn.addEventListener("click", () => {
-        moveConfirmedAgenda(agenda.id, -1);
-      });
-    }
-
-    // 아래로 이동 버튼 이벤트
-    const moveDownBtn = card.querySelector(".move-down-agenda-btn");
-    if (moveDownBtn && !moveDownBtn.disabled) {
-      moveDownBtn.addEventListener("click", () => {
-        moveConfirmedAgenda(agenda.id, 1);
-      });
-    }
-
-    // 수정 버튼 이벤트
-    const editBtn = card.querySelector(".edit-confirmed-agenda-btn");
-    if (editBtn) {
-      editBtn.addEventListener("click", () => {
-        openEditAgendaModal(agenda.id);
-      });
-    }
-
-    // 삭제 버튼 이벤트
-    const deleteBtn = card.querySelector(".delete-confirmed-agenda-btn");
-    if (deleteBtn) {
-      deleteBtn.addEventListener("click", () => {
-        if (confirm(`'${agenda.title}' 안건을 회의 목록에서 삭제하시겠습니까?`)) {
-          appState.agendas.confirmed = appState.agendas.confirmed.filter(a => a.id !== agenda.id);
-          renumberConfirmedAgendas();
-          if (appState.staffBox && appState.staffBox.items) {
-            const raw = agenda.title.replace(/\[안건 \d+\]/, "").trim();
-            appState.staffBox.items = appState.staffBox.items.filter(s => !(s.agendaId === agenda.id || s.id === agenda.id || s.title.includes(raw) || raw.includes(s.title)));
-          }
-          saveState();
-          renderAgendaSection();
-          renderStaffBoxSection();
-          updateStaffBoxHomeBadge();
-          showToast(`🗑️ 안건이 삭제되었습니다. (소통함 연동)`, "info");
+    meetingChipsBar.querySelectorAll(".meeting-chip-btn").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const targetId = chip.getAttribute("data-meet-id");
+        if (targetId && targetId !== activeMeet.id) {
+          selectMeeting(targetId);
         }
       });
-    }
-
-    confirmedList.appendChild(card);
-  });
-
-  // Render Pending: 전도사와 제안자 본인 외에는 보이지 않게 보안 필터링!
-  const visiblePending = isPastor 
-    ? appState.agendas.pending 
-    : appState.agendas.pending.filter(agenda => isAgendaAuthor(agenda, currentUser));
-
-  visiblePending.forEach(agenda => {
-    const card = document.createElement("div");
-    card.className = "agenda-card waiting-border";
-
-    let actionsHtml = "";
-    if (isPastor) {
-      actionsHtml = `
-        <div class="waiting-actions">
-          <button class="btn-approve" data-approve-id="${agenda.id}">
-            <span>✓</span> <span>승인</span>
-          </button>
-          <button class="btn-reject" data-reject-id="${agenda.id}">
-            <span>✕</span> <span>반려</span>
-          </button>
-        </div>
-      `;
-    } else {
-      actionsHtml = `
-        <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; padding-top:8px; border-top:1px dashed #fed7aa;">
-          <span style="font-size:11.5px; color:#ea580c; font-weight:700;">🔒 전도사님 승인 대기 중 (제안자만 열람 가능)</span>
-          <button type="button" class="btn-withdraw-agenda" data-agenda-id="${agenda.id}" style="padding:4px 9px; font-size:11px; font-weight:700; background:#fff1f2; color:#e11d48; border-radius:6px; border:1px solid #fecdd3; cursor:pointer;" title="제안 취소">
-            제안 취소 ✕
-          </button>
-        </div>
-      `;
-    }
-
-    card.innerHTML = `
-      <div class="agenda-title">${agenda.title}</div>
-      <div class="agenda-author">
-        <span>(${agenda.author})</span>
-        <span style="color:#d96a24; font-weight:700; font-size:11px;">승인 대기</span>
-      </div>
-      ${agenda.desc ? `<p style="font-size:12px; color:var(--text-muted); margin-top:6px;">${agenda.desc}</p>` : ""}
-      ${actionsHtml}
-    `;
-
-    if (isPastor) {
-      card.querySelector(".btn-approve").addEventListener("click", () => {
-        approveAgenda(agenda.id);
-      });
-      card.querySelector(".btn-reject").addEventListener("click", () => {
-        rejectAgenda(agenda.id);
-      });
-    } else {
-      const withdrawBtn = card.querySelector(".btn-withdraw-agenda");
-      if (withdrawBtn) {
-        withdrawBtn.addEventListener("click", () => {
-          if (confirm(`'${agenda.title}' 제안을 취소하시겠습니까?`)) {
-            appState.agendas.pending = appState.agendas.pending.filter(a => a.id !== agenda.id);
-            if (appState.staffBox && appState.staffBox.items) {
-              appState.staffBox.items = appState.staffBox.items.filter(s => s.agendaId !== agenda.id && s.id !== agenda.id);
-            }
-            saveState();
-            renderAgendaSection();
-            renderStaffBoxSection();
-            updateStaffBoxHomeBadge();
-            showToast("제안하신 안건이 취소되었습니다.", "info");
-          }
-        });
-      }
-    }
-
-    pendingList.appendChild(card);
-  });
-
-  if (visiblePending.length === 0) {
-    const emptyMsg = isPastor 
-      ? "현재 승인 대기 중인 교사 제안 안건이 없습니다. 👍"
-      : "내가 제안하여 승인 대기 중인 안건이 없습니다. 👍";
-    pendingList.innerHTML = `
-      <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:13px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
-        ${emptyMsg}
-      </div>
-    `;
+    });
   }
 
-  confirmedCountEl.textContent = appState.agendas.confirmed.length;
-  pendingCountEl.textContent = visiblePending.length;
+  // 지난 회의 보관함 알림 배너
+  if (archiveNoticeRoot) {
+    if (!isCurrentMeeting) {
+      archiveNoticeRoot.innerHTML = `
+        <div class="p-3 mb-3 bg-amber-50/90 border border-amber-200 rounded-2xl flex items-center justify-between gap-2 text-xs shadow-sm">
+          <div class="flex items-center gap-2 text-amber-900 font-semibold min-w-0">
+            <span class="text-base">🔒</span>
+            <span class="truncate"><strong>${activeMeet.date}</strong> 지난 회의 보관함 (의결 완료 기록)</span>
+          </div>
+          <button type="button" class="btn-return-current-meet px-2.5 py-1 text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all flex-shrink-0 cursor-pointer shadow-xs">
+            금주 회의로 ↩️
+          </button>
+        </div>
+      `;
+      const returnBtn = archiveNoticeRoot.querySelector(".btn-return-current-meet");
+      if (returnBtn) {
+        returnBtn.addEventListener("click", () => {
+          const cur = appState.meetings.find(m => m.isCurrent) || appState.meetings[0];
+          if (cur) selectMeeting(cur.id);
+        });
+      }
+    } else {
+      archiveNoticeRoot.innerHTML = "";
+    }
+  }
+
+  // 하단 액션 버튼 문구 및 스타일 변경
+  if (openModalBtn) {
+    if (!isCurrentMeeting) {
+      openModalBtn.innerHTML = `<span>↩️</span> <span>이번 주 진행 중인 회의로 돌아가기</span>`;
+      openModalBtn.className = "btn-action-wide bg-amber-500 hover:bg-amber-600 text-white";
+    } else {
+      openModalBtn.className = "btn-action-wide";
+      if (isPastor) {
+        openModalBtn.innerHTML = `<span>＋</span> <span>회의 안건 추가 (전도사 즉시 확정)</span>`;
+      } else {
+        openModalBtn.innerHTML = `<span>＋</span> <span>안건 제안하기</span>`;
+      }
+    }
+  }
+
+  if (confirmedList) confirmedList.innerHTML = "";
+  if (pendingList) pendingList.innerHTML = "";
+
+  // 표시할 확정 안건 목록 결정
+  const confirmedAgendas = isCurrentMeeting 
+    ? (appState.agendas ? appState.agendas.confirmed : [])
+    : (activeMeet.confirmed || []);
+
+  // 확정 안건 카드 렌더링
+  if (confirmedList) {
+    if (confirmedAgendas.length === 0) {
+      confirmedList.innerHTML = `
+        <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:13px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+          등록된 확정 안건이 없습니다.
+        </div>
+      `;
+    } else {
+      confirmedAgendas.forEach((agenda, index) => {
+        const card = document.createElement("div");
+        card.className = "agenda-card default-border";
+        if (agenda.type === "cyan") card.classList.add("cyan-border");
+        if (agenda.type === "yellow") card.classList.add("yellow-border");
+
+        let badgeHtml = "";
+        const badgeText = agenda.statusBadge || (!isCurrentMeeting ? "의결 완료 ✓" : null);
+        if (badgeText) {
+          badgeHtml = `<span class="approval-badge">${badgeText}</span>`;
+        }
+
+        // 전도사(pastor)이면서 현재 진행 중인 회의인 경우에만 순서 변경/수정/삭제 버튼 제공
+        let actionButtonsHtml = "";
+        if (isPastor && isCurrentMeeting) {
+          const isFirst = (index === 0);
+          const isLast = (index === confirmedAgendas.length - 1);
+          actionButtonsHtml = `
+            <div style="display:flex; align-items:center; gap:4px; margin-left:auto;">
+              <!-- 순서 이동 버튼 -->
+              <div style="display:flex; align-items:center; gap:2px; margin-right:4px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:2px;">
+                <button type="button" class="move-up-agenda-btn" data-agenda-id="${agenda.id}" ${isFirst ? "disabled" : ""} style="width:26px; height:24px; font-size:11px; font-weight:800; border-radius:6px; border:none; background:${isFirst ? "transparent" : "#ffffff"}; color:${isFirst ? "#cbd5e1" : "#475569"}; cursor:${isFirst ? "default" : "pointer"}; box-shadow:${isFirst ? "none" : "0 1px 2px rgba(0,0,0,0.05)"}; display:flex; align-items:center; justify-content:center;" title="위로 이동">
+                  ▲
+                </button>
+                <button type="button" class="move-down-agenda-btn" data-agenda-id="${agenda.id}" ${isLast ? "disabled" : ""} style="width:26px; height:24px; font-size:11px; font-weight:800; border-radius:6px; border:none; background:${isLast ? "transparent" : "#ffffff"}; color:${isLast ? "#cbd5e1" : "#475569"}; cursor:${isLast ? "default" : "pointer"}; box-shadow:${isLast ? "none" : "0 1px 2px rgba(0,0,0,0.05)"}; display:flex; align-items:center; justify-content:center;" title="아래로 이동">
+                  ▼
+                </button>
+              </div>
+              <button type="button" class="edit-confirmed-agenda-btn" data-agenda-id="${agenda.id}" style="padding:4px 8px; font-size:11px; font-weight:700; background:#f5efff; color:#6c35c4; border-radius:6px; border:1px solid #e0c8ff; cursor:pointer;" title="안건 수정">
+                ✏️ 수정
+              </button>
+              <button type="button" class="delete-confirmed-agenda-btn" data-agenda-id="${agenda.id}" style="padding:4px 7px; font-size:11px; background:#fff0f0; color:#ef4444; border-radius:6px; border:1px solid #fecaca; cursor:pointer;" title="안건 삭제">
+                🗑️
+              </button>
+            </div>
+          `;
+        }
+
+        card.dataset.agendaId = agenda.id;
+        card.innerHTML = `
+          <div class="agenda-title">${agenda.title}</div>
+          <div class="agenda-author" style="margin-top:6px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span>(${agenda.author})</span>
+              ${badgeHtml}
+            </div>
+            ${actionButtonsHtml}
+          </div>
+        `;
+
+        if (isPastor && isCurrentMeeting) {
+          const moveUpBtn = card.querySelector(".move-up-agenda-btn");
+          if (moveUpBtn && !moveUpBtn.disabled) {
+            moveUpBtn.addEventListener("click", () => {
+              moveConfirmedAgenda(agenda.id, -1);
+            });
+          }
+
+          const moveDownBtn = card.querySelector(".move-down-agenda-btn");
+          if (moveDownBtn && !moveDownBtn.disabled) {
+            moveDownBtn.addEventListener("click", () => {
+              moveConfirmedAgenda(agenda.id, 1);
+            });
+          }
+
+          const editBtn = card.querySelector(".edit-confirmed-agenda-btn");
+          if (editBtn) {
+            editBtn.addEventListener("click", () => {
+              openEditAgendaModal(agenda.id);
+            });
+          }
+
+          const deleteBtn = card.querySelector(".delete-confirmed-agenda-btn");
+          if (deleteBtn) {
+            deleteBtn.addEventListener("click", () => {
+              if (confirm(`'${agenda.title}' 안건을 회의 목록에서 삭제하시겠습니까?`)) {
+                appState.agendas.confirmed = appState.agendas.confirmed.filter(a => a.id !== agenda.id);
+                renumberConfirmedAgendas();
+                if (appState.staffBox && appState.staffBox.items) {
+                  const raw = agenda.title.replace(/\[안건 \d+\]/, "").trim();
+                  appState.staffBox.items = appState.staffBox.items.filter(s => !(s.agendaId === agenda.id || s.id === agenda.id || s.title.includes(raw) || raw.includes(s.title)));
+                }
+                saveState();
+                renderAgendaSection();
+                renderStaffBoxSection();
+                updateStaffBoxHomeBadge();
+                showToast(`🗑️ 안건이 삭제되었습니다. (소통함 연동)`, "info");
+              }
+            });
+          }
+        }
+
+        confirmedList.appendChild(card);
+      });
+    }
+  }
+
+  // 승인 대기 안건 섹션 (현재 진행 중인 회의에서만 표시)
+  if (pendingSectionLabel) {
+    pendingSectionLabel.style.display = isCurrentMeeting ? "" : "none";
+  }
+  if (pendingList) {
+    pendingList.style.display = isCurrentMeeting ? "" : "none";
+  }
+
+  let visiblePending = [];
+  if (isCurrentMeeting && pendingList && appState.agendas && Array.isArray(appState.agendas.pending)) {
+    visiblePending = isPastor 
+      ? appState.agendas.pending 
+      : appState.agendas.pending.filter(agenda => isAgendaAuthor(agenda, currentUser));
+
+    visiblePending.forEach(agenda => {
+      const card = document.createElement("div");
+      card.className = "agenda-card waiting-border";
+
+      let actionsHtml = "";
+      if (isPastor) {
+        actionsHtml = `
+          <div class="waiting-actions">
+            <button class="btn-approve" data-approve-id="${agenda.id}">
+              <span>✓</span> <span>승인</span>
+            </button>
+            <button class="btn-reject" data-reject-id="${agenda.id}">
+              <span>✕</span> <span>반려</span>
+            </button>
+          </div>
+        `;
+      } else {
+        actionsHtml = `
+          <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between; padding-top:8px; border-top:1px dashed #fed7aa;">
+            <span style="font-size:11.5px; color:#ea580c; font-weight:700;">🔒 전도사님 승인 대기 중 (제안자만 열람 가능)</span>
+            <button type="button" class="btn-withdraw-agenda" data-agenda-id="${agenda.id}" style="padding:4px 9px; font-size:11px; font-weight:700; background:#fff1f2; color:#e11d48; border-radius:6px; border:1px solid #fecdd3; cursor:pointer;" title="제안 취소">
+              제안 취소 ✕
+            </button>
+          </div>
+        `;
+      }
+
+      card.innerHTML = `
+        <div class="agenda-title">${agenda.title}</div>
+        <div class="agenda-author">
+          <span>(${agenda.author})</span>
+          <span style="color:#d96a24; font-weight:700; font-size:11px;">승인 대기</span>
+        </div>
+        ${agenda.desc ? `<p style="font-size:12px; color:var(--text-muted); margin-top:6px;">${agenda.desc}</p>` : ""}
+        ${actionsHtml}
+      `;
+
+      if (isPastor) {
+        card.querySelector(".btn-approve").addEventListener("click", () => {
+          approveAgenda(agenda.id);
+        });
+        card.querySelector(".btn-reject").addEventListener("click", () => {
+          rejectAgenda(agenda.id);
+        });
+      } else {
+        const withdrawBtn = card.querySelector(".btn-withdraw-agenda");
+        if (withdrawBtn) {
+          withdrawBtn.addEventListener("click", () => {
+            if (confirm(`'${agenda.title}' 제안을 취소하시겠습니까?`)) {
+              appState.agendas.pending = appState.agendas.pending.filter(a => a.id !== agenda.id);
+              if (appState.staffBox && appState.staffBox.items) {
+                appState.staffBox.items = appState.staffBox.items.filter(s => s.agendaId !== agenda.id && s.id !== agenda.id);
+              }
+              saveState();
+              renderAgendaSection();
+              renderStaffBoxSection();
+              updateStaffBoxHomeBadge();
+              showToast("제안하신 안건이 취소되었습니다.", "info");
+            }
+          });
+        }
+      }
+
+      pendingList.appendChild(card);
+    });
+
+    if (visiblePending.length === 0) {
+      const emptyMsg = isPastor 
+        ? "현재 승인 대기 중인 교사 제안 안건이 없습니다. 👍"
+        : "내가 제안하여 승인 대기 중인 안건이 없습니다. 👍";
+      pendingList.innerHTML = `
+        <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:13px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+          ${emptyMsg}
+        </div>
+      `;
+    }
+  }
+
+  if (confirmedCountEl) confirmedCountEl.textContent = confirmedAgendas.length;
+  if (pendingCountEl) pendingCountEl.textContent = isCurrentMeeting ? visiblePending.length : 0;
 
   updateMeetingNavBadge();
 }
@@ -2104,6 +2447,17 @@ function initAgendaEvents() {
   const openModalBtn = document.getElementById("openAddAgendaModalBtn");
   if (openModalBtn) {
     openModalBtn.addEventListener("click", () => {
+      const activeMeet = getActiveOrCurrentMeeting();
+      const isCurrentMeeting = Boolean(activeMeet && (activeMeet.isCurrent || activeMeet.status === "active"));
+      if (!isCurrentMeeting) {
+        const curMeet = appState.meetings.find(m => m.isCurrent) || appState.meetings[0];
+        if (curMeet) {
+          selectMeeting(curMeet.id);
+          showToast("이번 주 진행 중인 회의로 이동했습니다. 📅", "info");
+        }
+        return;
+      }
+
       const currentUser = getCurrentUser();
       const authorSelect = document.getElementById("agendaAuthorInput");
       const modalTitle = document.querySelector("#agendaModal .sheet-title");
@@ -2128,6 +2482,28 @@ function initAgendaEvents() {
 
       openModal("agendaModal");
     });
+  }
+
+  // 상단 회의 일자 셀렉트 변경 이벤트
+  const meetingSelect = document.getElementById("meetingDateSelect");
+  if (meetingSelect) {
+    meetingSelect.addEventListener("change", (e) => {
+      selectMeeting(e.target.value);
+    });
+  }
+
+  // 전도사 새 회의 개설 버튼 이벤트
+  const openNewMeetBtn = document.getElementById("openNewMeetingBtn");
+  if (openNewMeetBtn) {
+    openNewMeetBtn.addEventListener("click", () => {
+      openCreateNewMeetingModal();
+    });
+  }
+
+  // 새 회의 개설 폼 제출 이벤트
+  const newMeetingForm = document.getElementById("newMeetingForm");
+  if (newMeetingForm) {
+    newMeetingForm.addEventListener("submit", handleNewMeetingSubmit);
   }
 
   const form = document.getElementById("agendaForm");
@@ -2182,11 +2558,12 @@ function initAgendaEvents() {
           authorId: currentUser ? currentUser.id : null,
           title: `[제안] ${title}`,
           author: `제안자: ${author}`,
-          desc: desc
+          desc: desc,
+          status: "pending"
         };
         appState.agendas.pending.push(newAgenda);
 
-        // 사역자 소통함(staffBox)에도 '회의안건'으로 자동 등록 (동기화)
+        // 사역자 소통함에도 승인대기 회의안건으로 동기화 등록
         if (appState.staffBox && appState.staffBox.items) {
           appState.staffBox.items.unshift({
             id: newId,
@@ -2196,8 +2573,8 @@ function initAgendaEvents() {
             title: title,
             author: author,
             budget: null,
-            status: "검토중",
-            badgeType: "review"
+            status: "승인대기",
+            badgeType: "pending"
           });
         }
 
