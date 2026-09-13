@@ -9548,8 +9548,9 @@ function renderNoticesHistoryList(filterTag = currentNoticeFilterTag) {
   const addBtn = document.getElementById("openAddNoticeBtn");
   if (!listContainer) return;
 
-  const currentUser = getCurrentUser();
-  const canManage = currentUser && !isStudentRole(currentUser.role);
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  const canManage = isPastor;
 
   if (addBtn) {
     addBtn.style.display = canManage ? "flex" : "none";
@@ -9699,6 +9700,12 @@ window.openNoticesModal = openNoticesModal;
 window.openAddNoticeModal = openAddNoticeModal;
 
 function setNoticeAsCurrent(noticeId) {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("⚠️ 메인 배너 지정은 전도사님 고유 권한입니다 🔒", "warning");
+    return;
+  }
   if (!appState.notices) return;
   appState.notices.forEach(n => {
     n.isCurrent = (n.id === noticeId);
@@ -9710,6 +9717,12 @@ function setNoticeAsCurrent(noticeId) {
 }
 
 function deleteNotice(noticeId) {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("⚠️ 공지사항 삭제는 전도사님 고유 권한입니다 🔒", "warning");
+    return;
+  }
   if (!appState.notices) return;
   const target = appState.notices.find(n => n.id === noticeId);
   if (!target) return;
@@ -9729,15 +9742,21 @@ function deleteNotice(noticeId) {
 }
 
 function openAddNoticeModal() {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("⚠️ 새 공지 작성은 전도사님 고유 권한입니다 🔒", "warning");
+    return;
+  }
+
   const form = document.getElementById("noticeForm");
   if (!form) return;
   form.reset();
   document.getElementById("noticeEditId").value = "";
   document.getElementById("noticeFormModalTitle").textContent = "📢 새 공지 작성";
-  document.getElementById("noticeFormModalSubtitle").textContent = "예랑 메인 공지 및 히스토리에 게시합니다";
+  document.getElementById("noticeFormModalSubtitle").textContent = "예랑 메인 공지 및 히스토리에 게시합니다 (전도사 고유 권한)";
   document.getElementById("noticeSubmitBtn").textContent = "공지 저장하기";
 
-  const currentUser = getCurrentUser();
   if (currentUser) {
     document.getElementById("noticeAuthorInput").value = currentUser.name || "정하람 전도사";
   }
@@ -9755,13 +9774,20 @@ function openAddNoticeModal() {
 }
 
 function openEditNoticeModal(noticeId) {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("⚠️ 공지사항 수정은 전도사님 고유 권한입니다 🔒", "warning");
+    return;
+  }
+
   if (!appState.notices) return;
   const notice = appState.notices.find(n => n.id === noticeId);
   if (!notice) return;
 
   document.getElementById("noticeEditId").value = notice.id;
   document.getElementById("noticeFormModalTitle").textContent = "✏️ 공지사항 수정";
-  document.getElementById("noticeFormModalSubtitle").textContent = "공지 내용을 수정합니다";
+  document.getElementById("noticeFormModalSubtitle").textContent = "공지 내용을 수정합니다 (전도사 고유 권한)";
   document.getElementById("noticeSubmitBtn").textContent = "수정사항 저장하기";
 
   document.getElementById("noticeTagInput").value = notice.tag || "금주 공지";
@@ -9804,6 +9830,12 @@ function initNoticesEvents() {
   const openAddBtn = document.getElementById("openAddNoticeBtn");
   if (openAddBtn) {
     openAddBtn.addEventListener("click", () => {
+      const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+      if (!isPastor) {
+        showToast("⚠️ 공지사항 작성은 전도사님 고유 권한입니다 🔒", "warning");
+        return;
+      }
       openAddNoticeModal();
     });
   }
@@ -9813,6 +9845,13 @@ function initNoticesEvents() {
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+      const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+      if (!isPastor) {
+        showToast("⚠️ 공지사항 관리는 전도사님 고유 권한입니다 🔒", "warning");
+        return;
+      }
+
       const editId = document.getElementById("noticeEditId").value;
       const tag = document.getElementById("noticeTagInput").value;
       const time = document.getElementById("noticeTimeInput").value.trim();
