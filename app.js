@@ -25,7 +25,7 @@ const INITIAL_DATA = {
         id: 2,
         date: "8/28",
         title: "심방: 찬양팀 세션 격려",
-        desc: "주일 오전 찬양 연습 후 간식 전달 및 악기 세션 격려.",
+        desc: "토요예배 전 찬양 연습 후 간식 전달 및 악기 세션 격려.",
         icon: "📢"
       }
     ],
@@ -40,9 +40,9 @@ const INITIAL_DATA = {
       tag: "금주 공지",
       time: "12시",
       title: "전 학년 간식 타임! (식당 3층 모임)",
-      content: "이번 주일 예배 후 3층 식당에서 전 학년 간식 타임(피자 & 음료)이 진행됩니다. 공과 공부를 마친 후 각 반 담임 선생님의 인솔 하에 3층 식당으로 이동해 주세요.",
+      content: "이번 주 토요예배 후 3층 식당에서 전 학년 간식 타임(피자 & 음료)이 진행됩니다. 공과 공부를 마친 후 각 반 담임 선생님의 인솔 하에 3층 식당으로 이동해 주세요.",
       author: "정하람 전도사",
-      date: "2026.09.13 (주일)",
+      date: "2026.09.12 (토)",
       isCurrent: true
     },
     {
@@ -50,7 +50,7 @@ const INITIAL_DATA = {
       tag: "행사 공지",
       time: "16:00",
       title: "중고등부 찬양팀 토요 정기 합주 연습 안내",
-      content: "이번 주 토요일 오후 4시 본당 예루살렘홀에서 주일 예배 찬양팀 합주 연습이 있습니다. 세션 및 싱어팀 학생들은 악보와 개인 악기를 지참하여 10분 전까지 도착해 주세요.",
+      content: "토요일 오후 4시 본당 예루살렘홀에서 토요예배 찬양팀 합주 연습이 있습니다. 세션 및 싱어팀 학생들은 악보와 개인 악기를 지참하여 10분 전까지 도착해 주세요.",
       author: "소예진 선생님",
       date: "2026.09.12 (토)",
       isCurrent: false
@@ -59,10 +59,10 @@ const INITIAL_DATA = {
       id: "notice_3",
       tag: "예배 공지",
       time: "11:00",
-      title: "9월 친구초청주일 및 웰컴 페스티벌 안내",
+      title: "9월 친구초청 토요예배 & 웰컴 페스티벌 안내",
       content: "새학기를 맞아 믿지 않는 친구들을 초청하는 '예랑 프렌즈 데이'가 열립니다. 친구를 위한 기도와 초청장 전달에 함께 동참해 주세요. 풍성한 웰컴 선물과 레크리에이션이 준비되어 있습니다.",
       author: "정하람 전도사",
-      date: "2026.09.06 (주일)",
+      date: "2026.09.05 (토)",
       isCurrent: false
     },
     {
@@ -80,9 +80,9 @@ const INITIAL_DATA = {
       tag: "사역 공지",
       time: "13:30",
       title: "3분기 교사 기도회 및 월례회",
-      content: "주일 3부 예배 후 소예배실에서 교사 월례회가 진행됩니다. 분반별 심방 현황 및 하반기 사역 기획 안건을 함께 나눕니다.",
+      content: "토요예배 후 소예배실에서 교사 월례회가 진행됩니다. 분반별 심방 현황 및 하반기 사역 기획 안건을 함께 나눕니다.",
       author: "김희순 부장집사",
-      date: "2026.08.23",
+      date: "2026.08.22",
       isCurrent: false
     }
   ],
@@ -128,7 +128,7 @@ const INITIAL_DATA = {
       badgeColor: "#f0fdfa",
       students: [
         { id: "s_mid_1", name: "김하람", roleInfo: "중2 / 새친구반 정착 학생", grade: "중2", avatar: "👧🏻", attendance: "출석", recentVisit: "새친구 4주 수료 후 중등부 적응 완료", phone: "010-5678-9012" },
-        { id: "s_mid_2", name: "강태우", roleInfo: "중3 / 중등부 회장", grade: "중3", avatar: "👦🏻", attendance: "출석", recentVisit: "친구초청주일 레크리에이션 준비 나눔", phone: "010-6666-7777" }
+        { id: "s_mid_2", name: "강태우", roleInfo: "중3 / 중등부 회장", grade: "중3", avatar: "👦🏻", attendance: "출석", recentVisit: "친구초청 토요예배 레크리에이션 준비 나눔", phone: "010-6666-7777" }
       ]
     }
   ],
@@ -152,7 +152,7 @@ const INITIAL_DATA = {
         steps: [
           { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 및 말씀 다이어리 전달 완료 ✓", completed: true },
           { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도제목 나눔", desc: "학교 적응 및 첫 신앙생활 상담 완료 ✓", completed: true },
-          { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "이번 주일 점심 시간 떡볶이 파티 예정 ⏳", completed: true },
+          { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "이번 주 토요예배 후 떡볶이 파티 예정 ⏳", completed: true },
           { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 고1 남학생반 정규 편성 예정", completed: false }
         ]
       },
@@ -428,8 +428,8 @@ const INITIAL_DATA = {
     ]
   },
   worshipDuty: {
-    date: "10/18",
-    subtitle: "정성된 마음으로 준비하는 예배",
+    date: "10/17 (토)",
+    subtitle: "정성된 마음으로 준비하는 토요예배",
     prePrayer: { name: "교사 & 리더", role: "예배 10분 전 본당", badge: "예배전" },
     prayer: { name: "김예원", role: "고등부 2학년", badge: "학생회" },
     scripture: { name: "이유리 학생", role: "중등부 3학년", badge: "성경" },
@@ -437,13 +437,13 @@ const INITIAL_DATA = {
   },
   calendarEvents: [
     // 10월
-    { id: "evt_1", date: "2026-10-25", title: "🎉 친구초청", type: "event", color: "orange" },
+    { id: "evt_1", date: "2026-10-24", title: "🎉 친구초청", type: "event", color: "orange" },
     // 과거 일정 (8월, 9월)
     { id: "evt_2", date: "2026-08-15", title: "🏕️ 여름수련회", type: "event", color: "mint" },
-    { id: "evt_3", date: "2026-09-06", title: "💻 스카준비", type: "event", color: "yellow" },
-    { id: "evt_4", date: "2026-09-20", title: "🍂 2학기 개강예배", type: "event", color: "orange" },
+    { id: "evt_3", date: "2026-09-05", title: "💻 스카준비", type: "event", color: "yellow" },
+    { id: "evt_4", date: "2026-09-19", title: "🍂 2학기 개강예배", type: "event", color: "orange" },
     // 향후 일정 (11월, 12월)
-    { id: "evt_5", date: "2026-11-15", title: "🌾 추수감사주일", type: "event", color: "yellow" },
+    { id: "evt_5", date: "2026-11-14", title: "🌾 추수감사 토요예배", type: "event", color: "yellow" },
     { id: "evt_6", date: "2026-12-25", title: "🎄 성탄축하예배", type: "event", color: "pink" }
   ],
   birthdays: [
@@ -627,6 +627,28 @@ function loadState() {
       }
       if (!parsed.notices || !Array.isArray(parsed.notices) || parsed.notices.length === 0) {
         parsed.notices = JSON.parse(JSON.stringify(INITIAL_DATA.notices));
+      }
+      // Migrate worship duty and notices to Saturday worship basis
+      if (parsed.worshipDuty) {
+        if (!parsed.worshipDuty.date || parsed.worshipDuty.date === "10/18") {
+          parsed.worshipDuty.date = "10/17 (토)";
+        }
+        if (!parsed.worshipDuty.subtitle || parsed.worshipDuty.subtitle.includes("주일") || parsed.worshipDuty.subtitle === "정성된 마음으로 준비하는 예배") {
+          parsed.worshipDuty.subtitle = "정성된 마음으로 준비하는 토요예배";
+        }
+      }
+      if (parsed.notices && Array.isArray(parsed.notices)) {
+        parsed.notices.forEach(n => {
+          if (n.date && n.date.includes("(주일)")) {
+            n.date = n.date.replace("2026.09.13 (주일)", "2026.09.12 (토)").replace("(주일)", "(토)");
+          }
+          if (n.content && n.content.includes("주일")) {
+            n.content = n.content.replace("이번 주일 예배 후", "이번 주 토요예배 후").replace("주일 예배", "토요예배");
+          }
+          if (n.title && n.title.includes("친구초청주일")) {
+            n.title = n.title.replace("친구초청주일", "친구초청 토요예배");
+          }
+        });
       }
       return parsed;
     } catch (e) {
@@ -940,7 +962,7 @@ function addNewcomerStudent() {
     steps: [
       { week: 1, title: "새친구 등록 & 환영 선물 증정", desc: "예랑 웰컴 키트 전달 완료 ✓", completed: true },
       { week: 2, title: "소예진 담임교사 1:1 카톡 인사 & 기도나눔", desc: "학교 적응 및 첫 신앙생활 상담 예정", completed: false },
-      { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "주일 점심 시간 또래 친구 교제 예정", completed: false },
+      { week: 3, title: "분반 또래 친구 소개 & 간식 교제", desc: "토요예배 후 또래 친구 교제 예정", completed: false },
       { week: 4, title: "새친구반 수료 축하 & 정규 분반 등반", desc: "수료패 증정 및 정규 분반 편성 예정", completed: false }
     ]
   });
@@ -1858,7 +1880,7 @@ function renderAttendanceSection() {
     ` : `
       <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
       <div style="font-size: 14px; font-weight: 800; color: #475569; margin-bottom: 4px;">등록된 나의 예배 출결 내역이 없습니다</div>
-      <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">이번 주 주일 예배에 사전 결석 또는 지각 예정이실 경우<br>아래 버튼을 눌러 등록해주세요.</div>
+      <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">이번 주 토요예배에 사전 결석 또는 지각 예정이실 경우<br>아래 버튼을 눌러 등록해주세요.</div>
     `;
     listEl.appendChild(emptyEl);
     return;
@@ -3244,15 +3266,15 @@ const ROLES = {
     id: "pastor",
     name: "정하람 전도사",
     title: "이룸교회 중고등부 예랑",
-    subtitle: "2026년 10월 13일 주일",
+    subtitle: "2026년 10월 17일 (토)",
     badge: "✝️ 전도사 모드",
     tagClass: "tag-pastor",
     activeClass: "active-pastor",
     tabs: [
-      { target: "view-home", icon: "home", label: "홈", title: "이룸교회 중고등부 예랑", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
+      { target: "view-home", icon: "home", label: "홈", title: "이룸교회 중고등부 예랑", subtitle: "2026년 10월 17일 (토)" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 토요예배 출결" },
       { target: "view-students", icon: "menu_book", label: "공과/새친구반", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
-      { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
+      { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.12 토요 교사 회의 안건" },
       { target: "view-accounting", icon: "account_balance_wallet", label: "재정", title: "부서 재정 및 회계 장부", subtitle: "실시간 실잔액 및 전체 교사 영수증 감독" }
     ],
     defaultTab: "view-home",
@@ -3267,9 +3289,9 @@ const ROLES = {
     tagClass: "tag-accountant",
     activeClass: "active-accountant",
     tabs: [
-      { target: "view-home", icon: "home", label: "홈", title: "회계 & 행정 대시보드", subtitle: "2026년 10월 13일 주일" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" },
-      { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.13 주일 교사 회의 안건" },
+      { target: "view-home", icon: "home", label: "홈", title: "회계 & 행정 대시보드", subtitle: "2026년 10월 17일 (토)" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 토요예배 출결" },
+      { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.12 토요 교사 회의 안건" },
       { target: "view-accounting", icon: "account_balance_wallet", label: "회계장부", title: "부서 전체 실잔액 & 장부", subtitle: "영수증 정산 승인 및 구글 시트 연동" }
     ],
     defaultTab: "view-home",
@@ -3284,9 +3306,9 @@ const ROLES = {
     tagClass: "tag-deacon",
     activeClass: "active-teacher",
     tabs: [
-      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
       { target: "view-students", icon: "menu_book", label: "공과/새친구반", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -3302,9 +3324,9 @@ const ROLES = {
     tagClass: "tag-teacher",
     activeClass: "active-teacher",
     tabs: [
-      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
       { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "고3 분반 학생 출결 및 심방 지도" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -3320,9 +3342,9 @@ const ROLES = {
     tagClass: "tag-teacher",
     activeClass: "active-teacher",
     tabs: [
-      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
       { target: "view-teacher-new", icon: "spa", label: "새친구반", title: "새친구반 적응 & 정착", subtitle: "새친구반 4주 체크리스트 & 등반 관리" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -3338,9 +3360,9 @@ const ROLES = {
     tagClass: "tag-teacher",
     activeClass: "active-teacher",
     tabs: [
-      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 13일 주일" },
+      { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
       { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "분반 학생 출결 및 심방 지도" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 주일 예배 출결" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -3356,8 +3378,8 @@ const ROLES = {
     tagClass: "tag-student",
     activeClass: "active-student",
     tabs: [
-      { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "주일 섬김이 · D-Day · 공지사항" },
-      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 예배 출결 등록" },
+      { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
+      { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
     ],
     defaultTab: "view-home",
@@ -4301,7 +4323,7 @@ function initClock() {
   const timeEl = document.getElementById("currentTime");
   const headerDateEl = document.getElementById("headerLiveDate");
 
-  const DAY_NAMES = ["주일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+  const DAY_NAMES = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
 
   function updateClockAndDate() {
     const now = new Date();
@@ -4323,7 +4345,7 @@ function initClock() {
   }
 
   updateClockAndDate();
-  setInterval(updateClockAndDate, 10000); // 10초마다 실시간 갱신
+  setInterval(updateClockAndDate, 30000);
 }
 
 // --- 이번 주 예배 섬김 (Worship Duty) Rendering & Events ---
@@ -4333,8 +4355,8 @@ function renderWorshipDutySection() {
 
   const dateEl = document.getElementById("dutyDateDisplay");
   const subEl = document.getElementById("dutySubtitleDisplay");
-  if (dateEl) dateEl.textContent = duty.date || "10/18";
-  if (subEl) subEl.textContent = duty.subtitle || "정성된 마음으로 준비하는 예배";
+  if (dateEl) dateEl.textContent = duty.date || "10/17 (토)";
+  if (subEl) subEl.textContent = duty.subtitle || "정성된 마음으로 준비하는 토요예배";
 
   // 1) 예배 전 기도회
   const preName = document.getElementById("dutyPrePrayerName");
@@ -4500,7 +4522,7 @@ window.openEditWorshipDutyModalDirect = function() {
   }
 
   const dateInput = document.getElementById("dutyDateInput");
-  if (dateInput) dateInput.value = duty.date || "10/18";
+  if (dateInput) dateInput.value = duty.date || "10/17 (토)";
 
   // 1) 예배 전 기도회
   buildOptions(
@@ -4591,7 +4613,7 @@ function initWorshipDutyEvents() {
       const annName = resolveName("dutyAnnouncementNameSelect", "dutyAnnouncementNameInput");
       const annRole = document.getElementById("dutyAnnouncementRoleInput").value.trim();
 
-      appState.worshipDuty.date = date || "10/18";
+      appState.worshipDuty.date = date || "10/17 (토)";
       if (!appState.worshipDuty.prePrayer) appState.worshipDuty.prePrayer = {};
       appState.worshipDuty.prePrayer.name = preName;
       appState.worshipDuty.prePrayer.role = preRole;

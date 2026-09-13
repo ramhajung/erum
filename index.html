@@ -131,7 +131,7 @@
       }
     };
   </script>
-    <link rel="stylesheet" href="style.css?v=20260913_hide_view_all">
+    <link rel="stylesheet" href="style.css?v=20260913_saturday_worship">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -535,8 +535,8 @@
                   <span class="material-symbols-outlined text-[19px]">assignment_ind</span>
                 </div>
                 <div>
-                  <h2 class="text-title-md font-bold text-text-primary" id="duty-heading">이번 주 예배 섬김 (<span id="dutyDateDisplay">10/18</span>)</h2>
-                  <p class="text-[11px] text-text-muted" id="dutySubtitleDisplay">정성된 마음으로 준비하는 예배</p>
+                  <h2 class="text-title-md font-bold text-text-primary" id="duty-heading">이번 주 예배 섬김 (<span id="dutyDateDisplay">10/17 (토)</span>)</h2>
+                  <p class="text-[11px] text-text-muted" id="dutySubtitleDisplay">정성된 마음으로 준비하는 토요예배</p>
                 </div>
               </div>
               <button id="openEditWorshipDutyBtn" onclick="openEditWorshipDutyModalDirect()" aria-label="예배 섬김 명단 수정" class="px-2.5 py-1.5 text-xs font-bold bg-primary text-white hover:bg-primary/90 rounded-xl items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer" style="display: none;" type="button" title="예배 섬김 명단 수정">
@@ -703,7 +703,7 @@
            =================================================================== -->
       <section class="screen-view" id="view-agenda">
         <div class="agenda-date-badge">
-          📅 2026.09.13 주일 교사 회의
+          📅 2026.09.12 토요 교사 회의
         </div>
 
         <!-- Section: 확정된 회의 안건 -->
@@ -817,7 +817,7 @@
         <!-- Sub-View 3: 예배 출결 & 대타 관리 (Image 3 from prompt 1) -->
         <div id="subViewAttendance" style="display:none;">
           <div style="font-size: 11px; font-weight:700; color:var(--text-muted); margin-bottom: 6px;">
-            이룸교회 중고등부 예랑 · 예배 출결 & 공백 관리 (2026.09.20 주일)
+            이룸교회 중고등부 예랑 · 예배 출결 & 공백 관리 (2026.09.19 토)
           </div>
 
           <!-- Stats Summary Bar (전도사에게만 노출) -->
@@ -1239,7 +1239,7 @@
             <label>희망하는 상담 방식</label>
             <select id="counselMethodInput">
               <option value="카카오톡 1:1 비밀 상담">카카오톡 1:1 비밀 상담 💬</option>
-              <option value="주일 예배 후 교회 카페 대면 심방">주일 예배 후 교회 카페 대면 심방 ☕</option>
+              <option value="토요예배 후 교회 카페 대면 심방">토요예배 후 교회 카페 대면 심방 ☕</option>
               <option value="조용한 전화 통화">조용한 전화 통화 📞</option>
             </select>
           </div>
@@ -1258,14 +1258,14 @@
     <!-- Fixed Bottom Navigation Bar (Stitch Apple/Toss Dock Shell) -->
     <nav aria-label="하단 네비게이션" class="bottom-tab-bar bg-surface/85 backdrop-blur-xl fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center max-w-container-max mx-auto px-space-xs py-2 border-t border-outline-variant/20 shadow-[0_-8px_24px_rgba(60,50,40,0.06)]" id="bottomTabBar">
       <!-- 1: 홈 (Active) -->
-      <button class="tab-btn flex flex-col items-center justify-center text-primary font-bold gap-0.5 py-1 px-3 rounded-2xl active:scale-95 transition-all duration-150 relative group active" data-target="view-home" data-title="이룸교회 중고등부 예랑" data-subtitle="2026년 10월 13일 주일" type="button">
+      <button class="tab-btn flex flex-col items-center justify-center text-primary font-bold gap-0.5 py-1 px-3 rounded-2xl active:scale-95 transition-all duration-150 relative group active" data-target="view-home" data-title="이룸교회 중고등부 예랑" data-subtitle="2026년 10월 17일 (토)" type="button">
         <div class="tab-icon-wrap w-10 h-7 rounded-full bg-primary-fixed/50 flex items-center justify-center transition-colors">
           <span class="material-symbols-outlined text-[23px]" style="font-variation-settings: 'FILL' 1;">home</span>
         </div>
         <span class="text-[11px] font-bold tracking-tight">홈</span>
       </button>
       <!-- 2: 스케줄 -->
-      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-scheduler" data-title="예랑 스마트 스케줄러" data-subtitle="사역 캘린더 · 생일 · 행사 D-Day · 예배 출결" type="button">
+      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-scheduler" data-title="예랑 스마트 스케줄러" data-subtitle="사역 캘린더 · 생일 · 행사 D-Day · 토요예배 출결" type="button">
         <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center">
           <span class="material-symbols-outlined text-[23px]">calendar_today</span>
         </div>
@@ -1279,7 +1279,7 @@
         <span class="text-[11px] font-semibold tracking-tight">공과/새친구반</span>
       </button>
       <!-- 4: 회의 -->
-      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-agenda" data-title="이번 주 교사 회의 안건" data-subtitle="2026.09.13 주일 교사 회의 안건" type="button">
+      <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-agenda" data-title="이번 주 교사 회의 안건" data-subtitle="2026.09.12 토요 교사 회의 안건" type="button">
         <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center relative">
           <span class="material-symbols-outlined text-[23px]">diversity_3</span>
           <span id="meetingNavBadgeStatic" class="meeting-nav-badge hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none shadow-sm">0</span>
@@ -1357,7 +1357,7 @@
           </div>
           <div class="form-group">
             <label>안건 제목</label>
-            <input type="text" id="agendaTitleInput" placeholder="예: 2학기 친구초청주일 특별 순서 편성의 건" required>
+            <input type="text" id="agendaTitleInput" placeholder="예: 2학기 친구초청 토요예배 특별 순서 편성의 건" required>
           </div>
           <div class="form-group">
             <label>제안 사유 및 설명</label>
@@ -1397,7 +1397,7 @@
       </div>
     </div>
 
-    <!-- Modal 3: 나의 주일 불참/지각 사전 등록 모달 -->
+    <!-- Modal 3: 나의 토요예배 불참/지각 사전 등록 모달 -->
     <div class="modal-backdrop" id="absentModal">
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
@@ -1429,7 +1429,7 @@
           </div>
           <div class="form-group">
             <label>상세 메모</label>
-            <input type="text" id="absentMemoInput" placeholder="예: 회사 파견 업무로 인해 주일 불참합니다." required>
+            <input type="text" id="absentMemoInput" placeholder="예: 학원 보강 일정으로 인해 토요예배 불참합니다." required>
           </div>
           <div class="form-group">
             <label>도착 예정 시간</label>
@@ -1866,8 +1866,8 @@
         </div>
         <form id="worshipDutyForm" class="space-y-3.5" style="padding: 10px 0 24px;">
           <div class="form-group">
-            <label style="font-size:12px; font-weight:700; color:#334155;">예배 주일 날짜</label>
-            <input type="text" id="dutyDateInput" placeholder="예: 10/18" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
+            <label style="font-size:12px; font-weight:700; color:#334155;">예배 날짜 (토요일)</label>
+            <input type="text" id="dutyDateInput" placeholder="예: 10/17 (토)" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
           </div>
 
           <!-- 1) 예배 전 기도회 -->
@@ -2219,7 +2219,7 @@
           <div id="calEventFieldsGroup" style="display:none;">
             <div class="form-group" style="margin-bottom:10px;">
               <label style="font-size:12px; font-weight:800; color:#2d261e;">행사명</label>
-              <input type="text" id="calEventTitleInput" class="field-input" placeholder="예: 친구초청주일, 야외예배" style="width:100%; margin-top:4px;">
+              <input type="text" id="calEventTitleInput" class="field-input" placeholder="예: 친구초청 토요예배, 야외예배" style="width:100%; margin-top:4px;">
             </div>
             <div class="form-group" style="margin-bottom:10px;">
               <label style="font-size:12px; font-weight:800; color:#2d261e;">뱃지 색상</label>
@@ -2429,7 +2429,7 @@
             </div>
             <div class="form-group mb-0">
               <label for="noticeTimeInput">시간 / 모임 일시</label>
-              <input type="text" id="noticeTimeInput" placeholder="예: 12시, 11:00, 주일 점심" value="12시" required>
+              <input type="text" id="noticeTimeInput" placeholder="예: 12시, 11:00, 토요예배 후" value="12시" required>
             </div>
           </div>
 
@@ -2475,7 +2475,7 @@
 
   </div>
 
-  <script src="app.js?v=20260913_hide_view_all"></script>
+  <script src="app.js?v=20260913_saturday_worship"></script>
 </body>
 </html>
 

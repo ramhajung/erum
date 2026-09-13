@@ -1993,7 +1993,7 @@ button:active, .btn:active, .interactive-card:active {
   margin-left: auto;
 }
 
-/* 1) 이번 주 주일 섬김이 (Image 3 exact match) */
+/* 1) 이번 주 토요예배 섬김이 (Image 3 exact match) */
 .home-service-outer-card {
   background: #def4ec;
   border: 1px solid #c8ede1;
