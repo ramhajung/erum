@@ -1689,29 +1689,6 @@ function renderClassMinistrySection() {
         }).join('')}
       </div>
 
-      <!-- Section 2: 이번 주 공과 교재 요약 -->
-      <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
-        <span>📑 금주 공과 나눔 핵심 가이드</span>
-        <div style="display:flex; align-items:center; gap:6px;">
-          <span style="font-size:11px; font-weight:700; color:#888;">${bibleCurriculum.scripture || '시편 119:105'}</span>
-          ${isPastor ? `
-            <button type="button" onclick="openEditCurriculumModalDirect('bible')" style="font-size:11px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 4px;">
-              수정 ✏️
-            </button>
-          ` : ''}
-        </div>
-      </div>
-      <div class="card p-4" style="background:#faf8f5; border:1px solid #ebd9c8; border-radius:18px;">
-        <div style="font-size:12.5px; font-weight:800; color:#9a3412; margin-bottom:4px;">
-          ${isStudent ? '💡 이번 주 나눔 질문' : '💡 교사 나눔 팁'}
-        </div>
-        <p style="font-size:12px; color:#57534e; line-height:1.6; margin:0;">
-          ${isStudent
-            ? (bibleCurriculum.studentQuestion ? bibleCurriculum.studentQuestion.replace(/\n/g, '<br>') : '“주의 말씀은 내 발에 등이요 내 길에 빛이니이다” (시편 119:105)<br>이번 주 한 주 동안 나를 이끌어 주신 하나님의 말씀이나 분반 친구들과 나누고 싶은 감사 제목을 나누어 보세요.')
-            : (bibleCurriculum.teacherTip ? bibleCurriculum.teacherTip.replace(/\n/g, '<br>') : '수험생 아이들이 진로에 대한 불안감 대신 하나님의 말씀을 발의 등불 삼을 수 있도록 격려해주세요. 말씀 묵상 나눔 후 함께 손잡고 축복 기도하는 시간을 갖습니다.')}
-        </p>
-      </div>
-
       ${isStudent ? `
         <div style="display:flex; gap:8px; margin-top:16px;">
           <button class="btn-primary" style="flex:1; background:#ea580c; border:none; padding:12px; font-size:13.5px; font-weight:800; border-radius:14px; cursor:pointer;" onclick="switchToTab('view-student-counsel')">
