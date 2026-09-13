@@ -352,6 +352,71 @@ const INITIAL_DATA = {
         }
       ],
       pending: []
+    },
+    {
+      id: "meet_20260815",
+      date: "2026.08.15",
+      title: "2026.08.15 토요 교사 회의 (광복절 연휴)",
+      isCurrent: false,
+      status: "closed",
+      confirmed: [
+        {
+          id: 501,
+          title: "[안건 1] 광복절 연휴 청소년부 연합 찬양예배 순서 점검",
+          author: "작성: 정하람 전도사",
+          statusBadge: "의결 완료 ✓",
+          type: "cyan"
+        },
+        {
+          id: 502,
+          title: "[안건 2] 2학기 교사 성경통독 챌린지 및 기도 짝꿍 편성",
+          author: "작성: 박진우 선생님",
+          statusBadge: "의결 완료 ✓",
+          type: "yellow"
+        }
+      ],
+      pending: []
+    },
+    {
+      id: "meet_20260808",
+      date: "2026.08.08",
+      title: "2026.08.08 토요 교사 회의",
+      isCurrent: false,
+      status: "closed",
+      confirmed: [
+        {
+          id: 601,
+          title: "[안건 1] 여름성경학교 및 수련회 결산 안전 점검 보고",
+          author: "작성: 정하람 전도사",
+          statusBadge: "의결 완료 ✓",
+          type: "cyan"
+        }
+      ],
+      pending: []
+    },
+    {
+      id: "meet_20260725",
+      date: "2026.07.25",
+      title: "2026.07.25 토요 교사 회의 (수련회 D-1주)",
+      isCurrent: false,
+      status: "closed",
+      confirmed: [
+        {
+          id: 701,
+          title: "[안건 1] 2026 예랑 하계 수련회 프로그램 및 조편성 최종 확정",
+          author: "작성: 정하람 전도사",
+          statusBadge: "의결 완료 ✓",
+          type: "cyan"
+        },
+        {
+          id: 702,
+          title: "[안건 2] 수련회 안전 수칙 및 응급 비상 연락망 공유",
+          author: "작성: 김대한 선생님",
+          statusBadge: "의결 완료 ✓",
+          type: "peach"
+        }
+      ],
+      pending: []
     }
   ],
   attendance: [
@@ -1012,6 +1077,13 @@ function loadState() {
       }
       if (!parsed.meetings || !Array.isArray(parsed.meetings) || parsed.meetings.length === 0) {
         parsed.meetings = JSON.parse(JSON.stringify(INITIAL_DATA.meetings));
+      } else {
+        INITIAL_DATA.meetings.forEach(initM => {
+          if (!parsed.meetings.some(m => m.id === initM.id)) {
+            parsed.meetings.push(JSON.parse(JSON.stringify(initM)));
+          }
+        });
+        parsed.meetings.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
       }
       if (!parsed.currentMeetingId) {
         parsed.currentMeetingId = "meet_20260912";
@@ -2230,58 +2302,38 @@ function renderAgendaSection() {
     newMeetingBtn.style.display = isPastor ? "flex" : "none";
   }
 
-  // 상단 셀렉트박스 렌더링
-  if (meetingSelect && Array.isArray(appState.meetings)) {
-    meetingSelect.innerHTML = appState.meetings.map(m => {
-      const isCur = m.isCurrent || m.status === "active";
-      const isSel = m.id === activeMeet.id;
-      const label = `${m.date} (${isCur ? "진행 중" : "보관/의결완료"}) - ${m.title}`;
-      return `<option value="${m.id}" ${isSel ? "selected" : ""}>${label}</option>`;
-    }).join("");
-  }
+  // 상단 단일 회의 헤더 카드 업데이트
+  const headerDate = document.getElementById("headerMeetingDate");
+  const headerBadge = document.getElementById("headerMeetingBadge");
+  const headerTitle = document.getElementById("headerMeetingTitle");
+  const headerIcon = document.getElementById("headerMeetingStatusIcon");
 
-  // 상단 가로 칩 스크롤 바 렌더링
-  if (meetingChipsBar && Array.isArray(appState.meetings)) {
-    meetingChipsBar.innerHTML = appState.meetings.map(m => {
-      const isCur = m.isCurrent || m.status === "active";
-      const isSel = m.id === activeMeet.id;
-      if (isSel) {
-        return `
-          <button type="button" class="meeting-chip-btn px-3 py-1.5 text-xs font-bold rounded-full bg-primary text-white shadow-sm flex items-center gap-1.5 flex-shrink-0 transition-all cursor-pointer" data-meet-id="${m.id}">
-            <span>${m.date}</span>
-            ${isCur ? '<span class="text-[10px] bg-white/25 px-1.5 py-0.2 rounded-full">진행 중</span>' : '<span class="text-[10px] bg-black/20 px-1.5 py-0.2 rounded-full">보관됨</span>'}
-          </button>
-        `;
+  if (activeMeet) {
+    if (headerDate) headerDate.textContent = activeMeet.date;
+    if (headerTitle) headerTitle.textContent = activeMeet.title || `${activeMeet.date} 토요 교사 회의`;
+    if (headerBadge) {
+      if (isCurrentMeeting) {
+        headerBadge.textContent = "진행 중 (이번 주)";
+        headerBadge.className = "text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-primary text-white";
+        if (headerIcon) headerIcon.textContent = "📅";
       } else {
-        return `
-          <button type="button" class="meeting-chip-btn px-3 py-1.5 text-xs font-semibold rounded-full bg-surface-container/80 hover:bg-surface-container text-secondary border border-outline-variant/30 flex items-center gap-1 flex-shrink-0 transition-all cursor-pointer" data-meet-id="${m.id}">
-            <span>${m.date}</span>
-            ${isCur ? '<span class="text-[10px] text-primary font-bold">진행</span>' : ''}
-          </button>
-        `;
+        headerBadge.textContent = "의결 완료 (과거 기록)";
+        headerBadge.className = "text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-700 text-white";
+        if (headerIcon) headerIcon.textContent = "📂";
       }
-    }).join("");
-
-    meetingChipsBar.querySelectorAll(".meeting-chip-btn").forEach(chip => {
-      chip.addEventListener("click", () => {
-        const targetId = chip.getAttribute("data-meet-id");
-        if (targetId && targetId !== activeMeet.id) {
-          selectMeeting(targetId);
-        }
-      });
-    });
+    }
   }
 
   // 지난 회의 보관함 알림 배너
   if (archiveNoticeRoot) {
     if (!isCurrentMeeting) {
       archiveNoticeRoot.innerHTML = `
-        <div class="p-3 mb-3 bg-amber-50/90 border border-amber-200 rounded-2xl flex items-center justify-between gap-2 text-xs shadow-sm">
-          <div class="flex items-center gap-2 text-amber-900 font-semibold min-w-0">
-            <span class="text-base">🔒</span>
-            <span class="truncate"><strong>${activeMeet.date}</strong> 지난 회의 보관함 (의결 완료 기록)</span>
+        <div class="p-3 mb-3 bg-amber-50/95 border border-amber-200 rounded-2xl flex items-center justify-between gap-2 text-xs shadow-xs">
+          <div class="flex items-center gap-2 text-amber-950 font-bold min-w-0">
+            <span class="text-base">📂</span>
+            <span class="truncate"><strong>${activeMeet.date}</strong> 과거 회의 기록 열람 중 (의결 완료)</span>
           </div>
-          <button type="button" class="btn-return-current-meet px-2.5 py-1 text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all flex-shrink-0 cursor-pointer shadow-xs">
+          <button type="button" class="btn-return-current-meet px-2.5 py-1 text-[11px] font-black bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-all flex-shrink-0 cursor-pointer shadow-xs whitespace-nowrap">
             금주 회의로 ↩️
           </button>
         </div>
@@ -2627,6 +2679,138 @@ function rejectAgenda(id) {
   showToast(`'${item.title}' 안건이 반려 처리되었습니다. (소통함 연동 완료)`, "warn");
 }
 
+// =============================================================================
+// 회의 기록 보관함 (Monthly Meeting Archive Modal)
+// =============================================================================
+let selectedMeetingArchiveMonth = "ALL";
+
+function openMeetingArchiveModal() {
+  selectedMeetingArchiveMonth = "ALL";
+  renderMeetingArchiveModal();
+  openModal("meetingArchiveModal");
+}
+
+window.openMeetingArchiveModal = openMeetingArchiveModal;
+
+function renderMeetingArchiveModal() {
+  const filterBar = document.getElementById("meetingMonthFilterBar");
+  const listContainer = document.getElementById("meetingArchiveListContainer");
+  const totalCountEl = document.getElementById("meetingArchiveTotalCount");
+  if (!listContainer) return;
+
+  const meetings = Array.isArray(appState.meetings) ? appState.meetings : [];
+  if (totalCountEl) {
+    totalCountEl.textContent = `총 ${meetings.length}회차`;
+  }
+
+  // 월별 목록 추출 (예: 2026.09, 2026.08, 2026.07)
+  const monthMap = new Map();
+  meetings.forEach(m => {
+    if (m.date) {
+      const match = m.date.match(/^(\d{4})\.(\d{2})/);
+      if (match) {
+        const monthKey = `${match[1]}.${match[2]}`;
+        const monthNum = parseInt(match[2], 10);
+        const monthName = `${monthNum}월`;
+        if (!monthMap.has(monthKey)) {
+          monthMap.set(monthKey, { key: monthKey, name: monthName, count: 0 });
+        }
+        monthMap.get(monthKey).count++;
+      }
+    }
+  });
+
+  const monthList = Array.from(monthMap.values());
+
+  // 월별 필터 칩 렌더링
+  if (filterBar) {
+    filterBar.innerHTML = `
+      <button type="button" class="meeting-month-chip ${selectedMeetingArchiveMonth === 'ALL' ? 'active' : ''}" data-month="ALL">
+        전체 (${meetings.length})
+      </button>
+      ${monthList.map(m => `
+        <button type="button" class="meeting-month-chip ${selectedMeetingArchiveMonth === m.key ? 'active' : ''}" data-month="${m.key}">
+          ${m.name} (${m.count})
+        </button>
+      `).join('')}
+    `;
+
+    filterBar.querySelectorAll(".meeting-month-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        selectedMeetingArchiveMonth = chip.getAttribute("data-month") || "ALL";
+        renderMeetingArchiveModal();
+      });
+    });
+  }
+
+  // 선택된 월의 회의 필터링
+  const filteredMeetings = (selectedMeetingArchiveMonth === "ALL")
+    ? meetings
+    : meetings.filter(m => m.date && m.date.startsWith(selectedMeetingArchiveMonth));
+
+  const activeMeet = getActiveOrCurrentMeeting();
+
+  if (filteredMeetings.length === 0) {
+    listContainer.innerHTML = `
+      <div style="text-align:center; padding:28px 16px; color:#8c786e; font-size:12.5px; background:#fffcf9; border-radius:16px; border:1px dashed #e6d7cc;">
+        해당 기간에 등록된 회의 기록이 없습니다.
+      </div>
+    `;
+    return;
+  }
+
+  listContainer.innerHTML = filteredMeetings.map(m => {
+    const isCur = Boolean(m.isCurrent || m.status === "active");
+    const isSelected = Boolean(activeMeet && m.id === activeMeet.id);
+    const confirmedCount = Array.isArray(m.confirmed) ? m.confirmed.length : 0;
+    const pendingCount = Array.isArray(m.pending) ? m.pending.length : 0;
+
+    return `
+      <div onclick="handleSelectMeetingFromArchive('${m.id}')" style="background:${isSelected ? 'rgba(150, 67, 43, 0.05)' : '#ffffff'}; border:1.5px solid ${isSelected ? 'var(--color-primary, #96432b)' : '#ede4db'}; border-radius:18px; padding:14px; box-shadow:${isSelected ? '0 3px 12px rgba(150, 67, 43, 0.12)' : '0 2px 6px rgba(60, 45, 35, 0.03)'}; cursor:pointer; transition:all 0.18s ease;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; gap:8px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:12.5px; font-weight:800; color:#1f2937; letter-spacing:-0.2px;">${m.date}</span>
+            ${isCur ? `
+              <span style="font-size:10px; font-weight:800; background:#96432b; color:#fff; padding:2px 7px; border-radius:6px;">이번 주 진행 중</span>
+            ` : `
+              <span style="font-size:10px; font-weight:800; background:#dcfce7; color:#166534; padding:2px 7px; border-radius:6px; border:1px solid #bbf7d0;">의결 완료 ✓</span>
+            `}
+          </div>
+          ${isSelected ? `
+            <span style="font-size:10.5px; font-weight:800; color:#96432b; background:#fff; padding:2px 8px; border-radius:8px; border:1px solid rgba(150,67,43,0.3); display:inline-flex; align-items:center; gap:3px;">
+              <span>열람 중</span> <span>✓</span>
+            </span>
+          ` : `
+            <span style="font-size:11px; font-weight:700; color:#9ca3af;">열람하기 →</span>
+          `}
+        </div>
+
+        <div style="font-size:13.5px; font-weight:800; color:#18181b; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          ${m.title || `${m.date} 토요 교사 회의`}
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; font-size:11.5px; color:#71717a; flex-wrap:wrap;">
+          <span style="font-weight:700; color:#3f3f46;">📌 확정 안건 ${confirmedCount}건</span>
+          ${pendingCount > 0 ? `<span style="color:#d97706; font-weight:700;">· ⏳ 제안 안건 ${pendingCount}건</span>` : ''}
+          ${m.confirmed && m.confirmed.length > 0 ? `
+            <span style="color:#a1a1aa; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px;">
+              · ${m.confirmed[0].title}
+            </span>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.handleSelectMeetingFromArchive = function(meetingId) {
+  selectMeeting(meetingId);
+  closeModal("meetingArchiveModal");
+  const meet = appState.meetings.find(m => m.id === meetingId);
+  const dateStr = meet ? meet.date : "";
+  showToast(`📂 ${dateStr} 교사 회의 기록으로 이동했습니다.`);
+};
+
 function initAgendaEvents() {
   const openModalBtn = document.getElementById("openAddAgendaModalBtn");
   if (openModalBtn) {
@@ -2668,11 +2852,11 @@ function initAgendaEvents() {
     });
   }
 
-  // 상단 회의 일자 셀렉트 변경 이벤트
-  const meetingSelect = document.getElementById("meetingDateSelect");
-  if (meetingSelect) {
-    meetingSelect.addEventListener("change", (e) => {
-      selectMeeting(e.target.value);
+  // 상단 회의 아카이브 열기 버튼 이벤트
+  const openArchiveBtn = document.getElementById("openMeetingArchiveBtn");
+  if (openArchiveBtn) {
+    openArchiveBtn.addEventListener("click", () => {
+      openMeetingArchiveModal();
     });
   }
 

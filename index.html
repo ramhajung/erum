@@ -744,23 +744,33 @@
            TAB 2: 이번 주 교사 회의 안건 (Image 2)
            =================================================================== -->
       <section class="screen-view" id="view-agenda">
-        <!-- 회의 일자 네비게이션 & 스위처 (1안: 상단 회의 일자 선택 및 칩 스크롤) -->
-        <div class="meeting-header-bar flex items-center justify-between gap-2 mb-2.5">
-          <div class="relative flex-1 min-w-0">
-            <select id="meetingDateSelect" class="w-full text-xs font-bold px-3 py-2 rounded-xl border border-primary/30 bg-surface-container/60 text-primary focus:bg-white focus:border-primary outline-none transition-all cursor-pointer appearance-none pr-7">
-              <!-- Populated dynamically by JS -->
-            </select>
-            <span class="material-symbols-outlined text-[18px] text-primary absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
-          </div>
+        <!-- 회의 일자 네비게이션 & 스위처 (1안: 세련된 단일 회의 헤더 바 + 회의 기록 보관함 모달) -->
+        <div class="meeting-header-card-wrap flex items-center justify-between gap-2 mb-3">
+          <button type="button" id="openMeetingArchiveBtn" class="flex-1 min-w-0 bg-white hover:bg-surface-container-low border border-primary/25 hover:border-primary/50 rounded-2xl p-3 flex items-center justify-between gap-2 text-left shadow-xs transition-all active:scale-[0.99] cursor-pointer group">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div id="headerMeetingStatusIcon" class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 text-base font-black">
+                📅
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span id="headerMeetingDate" class="text-xs font-black text-text-primary tracking-tight">2026.09.12</span>
+                  <span id="headerMeetingBadge" class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-primary text-white">진행 중</span>
+                </div>
+                <div id="headerMeetingTitle" class="text-[11.5px] font-semibold text-text-secondary truncate mt-0.5">
+                  2026.09.12 토요 교사 회의
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-primary text-xs font-bold flex-shrink-0 bg-primary/5 group-hover:bg-primary/10 px-2.5 py-1.5 rounded-xl border border-primary/15 transition-colors">
+              <span class="text-[11px] font-black">과거 기록</span>
+              <span class="material-symbols-outlined text-[16px]">calendar_month</span>
+            </div>
+          </button>
+
           <!-- 전도사 전용 새 회의 개설 버튼 -->
-          <button type="button" id="openNewMeetingBtn" class="px-2.5 py-1.5 text-[11.5px] font-bold bg-primary text-white rounded-xl shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-1 flex-shrink-0" style="display:none;" title="새 회의 개설">
+          <button type="button" id="openNewMeetingBtn" class="px-3 py-3 text-xs font-black bg-primary text-white rounded-2xl shadow-xs hover:opacity-90 active:scale-95 transition-all flex items-center gap-1 flex-shrink-0 cursor-pointer" style="display:none;" title="새 회의 개설">
             <span>＋</span> <span>새 회의</span>
           </button>
-        </div>
-
-        <!-- 빠른 날짜 선택 가로 칩 스크롤 바 -->
-        <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-3 pt-0.5" id="meetingDateChipsBar">
-          <!-- Populated dynamically by JS -->
         </div>
 
         <!-- 지난 회의 열람 알림 바 (과거 회의 선택 시 노출) -->
@@ -1460,6 +1470,36 @@
             <button type="submit" class="btn-orange" style="flex:1.5; margin-top:0;">수정 저장</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal 2-1: 교사 회의 기록 보관함 모달 (Meeting Archive Modal) -->
+    <div class="modal-backdrop" id="meetingArchiveModal">
+      <div class="bottom-sheet" style="max-height: 88%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="margin-bottom: 12px;">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="sheet-title flex items-center gap-1.5 text-[17px] font-black text-text-primary">
+                <span>📂</span>
+                <span>회의 기록 보관함</span>
+              </h3>
+              <span id="meetingArchiveTotalCount" class="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary">0회차</span>
+            </div>
+            <p class="text-[11.5px] font-medium text-text-muted mt-0.5">과거 진행된 주차별 교사 회의와 안건 의결 기록</p>
+          </div>
+          <button class="sheet-close-btn" data-close="meetingArchiveModal">✕</button>
+        </div>
+
+        <!-- 월별 필터 탭 바 -->
+        <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-3 pt-1 border-b border-surface-container-high mb-3" id="meetingMonthFilterBar">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- 회의 목록 컨테이너 -->
+        <div id="meetingArchiveListContainer" class="flex flex-col gap-2.5 pb-2">
+          <!-- Populated by JS -->
+        </div>
       </div>
     </div>
 
@@ -2871,7 +2911,7 @@
 
   </div>
 
-  <script src="app.js?v=20260913_mentor_privacy_v1"></script>
+  <script src="app.js?v=20260914_meeting_archive_v1"></script>
 </body>
 </html>
 

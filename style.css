@@ -3450,4 +3450,30 @@ textarea {
   box-shadow: 0 6px 18px rgba(150, 67, 43, 0.08);
 }
 
+/* 회의 아카이브 월별 필터 칩 */
+.meeting-month-chip {
+  background: #fffcf9;
+  color: #786f66;
+  border: 1px solid #ede4db;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  border-radius: 9999px;
+  padding: 5px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+.meeting-month-chip:hover {
+  background: #fdf5ee;
+  color: #96432b;
+  border-color: #f0cfc3;
+}
+.meeting-month-chip.active {
+  background: #96432b !important;
+  color: #ffffff !important;
+  border-color: #96432b !important;
+  box-shadow: 0 2px 8px rgba(150, 67, 43, 0.25);
+}
+
 
