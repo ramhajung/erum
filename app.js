@@ -2362,6 +2362,206 @@ function openAddVisitForClass(classId) {
   openModal("visitModal");
 }
 
+function canEditStudentPrayer(student) {
+  if (!student) return false;
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  if (!currentUser) return false;
+
+  // 1. 전도사님 (총괄 관리자)
+  const isPastor = (currentUser.role === "pastor") || (typeof currentRole !== "undefined" && currentRole === "pastor") || currentUser.isAdmin;
+  if (isPastor) return true;
+
+  const currentCleanName = (currentUser.name || "").replace(/\s*(학생|선생님|전도사|교사)$/, "").trim();
+  const studentCleanName = (student.name || "").replace(/\s*(학생|선생님|전도사|교사)$/, "").trim();
+
+  // 2. 학생 본인 (ID 또는 성명 일치)
+  if (currentUser.id === student.id || (currentCleanName && currentCleanName === studentCleanName)) {
+    return true;
+  }
+
+  // 3. 그 학생의 담당 선생님
+  const teacherCleanName = (student.teacherName || "").replace(/\s*(학생|선생님|전도사|교사)$/, "").trim();
+  if (teacherCleanName && currentCleanName && currentCleanName === teacherCleanName) {
+    return true;
+  }
+
+  // 선생님의 duty 또는 반 정보 확인
+  const studentClassClean = (student.className || student.grade || "").replace(/반$/, "").trim();
+  if (currentUser.duty && studentClassClean && currentUser.duty.includes(studentClassClean)) {
+    return true;
+  }
+
+  return false;
+}
+
+let editingStudentPrayerData = {
+  studentId: null,
+  prayers: []
+};
+
+function renderEditPrayerItems() {
+  const container = document.getElementById("editPrayerItemsContainer");
+  if (!container) return;
+
+  if (editingStudentPrayerData.prayers.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-4 text-stone-400 text-xs bg-stone-50 rounded-xl border border-dashed border-stone-200">
+        등록된 기도제목이 없습니다. 아래에서 새 기도제목을 추가해보세요.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = editingStudentPrayerData.prayers.map((p, idx) => {
+    const cleanText = (p.text || "").replace(/"/g, "&quot;");
+    return `
+      <div class="flex items-center gap-2 bg-stone-50 border border-stone-200/90 rounded-xl p-2.5">
+        <span class="text-rose-500 font-bold text-sm flex-shrink-0">♥</span>
+        <input type="text" class="flex-1 bg-white border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-800 font-semibold focus:border-orange-500 focus:outline-none" value="${cleanText}" data-index="${idx}" placeholder="기도제목 내용">
+        <button type="button" class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold cursor-pointer transition-colors flex-shrink-0" onclick="deleteTempPrayerItem(${idx})" title="삭제">
+          ✕
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function deleteTempPrayerItem(index) {
+  const inputs = document.querySelectorAll("#editPrayerItemsContainer input[data-index]");
+  inputs.forEach(inp => {
+    const idx = parseInt(inp.dataset.index, 10);
+    if (editingStudentPrayerData.prayers[idx]) {
+      editingStudentPrayerData.prayers[idx].text = inp.value;
+    }
+  });
+
+  editingStudentPrayerData.prayers.splice(index, 1);
+  renderEditPrayerItems();
+}
+
+function addNewPrayerItem() {
+  const input = document.getElementById("newPrayerTextInput");
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) {
+    showToast("⚠️ 기도제목 내용을 입력해주세요.", "warn");
+    return;
+  }
+
+  const inputs = document.querySelectorAll("#editPrayerItemsContainer input[data-index]");
+  inputs.forEach(inp => {
+    const idx = parseInt(inp.dataset.index, 10);
+    if (editingStudentPrayerData.prayers[idx]) {
+      editingStudentPrayerData.prayers[idx].text = inp.value;
+    }
+  });
+
+  editingStudentPrayerData.prayers.push({
+    id: Date.now(),
+    text: val,
+    count: 0,
+    prayed: false
+  });
+
+  input.value = "";
+  renderEditPrayerItems();
+  showToast("새 기도제목이 목록에 추가되었습니다. [저장 완료]를 눌러주세요.", "info");
+}
+
+function saveStudentPrayers() {
+  if (!editingStudentPrayerData.studentId) return;
+  const studentId = editingStudentPrayerData.studentId;
+  const all = getAllStudentsRoster();
+  const student = all.find(st => st.id === studentId || st.name === studentId);
+  if (!student) return;
+
+  const inputs = document.querySelectorAll("#editPrayerItemsContainer input[data-index]");
+  inputs.forEach(inp => {
+    const idx = parseInt(inp.dataset.index, 10);
+    if (editingStudentPrayerData.prayers[idx]) {
+      editingStudentPrayerData.prayers[idx].text = inp.value.trim();
+    }
+  });
+
+  const validPrayers = editingStudentPrayerData.prayers.filter(p => p.text && p.text.length > 0);
+  student.prayers = validPrayers;
+
+  // Sync to appState.gradeClasses
+  if (Array.isArray(appState.gradeClasses)) {
+    appState.gradeClasses.forEach(c => {
+      (c.students || []).forEach(st => {
+        if (st.id === studentId || st.name === student.name) {
+          st.prayers = JSON.parse(JSON.stringify(validPrayers));
+        }
+      });
+    });
+  }
+
+  // Sync to appState.newcomerMinistry
+  if (appState.newcomerMinistry && Array.isArray(appState.newcomerMinistry.students)) {
+    appState.newcomerMinistry.students.forEach(st => {
+      if (st.id === studentId || st.name === student.name) {
+        st.prayers = JSON.parse(JSON.stringify(validPrayers));
+      }
+    });
+  }
+
+  // Sync to appState.student if active
+  if (appState.student && (appState.student.id === studentId || appState.student.name === student.name)) {
+    appState.student.prayers = JSON.parse(JSON.stringify(validPrayers));
+  }
+
+  saveState();
+  closeModal("editStudentPrayerModal");
+  openStudentDetailModal(studentId);
+  renderStudentRosterList();
+  showToast(`🎉 ${student.name} 학생의 기도제목이 저장되었습니다! 🙏`, "success");
+}
+
+function openEditPrayerModal(studentId) {
+  const all = getAllStudentsRoster();
+  const s = all.find(st => st.id === studentId || st.name === studentId);
+  if (!s) return;
+
+  if (!canEditStudentPrayer(s)) {
+    showToast("🔒 기도제목 수정 권한이 없습니다 (학생 본인, 담당 선생님, 전도사님만 가능)", "warning");
+    return;
+  }
+
+  editingStudentPrayerData = {
+    studentId: s.id,
+    prayers: JSON.parse(JSON.stringify(s.prayers || []))
+  };
+
+  const gradeBadge = document.getElementById("editPrayerModalGradeBadge");
+  const teacherBadge = document.getElementById("editPrayerModalTeacherBadge");
+  const studentName = document.getElementById("editPrayerModalStudentName");
+  const newPrayerInput = document.getElementById("newPrayerTextInput");
+
+  if (gradeBadge) gradeBadge.textContent = s.className || s.grade;
+  if (teacherBadge) teacherBadge.textContent = `담당: ${s.teacherName || '교역자'}`;
+  if (studentName) studentName.textContent = s.name;
+  if (newPrayerInput) {
+    newPrayerInput.value = "";
+    newPrayerInput.onkeydown = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addNewPrayerItem();
+      }
+    };
+  }
+
+  renderEditPrayerItems();
+
+  const addBtn = document.getElementById("addNewPrayerItemBtn");
+  if (addBtn) addBtn.onclick = addNewPrayerItem;
+
+  const saveBtn = document.getElementById("saveStudentPrayersBtn");
+  if (saveBtn) saveBtn.onclick = saveStudentPrayers;
+
+  openModal("editStudentPrayerModal");
+}
+
 function openStudentDetailModal(studentId) {
   const all = getAllStudentsRoster();
   const s = all.find(st => st.id === studentId || st.name === studentId) || all[0];
@@ -2374,8 +2574,6 @@ function openStudentDetailModal(studentId) {
   const avatar = document.getElementById("detailModalAvatar");
   const name = document.getElementById("detailModalName");
   const duty = document.getElementById("detailModalDuty");
-  const callBtn = document.getElementById("detailModalCallBtn");
-  const msgBtn = document.getElementById("detailModalMsgBtn");
   const visitListEl = document.getElementById("detailModalVisitationList");
   const prayerListEl = document.getElementById("detailModalPrayerList");
   const addVisitBtn = document.getElementById("detailModalOpenAddVisitBtn");
@@ -2385,13 +2583,6 @@ function openStudentDetailModal(studentId) {
   if (avatar) avatar.textContent = s.avatar || '👦🏻';
   if (name) name.textContent = s.name;
   if (duty) duty.textContent = s.roleInfo || s.duty || `${s.grade} 학생`;
-
-  if (callBtn) {
-    callBtn.onclick = () => makePhoneCall(s.phone, s.name);
-  }
-  if (msgBtn) {
-    msgBtn.onclick = () => sendKakaoMessage(s.name);
-  }
 
   // Render Visits
   if (visitListEl) {
@@ -2420,6 +2611,21 @@ function openStudentDetailModal(studentId) {
     }
   }
 
+  // Prayer Edit Permission & Action Area
+  const canEdit = canEditStudentPrayer(s);
+  const prayerActionArea = document.getElementById("detailModalPrayerActionArea");
+  if (prayerActionArea) {
+    if (canEdit) {
+      prayerActionArea.innerHTML = `
+        <button type="button" onclick="openEditPrayerModal('${s.id}')" style="font-size:11px; font-weight:800; color:#ea580c; background:#fff7ed; border:1px solid #fed7aa; padding:2.5px 8px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:3px; transition:all 0.15s ease;">
+          <span>✏️</span> <span>수정/추가</span>
+        </button>
+      `;
+    } else {
+      prayerActionArea.innerHTML = ``;
+    }
+  }
+
   // Render Prayers
   if (prayerListEl) {
     prayerListEl.innerHTML = "";
@@ -2428,17 +2634,35 @@ function openStudentDetailModal(studentId) {
       prayerListEl.innerHTML = `
         <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:12.5px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
           등록된 기도제목이 없습니다.
+          ${canEdit ? `
+            <div style="margin-top:8px;">
+              <button type="button" onclick="openEditPrayerModal('${s.id}')" style="padding:4px 10px; font-size:11.5px; font-weight:800; border-radius:8px; border:1px solid #fed7aa; background:#fff7ed; color:#ea580c; cursor:pointer;">
+                ＋ 새 기도제목 등록
+              </button>
+            </div>
+          ` : ''}
         </div>
       `;
     } else {
       prayers.forEach(prayer => {
         const el = document.createElement("div");
         el.className = "prayer-card";
-        el.style.cursor = "default";
+        el.style.cursor = canEdit ? "pointer" : "default";
+        if (canEdit) {
+          el.onclick = () => openEditPrayerModal(s.id);
+          el.title = "클릭하여 기도제목 수정/추가";
+        }
         el.innerHTML = `
-          <div class="prayer-left" style="width:100%;">
-            <div class="prayer-heart-icon" style="background:#ff6e87; color:white; flex-shrink:0;">♥</div>
-            <span style="font-size:13.5px; font-weight:700; color:#2b231d; line-height:1.45;">${prayer.text}</span>
+          <div class="prayer-left" style="width:100%; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+              <div class="prayer-heart-icon" style="background:#ff6e87; color:white; flex-shrink:0;">♥</div>
+              <span style="font-size:13.5px; font-weight:700; color:#2b231d; line-height:1.45;">${prayer.text}</span>
+            </div>
+            ${canEdit ? `
+              <span style="font-size:10.5px; font-weight:700; color:#ea580c; background:#fff7ed; border:1px solid #ffedd5; padding:2px 6px; border-radius:6px; flex-shrink:0; margin-left:8px;">
+                수정 ✏️
+              </span>
+            ` : ''}
           </div>
         `;
         prayerListEl.appendChild(el);
@@ -2619,6 +2843,11 @@ function initStudentEvents() {
 
 window.openStudentDetailModal = openStudentDetailModal;
 window.openAddVisitForClass = openAddVisitForClass;
+window.canEditStudentPrayer = canEditStudentPrayer;
+window.openEditPrayerModal = openEditPrayerModal;
+window.deleteTempPrayerItem = deleteTempPrayerItem;
+window.addNewPrayerItem = addNewPrayerItem;
+window.saveStudentPrayers = saveStudentPrayers;
 window.makePhoneCall = makePhoneCall;
 window.sendKakaoMessage = sendKakaoMessage;
 window.incrementPrayerCount = incrementPrayerCount;

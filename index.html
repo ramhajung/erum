@@ -1389,8 +1389,9 @@
         </div>
 
         <!-- Section 2: 학생 기도제목 -->
-        <div class="section-label" style="margin-top: 20px;">
+        <div class="section-label" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
           <span>2) 학생 기도제목 🙏</span>
+          <div id="detailModalPrayerActionArea"></div>
         </div>
         <div id="detailModalPrayerList" class="space-y-2">
           <!-- Populated by JS -->
@@ -1400,6 +1401,58 @@
         <button type="button" class="btn-primary w-full mt-4 py-3 text-sm font-black flex items-center justify-center gap-1.5 cursor-pointer" id="detailModalOpenAddVisitBtn">
           <span>＋</span> <span>새 심방 기록 등록</span>
         </button>
+      </div>
+    </div>
+
+    <!-- Modal: 학생 기도제목 수정/관리 바텀시트 -->
+    <div class="modal-backdrop" id="editStudentPrayerModal" style="z-index: 1050;">
+      <div class="bottom-sheet" style="max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="margin-bottom: 12px;">
+          <div>
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="px-2 py-0.5 rounded-md bg-orange-100 text-orange-800 text-[10.5px] font-extrabold" id="editPrayerModalGradeBadge">고3반</span>
+              <span class="text-[11px] font-semibold text-stone-500" id="editPrayerModalTeacherBadge">담당: 김대한 선생님</span>
+            </div>
+            <h3 class="sheet-title flex items-center gap-2 text-[17px]">
+              <span>🙏</span>
+              <span id="editPrayerModalStudentName">박성준</span>
+              <span class="text-[14px] font-normal text-stone-600">기도제목 관리</span>
+            </h3>
+            <p class="text-[11px] font-medium text-stone-500 mt-1">학생 본인, 담당 선생님, 전도사님만 수정할 수 있습니다.</p>
+          </div>
+          <button class="sheet-close-btn" data-close="editStudentPrayerModal">✕</button>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto; padding-right: 2px;">
+          <!-- 기존 기도제목 리스트 -->
+          <div class="form-group mb-3">
+            <label class="text-xs font-bold text-stone-700 mb-1.5 flex items-center justify-between">
+              <span>현재 기도제목 목록</span>
+              <span class="text-[10.5px] font-normal text-stone-400">내용 수정 및 삭제(✕)</span>
+            </label>
+            <div id="editPrayerItemsContainer" class="space-y-2">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- 새 기도제목 추가 입력창 -->
+          <div class="form-group pt-2 border-t border-stone-100">
+            <label class="text-xs font-bold text-stone-700 mb-1">＋ 새 기도제목 추가</label>
+            <div class="flex gap-2">
+              <input type="text" id="newPrayerTextInput" placeholder="새로운 기도제목을 입력하세요..." class="flex-1 text-xs py-2 px-3 rounded-xl border border-stone-200 focus:outline-none focus:border-orange-500">
+              <button type="button" id="addNewPrayerItemBtn" class="px-3.5 py-2 rounded-xl bg-orange-600 text-white text-xs font-bold whitespace-nowrap hover:bg-orange-700 cursor-pointer">
+                추가
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-stone-100 mt-2">
+          <button type="button" id="saveStudentPrayersBtn" class="btn-primary w-full py-3 text-sm font-black flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>💾</span> <span>기도제목 저장 완료</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -3006,7 +3059,7 @@
 
   </div>
 
-  <script src="app.js?v=20260914_disable_call_talk_v1"></script>
+  <script src="app.js?v=20260914_role_based_prayer_edit_v1"></script>
 </body>
 </html>
 
