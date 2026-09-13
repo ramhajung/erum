@@ -4925,17 +4925,22 @@ function getActiveChecklistEvent() {
 function renderUpcomingEventsSection() {
   const container = document.getElementById("upcomingEventsContainer");
   const countBadge = document.getElementById("upcomingEventsCountBadge");
+  const viewAllEventsBtn = document.getElementById("viewAllEventsBtn");
   if (!container || !appState.events) return;
 
   if (countBadge) {
     countBadge.textContent = `${appState.events.length}개`;
   }
 
-  container.innerHTML = "";
-
   const currentUser = getCurrentUser();
   const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
   const isStudent = (role === "student" || currentRole === "student");
+
+  if (viewAllEventsBtn) {
+    viewAllEventsBtn.style.display = isStudent ? "none" : "";
+  }
+
+  container.innerHTML = "";
 
   appState.events.forEach((event, index) => {
     const totalItems = event.items ? event.items.length : 0;
