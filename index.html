@@ -591,98 +591,7 @@
           </div>
         </section>
 
-        <!-- Section: 주간 섬김 (Duty Roster) -->
-        <section aria-labelledby="duty-heading" class="space-y-4">
-          <!-- Weekly Duty Roster Block -->
-          <div class="bg-surface-card rounded-3xl p-4.5 border border-white/80 shadow-[0_8px_30px_rgba(60,50,40,0.05)] space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-surface-container/80">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl bg-badge-terracotta-bg text-primary flex items-center justify-center">
-                  <span class="material-symbols-outlined text-[19px]">assignment_ind</span>
-                </div>
-                <div>
-                  <h2 class="text-title-md font-bold text-text-primary" id="duty-heading">이번 주 예배 섬김 (<span id="dutyDateDisplay">10/17 (토)</span>)</h2>
-                  <p class="text-[11px] text-text-muted" id="dutySubtitleDisplay">정성된 마음으로 준비하는 토요예배</p>
-                </div>
-              </div>
-              <button id="openEditWorshipDutyBtn" onclick="openEditWorshipDutyModalDirect()" aria-label="예배 섬김 명단 수정" class="px-2.5 py-1.5 text-xs font-bold bg-primary text-white hover:bg-primary/90 rounded-xl items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer" style="display: none;" type="button" title="예배 섬김 명단 수정">
-                <span class="material-symbols-outlined text-[16px]">edit_note</span>
-                <span>섬김이 수정</span>
-              </button>
-            </div>
 
-            <!-- 2x2 Duty Grid with Tinted Pastel Icon Accents -->
-            <div class="grid grid-cols-2 gap-2.5" id="worshipDutyGrid">
-              <!-- 1) 예배 전 기도회 -->
-              <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-secondary/40 hover:bg-white transition-all group">
-                <div class="flex items-center justify-between gap-1">
-                  <div class="flex items-center gap-1.5 min-w-0">
-                    <div class="w-6 h-6 rounded-lg bg-teal-50 text-secondary flex items-center justify-center shrink-0">
-                      <span class="material-symbols-outlined text-[14px]">diversity_1</span>
-                    </div>
-                    <span class="text-[12px] font-bold text-text-secondary whitespace-nowrap">예배 전 기도회</span>
-                  </div>
-                  <span id="dutyPrePrayerBadge" class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-md bg-white text-secondary border border-secondary/20 shadow-2xs shrink-0">예배전</span>
-                </div>
-                <div>
-                  <p id="dutyPrePrayerName" class="text-title-md font-extrabold text-text-primary group-hover:text-secondary transition-colors">교사 & 리더</p>
-                  <p id="dutyPrePrayerRole" class="text-label-sm font-label-sm text-text-muted">예배 10분 전 본당</p>
-                </div>
-              </div>
-
-              <!-- 2) 대표기도 -->
-              <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-secondary/40 hover:bg-white transition-all group">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                      <span class="material-symbols-outlined text-[14px]">pan_tool</span>
-                    </div>
-                    <span class="text-label-sm font-bold text-text-secondary">대표기도</span>
-                  </div>
-                  <span id="dutyPrayerBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-emerald-600 border border-emerald-600/20 shadow-2xs">학생회</span>
-                </div>
-                <div>
-                  <p id="dutyPrayerName" class="text-title-md font-extrabold text-text-primary group-hover:text-secondary transition-colors">김예원</p>
-                  <p id="dutyPrayerRole" class="text-label-sm font-label-sm text-text-muted">고등부 2학년</p>
-                </div>
-              </div>
-
-              <!-- 3) 말씀봉독 -->
-              <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-tertiary/40 hover:bg-white transition-all group">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-6 h-6 rounded-lg bg-sky-50 text-tertiary flex items-center justify-center">
-                      <span class="material-symbols-outlined text-[14px]">menu_book</span>
-                    </div>
-                    <span class="text-label-sm font-bold text-text-secondary">말씀봉독</span>
-                  </div>
-                  <span id="dutyScriptureBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-badge-indigo-bg text-badge-indigo-text border border-badge-indigo-text/20">성경</span>
-                </div>
-                <div>
-                  <p id="dutyScriptureName" class="text-title-md font-extrabold text-text-primary group-hover:text-tertiary transition-colors">이유리 학생</p>
-                  <p id="dutyScriptureRole" class="text-label-sm font-label-sm text-text-muted">중등부 3학년</p>
-                </div>
-              </div>
-
-              <!-- 4) 광고 -->
-              <div class="bg-surface-canvas/90 rounded-2xl p-3 border border-outline-variant/20 flex flex-col justify-between space-y-2.5 hover:border-primary/40 hover:bg-white transition-all group">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-6 h-6 rounded-lg bg-rose-50 text-primary flex items-center justify-center">
-                      <span class="material-symbols-outlined text-[14px]">campaign</span>
-                    </div>
-                    <span class="text-label-sm font-bold text-text-secondary">광고</span>
-                  </div>
-                  <span id="dutyAnnouncementBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-primary border border-primary/20 shadow-2xs">부서소식</span>
-                </div>
-                <div>
-                  <p id="dutyAnnouncementName" class="text-title-md font-extrabold text-text-primary group-hover:text-primary transition-colors">정하람 전도사</p>
-                  <p id="dutyAnnouncementRole" class="text-label-sm font-label-sm text-text-muted">청소년부 담당</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         <!-- Bottom Spacer for Comfortable Navigation Clearance -->
         <div class="h-12 w-full" aria-hidden="true"></div>
@@ -2174,107 +2083,7 @@
       </div>
     </div>
 
-    <!-- Modal: 이번 주 예배 섬김 명단 수정 모달 -->
-    <div class="modal-backdrop" id="editWorshipDutyModal">
-      <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header">
-          <div>
-            <h3 class="sheet-title">✏️ 이번 주 예배 섬김 수정</h3>
-            <p style="font-size:11px; color:var(--text-muted);">예배 전 기도회 · 대표기도 · 말씀봉독 · 광고 섬김이 변경</p>
-          </div>
-          <button class="sheet-close-btn" data-close="editWorshipDutyModal">✕</button>
-        </div>
-        <form id="worshipDutyForm" class="space-y-3.5" style="padding: 10px 0 24px;">
-          <div class="form-group">
-            <label style="font-size:12px; font-weight:700; color:#334155;">예배 날짜 (토요일)</label>
-            <input type="text" id="dutyDateInput" placeholder="예: 10/17 (토)" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
-          </div>
 
-          <!-- 1) 예배 전 기도회 -->
-          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px;" class="space-y-2">
-            <div style="font-size:12.5px; font-weight:800; color:#0f766e; display:flex; align-items:center; gap:4px;">
-              <span>🙏 예배 전 기도회</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label style="font-size:11px; color:#64748b;">인도/담당 선택</label>
-                <select id="dutyPrePrayerNameSelect" class="field-select" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
-                  <!-- Options injected dynamically from registered users -->
-                </select>
-                <input type="text" id="dutyPrePrayerNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; margin-top:4px; display:none;" placeholder="직접 입력">
-              </div>
-              <div>
-                <label style="font-size:11px; color:#64748b;">장소/시간/소속</label>
-                <input type="text" id="dutyPrePrayerRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" placeholder="예: 예배 10분 전 본당">
-              </div>
-            </div>
-          </div>
-
-          <!-- 2) 대표기도 -->
-          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px;" class="space-y-2">
-            <div style="font-size:12.5px; font-weight:800; color:#059669; display:flex; align-items:center; gap:4px;">
-              <span>✋ 대표기도</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label style="font-size:11px; color:#64748b;">담당자 선택</label>
-                <select id="dutyPrayerNameSelect" class="field-select" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
-                  <!-- Options injected dynamically -->
-                </select>
-                <input type="text" id="dutyPrayerNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; margin-top:4px; display:none;" placeholder="직접 입력">
-              </div>
-              <div>
-                <label style="font-size:11px; color:#64748b;">소속/학년</label>
-                <input type="text" id="dutyPrayerRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" placeholder="예: 고등부 2학년">
-              </div>
-            </div>
-          </div>
-
-          <!-- 3) 말씀봉독 -->
-          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px;" class="space-y-2">
-            <div style="font-size:12.5px; font-weight:800; color:#0284c7; display:flex; align-items:center; gap:4px;">
-              <span>📖 말씀봉독</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label style="font-size:11px; color:#64748b;">담당자 선택</label>
-                <select id="dutyScriptureNameSelect" class="field-select" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
-                  <!-- Options injected dynamically -->
-                </select>
-                <input type="text" id="dutyScriptureNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; margin-top:4px; display:none;" placeholder="직접 입력">
-              </div>
-              <div>
-                <label style="font-size:11px; color:#64748b;">소속/학년</label>
-                <input type="text" id="dutyScriptureRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" placeholder="예: 중등부 3학년">
-              </div>
-            </div>
-          </div>
-
-          <!-- 4) 광고 -->
-          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px;" class="space-y-2">
-            <div style="font-size:12.5px; font-weight:800; color:#e11d48; display:flex; align-items:center; gap:4px;">
-              <span>📢 광고</span>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label style="font-size:11px; color:#64748b;">담당자 선택</label>
-                <select id="dutyAnnouncementNameSelect" class="field-select" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#fff;">
-                  <!-- Options injected dynamically -->
-                </select>
-                <input type="text" id="dutyAnnouncementNameInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; margin-top:4px; display:none;" placeholder="직접 입력">
-              </div>
-              <div>
-                <label style="font-size:11px; color:#64748b;">역할/부서</label>
-                <input type="text" id="dutyAnnouncementRoleInput" required style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" placeholder="예: 청소년부 담당">
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" class="btn-orange" style="margin-top:16px; width:100%;">예배 섬김 명단 저장하기 ✓</button>
-        </form>
-      </div>
-    </div>
 
     <!-- Modal 8: 사용자 계정 전환 모달 (User Switcher) -->
     <div class="modal-backdrop" id="userSwitchModal">
@@ -3118,7 +2927,7 @@
 
   </div>
 
-  <script src="app.js?v=20260914_home_prayers_v1"></script>
+  <script src="app.js?v=20260914_remove_worship_duty_v1"></script>
 </body>
 </html>
 
