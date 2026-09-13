@@ -2295,7 +2295,143 @@ function isAgendaAuthor(item, user) {
 // 5. Screen 2: 이번 주 교사 회의 안건 Rendering & Events
 // =============================================================================
 
+// --- 회의 자동 순환 엔진 (일요일 기준 차주 토요 회의 자동 생성 & 안전 아카이빙) ---
+function getUpcomingSaturdayDate(refDate = new Date()) {
+  const d = new Date(refDate.getFullYear(), refDate.getMonth(), refDate.getDate());
+  const dayOfWeek = d.getDay(); // 0: 일, 1: 월, ..., 6: 토
+  // 일요일(0)부터는 돌아오는 이번 주 토요일(+6)을 향해 새로운 회의 사이클이 시작됨
+  const daysUntilSaturday = (6 - dayOfWeek + 7) % 7;
+  d.setDate(d.getDate() + daysUntilSaturday);
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}.${m}.${day}`;
+}
+
+function checkAndAutoRollOverMeeting(notify = false) {
+  if (!appState) return false;
+  if (!appState.meetings || !Array.isArray(appState.meetings)) {
+    appState.meetings = JSON.parse(JSON.stringify(INITIAL_DATA.meetings || []));
+  }
+
+  const targetSaturdayStr = getUpcomingSaturdayDate(new Date());
+
+  // 1. 이번 주 토요일 회의가 이미 존재하는지 확인
+  const targetMeeting = appState.meetings.find(m => m.date === targetSaturdayStr);
+
+  if (targetMeeting) {
+    let stateChanged = false;
+    // 이번 주 회의가 active/current 상태가 아니라면 복구
+    if (!targetMeeting.isCurrent || targetMeeting.status !== "active") {
+      targetMeeting.isCurrent = true;
+      targetMeeting.status = "active";
+      stateChanged = true;
+    }
+
+    // 이번 주 토요일 이전의 과거 회의들은 모두 '의결 완료(closed)' 상태로 보존
+    appState.meetings.forEach(m => {
+      if (m.id !== targetMeeting.id && (m.date || "") < targetSaturdayStr) {
+        if (m.isCurrent || m.status === "active") {
+          m.isCurrent = false;
+          m.status = "closed";
+          if (Array.isArray(m.confirmed)) {
+            m.confirmed.forEach(c => {
+              if (!c.statusBadge) c.statusBadge = "의결 완료 ✓";
+            });
+          }
+          stateChanged = true;
+        }
+      }
+    });
+
+    // 선택된 회의 ID가 없거나 유효하지 않으면 이번 주 회의로 설정
+    if (!appState.currentMeetingId || !appState.meetings.some(m => m.id === appState.currentMeetingId)) {
+      appState.currentMeetingId = targetMeeting.id;
+      stateChanged = true;
+    }
+
+    // 현재 열람 중인 회의가 이번 주 회의인 경우 실시간 agendas 동기화 확인
+    if (appState.currentMeetingId === targetMeeting.id) {
+      if (!appState.agendas) {
+        appState.agendas = {
+          confirmed: targetMeeting.confirmed || [],
+          pending: targetMeeting.pending || []
+        };
+        stateChanged = true;
+      }
+    }
+
+    if (stateChanged) {
+      saveState();
+    }
+    return false;
+  }
+
+  // 2. 이번 주 토요일 회의가 존재하지 않는 경우 -> 일요일 00시 이후 자동 생성 트리거!
+  syncCurrentMeetingAgendas();
+
+  let rolledOverPending = [];
+
+  // 기존 회의들 안전하게 아카이빙 처리 & 미결(승인 대기) 안건 자동 이월 수집
+  appState.meetings.forEach(m => {
+    if (m.isCurrent || m.status === "active" || (m.date || "") < targetSaturdayStr) {
+      m.isCurrent = false;
+      m.status = "closed";
+      if (Array.isArray(m.confirmed)) {
+        m.confirmed.forEach(c => {
+          if (!c.statusBadge) c.statusBadge = "의결 완료 ✓";
+        });
+      }
+      // 지난 회의에서 미처리된 선생님들의 제안 안건을 소실 없이 새 회의로 이월
+      if (Array.isArray(m.pending) && m.pending.length > 0) {
+        m.pending.forEach(p => {
+          if (!rolledOverPending.some(rp => rp.title === p.title)) {
+            rolledOverPending.push({
+              id: p.id || (Date.now() + Math.floor(Math.random() * 1000)),
+              title: p.title,
+              author: p.author,
+              desc: p.desc ? (p.desc.includes("이월") ? p.desc : `[이전 회의 이월] ${p.desc}`) : "[이전 회의 미결 안건 이월]"
+            });
+          }
+        });
+      }
+    }
+  });
+
+  // 새 회의 객체 자동 생성
+  const newMeetingId = `meet_${targetSaturdayStr.replace(/\./g, "")}_auto`;
+  const newTitle = `${targetSaturdayStr} 토요 교사 회의`;
+  const newMeeting = {
+    id: newMeetingId,
+    date: targetSaturdayStr,
+    title: newTitle,
+    isCurrent: true,
+    status: "active",
+    isAutoCreated: true,
+    confirmed: [],
+    pending: rolledOverPending
+  };
+
+  appState.meetings.unshift(newMeeting);
+  appState.meetings.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  appState.currentMeetingId = newMeetingId;
+  appState.agendas = {
+    confirmed: [],
+    pending: rolledOverPending
+  };
+
+  saveState();
+
+  if (notify && typeof showToast === "function") {
+    showToast(`📅 새로운 주간이 시작되어 [${targetSaturdayStr} 토요 교사 회의] 세션이 자동으로 준비되었습니다! ✨`, "info", 4500);
+  }
+
+  return true;
+}
+
 function getActiveOrCurrentMeeting() {
+  checkAndAutoRollOverMeeting(false);
   if (!appState.meetings || !Array.isArray(appState.meetings) || appState.meetings.length === 0) {
     appState.meetings = JSON.parse(JSON.stringify(INITIAL_DATA.meetings));
   }
@@ -2315,6 +2451,13 @@ function selectMeeting(meetingId) {
 }
 
 function openCreateNewMeetingModal() {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("⚠️ 새 회의 개설은 전도사님 고유 권한입니다 🔒", "warning");
+    return;
+  }
+
   const modal = document.getElementById("newMeetingModal");
   if (!modal) return;
   const dateInput = document.getElementById("newMeetingDateInput");
@@ -2344,6 +2487,13 @@ function openCreateNewMeetingModal() {
 
 function handleNewMeetingSubmit(e) {
   e.preventDefault();
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("⚠️ 새 회의 개설은 전도사님 고유 권한입니다 🔒", "warning");
+    return;
+  }
+
   const dateInput = document.getElementById("newMeetingDateInput");
   const titleInput = document.getElementById("newMeetingTitleInput");
   const dateVal = (dateInput ? dateInput.value.trim() : "") || "2026.09.19";
@@ -2394,6 +2544,7 @@ function handleNewMeetingSubmit(e) {
 }
 
 function renderAgendaSection() {
+  checkAndAutoRollOverMeeting(false);
   const confirmedList = document.getElementById("confirmedAgendaList");
   const pendingList = document.getElementById("pendingAgendaList");
   const confirmedCountEl = document.getElementById("confirmedAgendaCount");
@@ -6597,6 +6748,19 @@ function initClock() {
     if (headerDateEl) {
       headerDateEl.textContent = `${year}년 ${month}월 ${date}일 (${day}) ${h}:${m}`;
     }
+
+    if (typeof checkAndAutoRollOverMeeting === "function") {
+      const rolledOver = checkAndAutoRollOverMeeting(true);
+      if (rolledOver) {
+        const currentScreen = document.querySelector(".screen-view.active");
+        if (currentScreen && currentScreen.id === "view-agenda" && typeof renderAgendaSection === "function") {
+          renderAgendaSection();
+        }
+        if (typeof updateMeetingNavBadge === "function") {
+          updateMeetingNavBadge();
+        }
+      }
+    }
   }
 
   updateClockAndDate();
@@ -9935,6 +10099,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTransferStudentEvents();
   initPullToRefresh();
 
+  checkAndAutoRollOverMeeting(true);
   renderAll();
 
   // Check login auth state
