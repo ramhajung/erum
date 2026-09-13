@@ -3918,6 +3918,7 @@ function switchMasterRole(roleKey, notify = true) {
   renderCalendarSection();
   renderClassMinistrySection();
   renderNewcomerMinistrySection();
+  renderUpcomingEventsSection();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
@@ -4932,6 +4933,10 @@ function renderUpcomingEventsSection() {
 
   container.innerHTML = "";
 
+  const currentUser = getCurrentUser();
+  const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
+  const isStudent = (role === "student" || currentRole === "student");
+
   appState.events.forEach((event, index) => {
     const totalItems = event.items ? event.items.length : 0;
     const checkedItems = event.items ? event.items.filter(i => i.checked).length : 0;
@@ -4952,7 +4957,7 @@ function renderUpcomingEventsSection() {
             <div class="flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/25 shadow-inner">
               <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
               <span class="text-white text-label-sm font-extrabold tracking-tight">${event.dday || "D-Day"}</span>
-              <span class="text-[10px] text-white/80 font-bold ml-1">· 준비 ${pct}%</span>
+              ${!isStudent ? `<span class="text-[10px] text-white/80 font-bold ml-1">· 준비 ${pct}%</span>` : ''}
             </div>
             <span class="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-md text-white flex items-center justify-center border border-white/20">
               <span class="material-symbols-outlined text-[19px]">${event.icon || "menu_book"}</span>
@@ -4990,7 +4995,7 @@ function renderUpcomingEventsSection() {
               <span class="px-2.5 py-1 rounded-full bg-accent-butter text-accent-butter-text text-label-sm font-bold tracking-tight border border-accent-butter-text/20">
                 ${event.dday || "D-Day"}
               </span>
-              <span class="text-[10.5px] font-bold text-accent-butter-text bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/50">준비 ${pct}%</span>
+              ${!isStudent ? `<span class="text-[10.5px] font-bold text-accent-butter-text bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/50">준비 ${pct}%</span>` : ''}
             </div>
             <span class="w-8 h-8 rounded-xl bg-amber-50 text-accent-butter-text flex items-center justify-center border border-amber-200/50">
               <span class="material-symbols-outlined text-[19px]">${event.icon || "cake"}</span>
@@ -5024,7 +5029,7 @@ function renderUpcomingEventsSection() {
               <span class="px-2.5 py-1 rounded-full bg-badge-sage-bg text-badge-sage-text text-label-sm font-bold tracking-tight border border-secondary/20">
                 ${event.dday || "D-Day"}
               </span>
-              <span class="text-[10.5px] font-bold text-secondary bg-emerald-50 px-2 py-0.5 rounded-full border border-secondary/20">준비 ${pct}%</span>
+              ${!isStudent ? `<span class="text-[10.5px] font-bold text-secondary bg-emerald-50 px-2 py-0.5 rounded-full border border-secondary/20">준비 ${pct}%</span>` : ''}
             </div>
             <span class="w-8 h-8 rounded-xl bg-badge-sage-bg text-secondary flex items-center justify-center border border-secondary/20">
               <span class="material-symbols-outlined text-[19px]">${event.icon || "volunteer_activism"}</span>
@@ -5049,10 +5054,10 @@ function renderUpcomingEventsSection() {
       `;
     }
 
-    // 카드 클릭 시 해당 행사 체크리스트로 이동
+    // 카드 클릭 시 해당 행사 체크리스트로 이동 (학생인 경우 친절한 안내 토스트)
     article.addEventListener("click", () => {
-      if (!canAccessChecklist()) {
-        showToast("⚠️ 행사 체크리스트는 전도사, 선생님, 부장집사님 전용 메뉴입니다.", "warn");
+      if (isStudent || !canAccessChecklist()) {
+        showToast(`🎉 ${event.title}: 기도로 함께 준비해요!`, "info");
         return;
       }
       appState.currentChecklistEventId = event.id;
