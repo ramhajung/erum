@@ -2030,13 +2030,7 @@ function renderClassMinistrySection() {
 
           let rightActionHtml = "";
           if (isStudent) {
-            rightActionHtml = `
-              <div style="display:flex; align-items:center; gap:6px;" onclick="event.stopPropagation();">
-                <span style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'};">
-                  ${isAttended ? '출석 ✓' : '결석 ✕'}
-                </span>
-              </div>
-            `;
+            rightActionHtml = "";
           } else if (isPastor) {
             rightActionHtml = `
               <div style="display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation();">
@@ -2067,9 +2061,11 @@ function renderClassMinistrySection() {
             `;
           }
 
+          const avatarBg = isStudent ? '#f8fafc' : (isAttended ? '#e0f2fe' : '#fef2f2');
+
           return `
             <div class="timeline-item" ${!isStudent ? `onclick="openStudentDetailModal('${s.id}')"` : ''} style="background:${isMe ? '#fffbf5' : '#fff'}; border:${isMe ? '1.5px solid #fed7aa' : '1px solid #f1e9e0'}; border-radius:16px; padding:12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02); ${!isStudent ? 'cursor:pointer; transition:all 0.15s ease;' : ''}" ${!isStudent ? `title="${s.name} 학생부 보기"` : ''}>
-              <div style="width:38px; height:38px; border-radius:12px; background:${isAttended ? '#e0f2fe' : '#fef2f2'}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+              <div style="width:38px; height:38px; border-radius:12px; background:${avatarBg}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
                 ${s.avatar || '👦🏻'}
               </div>
               <div class="timeline-content" style="flex:1; min-width:0;">
