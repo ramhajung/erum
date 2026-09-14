@@ -2035,9 +2035,6 @@ function renderClassMinistrySection() {
                 <span style="padding:4px 8px; font-size:11px; font-weight:800; border-radius:8px; background:${isAttended ? '#dcfce7' : '#fee2e2'}; color:${isAttended ? '#166534' : '#991b1b'};">
                   ${isAttended ? '출석 ✓' : '결석 ✕'}
                 </span>
-                <button class="timeline-icon-btn" onclick="event.stopPropagation(); showToast('${s.name} 친구에게 응원 인사를 건넵니다 👋🏻', 'info')" style="width:32px; height:32px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; font-size:14px; cursor:pointer;" title="인사하기">
-                  👋🏻
-                </button>
               </div>
             `;
           } else if (isPastor) {
