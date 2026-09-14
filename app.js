@@ -5241,7 +5241,7 @@ function initReceiptSection() {
         title: purpose.slice(0, 18) + (purpose.length > 18 ? "..." : ""),
         author: user,
         amount: amount,
-        status: "정산완료",
+        status: "승인대기",
         category: category,
         store: store,
         receiptUrl: receiptPhoto,
@@ -5284,6 +5284,7 @@ function initReceiptSection() {
               category: category,
               author: user,
               purpose: purpose,
+              status: "승인대기",
               imageBase64: receiptPhoto.startsWith("data:") ? receiptPhoto : null
             })
           }).then(() => {
@@ -5297,7 +5298,7 @@ function initReceiptSection() {
       saveState();
       renderAccountingSection();
 
-      showToast("구글 스프레드시트에 즉시 등록되었습니다! (새 행 추가 완료 🚀)");
+      showToast("영수증이 청구되었습니다! 전도사/회계 승인 후 송금됩니다 ⏳");
 
       setTimeout(() => {
         switchToTab("view-accounting");
@@ -5371,6 +5372,23 @@ function renderAccountingSection() {
     } else {
       myReceipts.forEach(r => {
         const isDone = r.status === "정산완료";
+        const isApproved = r.status === "승인완료";
+        const isRejected = r.status === "반려";
+        const isWaiting = !isDone && !isApproved && !isRejected; // 승인대기
+
+        let statusBadgeClass = "status-wait";
+        let statusBadgeText = "승인대기 ⏳";
+        if (isDone) {
+          statusBadgeClass = "status-done";
+          statusBadgeText = "정산완료 ✓";
+        } else if (isApproved) {
+          statusBadgeClass = "status-wait";
+          statusBadgeText = "승인완료(송금대기) 💳";
+        } else if (isRejected) {
+          statusBadgeClass = "status-reject";
+          statusBadgeText = "반려됨 ✕";
+        }
+
         const el = document.createElement("div");
         el.className = "expense-row-item";
         el.innerHTML = `
@@ -5380,6 +5398,11 @@ function renderAccountingSection() {
               <span class="smart-cat-pill">${r.category || "미분류"}</span>
             </div>
             <div class="expense-meta">${r.date} 제출 | ${r.store || "지정처"} | ${r.amount.toLocaleString()}원</div>
+            ${r.rejectReason ? `
+              <div style="font-size:11px; color:#dc2626; margin-top:2px; font-weight:700;">
+                반려 사유: ${r.rejectReason}
+              </div>
+            ` : ''}
             ${r.receiptUrl ? `
               <div style="margin-top:4px;">
                 <button class="receipt-view-pill" onclick="openReceiptModalById(${r.id})">📷 영수증 원본 보기</button>
@@ -5387,8 +5410,8 @@ function renderAccountingSection() {
             ` : ""}
           </div>
           <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0;">
-            <div class="expense-status-badge ${isDone ? "status-done" : "status-wait"}">
-              ${r.status} ${isDone ? "✓" : "⏳"}
+            <div class="expense-status-badge ${statusBadgeClass}">
+              ${statusBadgeText}
             </div>
             ${isDone ? `
               <button type="button" class="btn-icon" onclick="confirmAndDismissReceipt(${r.id})" style="width:auto; height:auto; padding:3px 8px; border-radius:8px; font-size:11px; font-weight:800; background:#f0fdf4; border:1px solid #86efac; color:#15803d; cursor:pointer; display:inline-flex; align-items:center; gap:3px;" title="정산금 입금 확인 후 내 목록에서 정리">
@@ -5407,23 +5430,71 @@ function renderAccountingSection() {
     allReceiptList.innerHTML = "";
     appState.accounting.receipts.forEach(r => {
       const anomalies = detectReceiptAnomalies(r, appState.accounting.receipts);
+      const isDone = r.status === "정산완료";
+      const isApproved = r.status === "승인완료";
+      const isRejected = r.status === "반려";
+      const isWaiting = !isDone && !isApproved && !isRejected;
+
+      let statusBadgeClass = "status-wait";
+      let statusBadgeText = "승인대기 ⏳";
+      if (isDone) {
+        statusBadgeClass = "status-done";
+        statusBadgeText = "정산완료 ✓";
+      } else if (isApproved) {
+        statusBadgeClass = "status-wait";
+        statusBadgeText = "송금대기 💳";
+      } else if (isRejected) {
+        statusBadgeClass = "status-reject";
+        statusBadgeText = "반려됨 ✕";
+      }
+
       const el = document.createElement("div");
       el.className = "expense-row-item";
       el.innerHTML = `
-        <div class="expense-info">
+        <div class="expense-info" style="flex:1; min-width:0;">
           <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
             <span>${r.title} (${(r.author || "").replace("선생님", "T")})</span>
             <span class="smart-cat-pill">${r.category || "미분류"}</span>
           </div>
           <div class="expense-meta">${r.date} 지출 | ${r.store || "지정처"} 📑</div>
+          ${r.rejectReason ? `
+            <div style="font-size:11px; color:#dc2626; margin-top:2px; font-weight:700;">
+              반려 사유: ${r.rejectReason}
+            </div>
+          ` : ''}
           <div style="display:flex; gap:4px; margin-top:4px; align-items:center; flex-wrap:wrap;">
             ${anomalies.map(a => `<span class="anomaly-tag ${a.tagClass}">${a.label}</span>`).join("")}
             ${r.receiptUrl ? `<button class="receipt-view-pill" onclick="openReceiptModalById(${r.id})">📷 영수증 보기</button>` : ""}
           </div>
         </div>
-        <div style="text-align:right; flex-shrink:0;">
+        <div style="text-align:right; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
           <div class="expense-amount-red">-${r.amount.toLocaleString()}원</div>
-          <div style="font-size:10.5px; color:#178263; font-weight:700; margin-top:2px;">시트기입완료 ✓</div>
+          <div class="expense-status-badge ${statusBadgeClass}" style="font-size:10px; padding:2px 6px;">
+            ${statusBadgeText}
+          </div>
+          <div style="display:flex; gap:4px; margin-top:3px; flex-wrap:wrap; justify-content:flex-end;">
+            ${isWaiting ? `
+              <button type="button" onclick="approveReceipt(${r.id})" style="background:#f0fdf4; border:1px solid #86efac; color:#15803d; font-size:10.5px; font-weight:800; padding:2.5px 7px; border-radius:6px; cursor:pointer;" title="영수증 내역 승인">
+                승인 👍
+              </button>
+              <button type="button" onclick="rejectReceipt(${r.id})" style="background:#fef2f2; border:1px solid #fca5a5; color:#b91c1c; font-size:10.5px; font-weight:800; padding:2.5px 7px; border-radius:6px; cursor:pointer;" title="영수증 반려">
+                반려 ✕
+              </button>
+            ` : ''}
+            ${isApproved ? `
+              <button type="button" onclick="completeReceiptPayout(${r.id})" style="background:#eff6ff; border:1px solid #93c5fd; color:#1d4ed8; font-size:10.5px; font-weight:800; padding:2.5px 7px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:2px;" title="송금 완료 후 정산 완료 처리">
+                <span>송금완료 💸</span>
+              </button>
+              <button type="button" onclick="rejectReceipt(${r.id})" style="background:#fef2f2; border:1px solid #fca5a5; color:#b91c1c; font-size:10px; font-weight:700; padding:2.5px 5px; border-radius:6px; cursor:pointer;" title="반려 처리">
+                취소
+              </button>
+            ` : ''}
+            ${isDone ? `
+              <div style="font-size:10px; color:#15803d; font-weight:700; display:inline-flex; align-items:center; gap:2px;">
+                <span>정산완료 ✓</span>
+              </div>
+            ` : ''}
+          </div>
         </div>
       `;
       allReceiptList.appendChild(el);
@@ -5468,6 +5539,50 @@ function confirmAndDismissReceipt(receiptId) {
     renderAccountingSection();
     showToast(`✅ '${receipt.title}' 영수증이 정산 확인되어 목록에서 정리되었습니다.`);
   }
+}
+
+// -----------------------------------------------------------------------------
+// 전도사 / 회계 결재 워크플로우 함수들
+// -----------------------------------------------------------------------------
+function approveReceipt(receiptId) {
+  const receipt = (appState.accounting.receipts || []).find(r => Number(r.id) === Number(receiptId));
+  if (!receipt) return;
+
+  if (confirm(`'${receipt.title}' (${receipt.author}, ${receipt.amount.toLocaleString()}원) 영수증을 승인하시겠습니까?\n\n승인 후 담당자에게 송금을 진행하실 수 있습니다.`)) {
+    receipt.status = "승인완료";
+    delete receipt.rejectReason;
+    saveState();
+    renderAccountingSection();
+    showToast(`👍 '${receipt.title}' 승인 완료되었습니다. (송금 대기)`);
+  }
+}
+
+function completeReceiptPayout(receiptId) {
+  const receipt = (appState.accounting.receipts || []).find(r => Number(r.id) === Number(receiptId));
+  if (!receipt) return;
+
+  const authorName = receipt.author || "담당 교사";
+  if (confirm(`[${authorName}] 선생님께 ${receipt.amount.toLocaleString()}원 송금을 완료하셨습니까?\n\n확인 시 '정산완료' 상태로 전환되며, 선생님 화면에 정산 확인 버튼이 제공됩니다.`)) {
+    receipt.status = "정산완료";
+    receipt.paidDate = new Date().toLocaleDateString("ko-KR");
+    saveState();
+    renderAccountingSection();
+    showToast(`💸 ${authorName} 선생님께 정산 송금 처리가 완료되었습니다!`);
+  }
+}
+
+function rejectReceipt(receiptId) {
+  const receipt = (appState.accounting.receipts || []).find(r => Number(r.id) === Number(receiptId));
+  if (!receipt) return;
+
+  const reason = prompt(`'${receipt.title}' 영수증 반려 사유를 입력해주세요:`, "영수증 사진 식별 불가 또는 증빙 서류 보완 필요");
+  if (reason === null) return; // 취소
+
+  receipt.status = "반려";
+  receipt.rejectReason = reason.trim() || "사유 미기재";
+  saveState();
+  renderAccountingSection();
+  showToast(`✕ '${receipt.title}' 영수증이 반려 처리되었습니다.`, "warn");
 }
 
 // -----------------------------------------------------------------------------
@@ -6119,19 +6234,30 @@ async function syncFromGoogleSheet(isManual = false) {
       });
     });
 
-    // 기존에 교사가 '정산 확인'으로 숨긴 영수증 ID 세트 보존
-    const previouslyHiddenIds = new Set(
-      (appState.accounting.receipts || [])
-        .filter(r => r.hiddenFromMine)
-        .map(r => String(r.id))
-    );
+    // 기존에 앱에서 관리자가 처리한 상태 및 숨김 플래그 보존
+    const localStatusMap = new Map();
+    (appState.accounting.receipts || []).forEach(r => {
+      localStatusMap.set(String(r.id), {
+        status: r.status,
+        rejectReason: r.rejectReason,
+        hiddenFromMine: r.hiddenFromMine,
+        paidDate: r.paidDate
+      });
+    });
 
     // 1월 historical entries from user's original Numbers screenshot
     const janEntries = (appState.accounting.ledgerEntries || []).filter(e => Number(e.month) === 1);
     appState.accounting.ledgerEntries = [...janEntries, ...fetchedLedgerEntries];
     appState.accounting.receipts = fetchedReceipts.map(r => {
-      if (previouslyHiddenIds.has(String(r.id))) {
-        return { ...r, hiddenFromMine: true };
+      const local = localStatusMap.get(String(r.id));
+      if (local) {
+        return {
+          ...r,
+          status: local.status || r.status,
+          rejectReason: local.rejectReason || r.rejectReason,
+          hiddenFromMine: !!local.hiddenFromMine,
+          paidDate: local.paidDate || r.paidDate
+        };
       }
       return r;
     });
@@ -6375,6 +6501,13 @@ function canAccessChecklist() {
   const currentUser = getCurrentUser();
   const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
   return ["pastor", "teacher", "teacher_grade", "teacher_new", "accountant", "deacon"].includes(role);
+}
+
+// 재정 영수증 승인/송금 결재 권한 확인: 전도사, 회계 선생님
+function canManageAccounting() {
+  const currentUser = getCurrentUser();
+  const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
+  return role === "pastor" || role === "accountant" || (currentUser && currentUser.isAdmin);
 }
 
 function getCurrentUser() {
