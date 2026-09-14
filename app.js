@@ -5450,29 +5450,86 @@ function renderAccountingSection() {
   // 2. All Receipts (Admin View) with Open Accountant Anomaly & Categorization
   if (allReceiptList) {
     allReceiptList.innerHTML = "";
-    appState.accounting.receipts.forEach(r => {
-      const anomalies = detectReceiptAnomalies(r, appState.accounting.receipts);
-      const isDone = r.status === "정산완료";
-      const isApproved = r.status === "승인완료";
-      const isRejected = r.status === "반려";
-      const isWaiting = !isDone && !isApproved && !isRejected;
+    
+    // 결재 상태별 영수증 카운트 집계
+    const allList = appState.accounting.receipts || [];
+    const pendingList = allList.filter(r => r.status === "승인대기" || r.status === "승인완료" || (!r.status && !r.isPaid));
+    const completedList = allList.filter(r => r.status === "정산완료");
+    
+    const pendingBadgeEl = document.getElementById("rcptFilterPendingBadge");
+    const completedBadgeEl = document.getElementById("rcptFilterCompletedBadge");
+    const allBadgeEl = document.getElementById("rcptFilterAllBadge");
+    if (pendingBadgeEl) pendingBadgeEl.textContent = pendingList.length;
+    if (completedBadgeEl) completedBadgeEl.textContent = completedList.length;
+    if (allBadgeEl) allBadgeEl.textContent = allList.length;
 
-      let statusBadgeClass = "status-wait";
-      let statusBadgeText = "승인대기 ⏳";
-      if (isDone) {
-        statusBadgeClass = "status-done";
-        statusBadgeText = "정산완료 ✓";
-      } else if (isApproved) {
-        statusBadgeClass = "status-wait";
-        statusBadgeText = "송금대기 💳";
-      } else if (isRejected) {
-        statusBadgeClass = "status-reject";
-        statusBadgeText = "반려됨 ✕";
+    // 현재 선택된 필터에 따라 영수증 목록 선별
+    const currentFilter = window.currentAdminReceiptFilter || "PENDING";
+    let displayedReceipts = allList;
+    if (currentFilter === "PENDING") {
+      displayedReceipts = pendingList;
+    } else if (currentFilter === "COMPLETED") {
+      displayedReceipts = completedList;
+    }
+
+    // 필터 칩 스타일 업데이트 및 이벤트 연결
+    document.querySelectorAll(".receipt-filter-chip").forEach(chip => {
+      const f = chip.dataset.filter;
+      const isActive = (f === currentFilter);
+      if (isActive) {
+        chip.style.border = "1px solid #f59e0b";
+        chip.style.background = "#fffbeb";
+        chip.style.color = "#b45309";
+        chip.style.fontWeight = "800";
+      } else {
+        chip.style.border = "1px solid #e5e7eb";
+        chip.style.background = "#ffffff";
+        chip.style.color = "#4b5563";
+        chip.style.fontWeight = "700";
       }
+      chip.onclick = () => {
+        window.currentAdminReceiptFilter = f;
+        renderAccountingSection();
+      };
+    });
 
-      const el = document.createElement("div");
-      el.className = "expense-row-item";
-      el.innerHTML = `
+    if (displayedReceipts.length === 0) {
+      const emptyMsgMap = {
+        PENDING: "현재 결재 대기 중인 영수증이 없습니다. 모두 정산 처리되었습니다! ✨",
+        COMPLETED: "정산 완료된 영수증 내역이 없습니다.",
+        ALL: "등록된 영수증 내역이 없습니다."
+      };
+      allReceiptList.innerHTML = `
+        <div style="text-align:center; padding:36px 16px; background:#fff; border:1px dashed #e5e7eb; border-radius:16px; color:#9ca3af;">
+          <div style="font-size:28px; margin-bottom:8px;">${currentFilter === 'PENDING' ? '🎉' : '🧾'}</div>
+          <div style="font-size:13.5px; font-weight:700; color:#4b5563;">${emptyMsgMap[currentFilter] || '내역이 없습니다'}</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">${currentFilter === 'PENDING' ? '새로운 영수증이 청구되면 실시간으로 표시됩니다.' : ''}</div>
+        </div>
+      `;
+    } else {
+      displayedReceipts.forEach(r => {
+        const anomalies = detectReceiptAnomalies(r, appState.accounting.receipts);
+        const isDone = r.status === "정산완료";
+        const isApproved = r.status === "승인완료";
+        const isRejected = r.status === "반려";
+        const isWaiting = !isDone && !isApproved && !isRejected;
+
+        let statusBadgeClass = "status-wait";
+        let statusBadgeText = "승인대기 ⏳";
+        if (isDone) {
+          statusBadgeClass = "status-done";
+          statusBadgeText = "정산완료 ✓";
+        } else if (isApproved) {
+          statusBadgeClass = "status-wait";
+          statusBadgeText = "송금대기 💳";
+        } else if (isRejected) {
+          statusBadgeClass = "status-reject";
+          statusBadgeText = "반려됨 ✕";
+        }
+
+        const el = document.createElement("div");
+        el.className = "expense-row-item";
+        el.innerHTML = `
         <div class="expense-info" style="flex:1; min-width:0;">
           <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
             <span>${r.title} (${(r.author || "").replace("선생님", "T")})</span>

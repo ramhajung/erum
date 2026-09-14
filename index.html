@@ -1054,10 +1054,27 @@
 
           <!-- Section 1: 영수증 및 지출 상세 내역 (스마트 카테고리 & 이상 탐지 배지) -->
           <div id="accSectionReceipts">
-            <div class="section-label">
+            <div class="section-label" style="display:flex; justify-content:space-between; align-items:center;">
               <span>📊 전체 교사 영수증 & 지출 내역</span>
               <span style="font-size:11px; font-weight:700; color:var(--accent-mint);">실시간 집계</span>
             </div>
+
+            <!-- 1안: 결재 상태별 필터 칩 바 (결재 대기 | 정산 완료 | 전체) -->
+            <div class="receipt-filter-bar" style="display:flex; gap:6px; margin:10px 0 14px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none;">
+              <button type="button" class="receipt-filter-chip active" data-filter="PENDING" id="filterRcptPending" style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:12px; font-size:12px; font-weight:800; cursor:pointer; border:1px solid #f59e0b; background:#fffbeb; color:#b45309; transition:all 0.15s ease;">
+                <span>⏳ 결재 대기</span>
+                <span id="rcptFilterPendingBadge" style="background:#f59e0b; color:#fff; font-size:10px; font-weight:900; padding:1px 6px; border-radius:10px;">0</span>
+              </button>
+              <button type="button" class="receipt-filter-chip" data-filter="COMPLETED" id="filterRcptCompleted" style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:12px; font-size:12px; font-weight:700; cursor:pointer; border:1px solid #e5e7eb; background:#ffffff; color:#4b5563; transition:all 0.15s ease;">
+                <span>✓ 정산 완료</span>
+                <span id="rcptFilterCompletedBadge" style="background:#e5e7eb; color:#4b5563; font-size:10px; font-weight:800; padding:1px 6px; border-radius:10px;">0</span>
+              </button>
+              <button type="button" class="receipt-filter-chip" data-filter="ALL" id="filterRcptAll" style="display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border-radius:12px; font-size:12px; font-weight:700; cursor:pointer; border:1px solid #e5e7eb; background:#ffffff; color:#4b5563; transition:all 0.15s ease;">
+                <span>전체 보기</span>
+                <span id="rcptFilterAllBadge" style="background:#e5e7eb; color:#4b5563; font-size:10px; font-weight:800; padding:1px 6px; border-radius:10px;">0</span>
+              </button>
+            </div>
+
             <div id="allReceiptList">
               <!-- Populated by JS -->
             </div>
