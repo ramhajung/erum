@@ -2014,7 +2014,7 @@ function renderClassMinistrySection() {
       <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
           <span>${isStudent ? `👥 우리 분반 친구들 (${activeClass.grade})` : isTeacherSelf ? `👥 내 담당 분반 학생 관리 & 출결` : `👥 ${activeClass.grade} 학생 관리 & 출결`}</span>
-          ${!isStudent ? `<span style="font-size:11px; font-weight:700; color:#ea580c; background:#fff7ed; border:1px solid #fed7aa; padding:2px 7px; border-radius:8px;">💡 학생 터치 시 학생부 열람</span>` : ''}
+          ${isStudent ? `<span style="font-size:11px; font-weight:700; color:#ea580c; background:#fff7ed; border:1px solid #fed7aa; padding:2px 7px; border-radius:8px;">💡 친구 터치 시 기도제목 보기</span>` : `<span style="font-size:11px; font-weight:700; color:#ea580c; background:#fff7ed; border:1px solid #fed7aa; padding:2px 7px; border-radius:8px;">💡 학생 터치 시 학생부 열람</span>`}
         </div>
         ${isPastor ? `
           <button type="button" onclick="openAddStudentToClassModal('${activeClass.id}')" style="font-size:11.5px; font-weight:800; color:#ea580c; background:none; border:none; cursor:pointer; padding:2px 6px;">
@@ -2030,7 +2030,12 @@ function renderClassMinistrySection() {
 
           let rightActionHtml = "";
           if (isStudent) {
-            rightActionHtml = "";
+            rightActionHtml = `
+              <div style="display:flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#ea580c;">
+                <span>기도제목</span>
+                <span style="font-size:10px;">›</span>
+              </div>
+            `;
           } else if (isPastor) {
             rightActionHtml = `
               <div style="display:flex; align-items:center; gap:5px;" onclick="event.stopPropagation();">
@@ -2062,9 +2067,11 @@ function renderClassMinistrySection() {
           }
 
           const avatarBg = isStudent ? '#f8fafc' : (isAttended ? '#e0f2fe' : '#fef2f2');
+          const onClickAction = isStudent ? `onclick="openFriendPrayerSheetModal('${s.id}')"` : `onclick="openStudentDetailModal('${s.id}')"`;
+          const titleText = isStudent ? `${s.name} 기도제목 보기` : `${s.name} 학생부 보기`;
 
           return `
-            <div class="timeline-item" ${!isStudent ? `onclick="openStudentDetailModal('${s.id}')"` : ''} style="background:${isMe ? '#fffbf5' : '#fff'}; border:${isMe ? '1.5px solid #fed7aa' : '1px solid #f1e9e0'}; border-radius:16px; padding:12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02); ${!isStudent ? 'cursor:pointer; transition:all 0.15s ease;' : ''}" ${!isStudent ? `title="${s.name} 학생부 보기"` : ''}>
+            <div class="timeline-item" ${onClickAction} style="background:${isMe ? '#fffbf5' : '#fff'}; border:${isMe ? '1.5px solid #fed7aa' : '1px solid #f1e9e0'}; border-radius:16px; padding:12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02); cursor:pointer; transition:all 0.15s ease;" title="${titleText}">
               <div style="width:38px; height:38px; border-radius:12px; background:${avatarBg}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
                 ${s.avatar || '👦🏻'}
               </div>
@@ -2656,6 +2663,10 @@ function saveStudentPrayers() {
   if (allModal && allModal.classList.contains("open")) {
     filterAllPrayersModal(currentAllPrayersFilter || "all");
   }
+  const friendModal = document.getElementById("friendPrayerSheetModal");
+  if (friendModal && friendModal.classList.contains("open")) {
+    openFriendPrayerSheetModal(studentId);
+  }
   showToast(`🎉 ${student.name} 학생의 기도제목이 저장되었습니다! 🙏`, "success");
 }
 
@@ -2701,6 +2712,128 @@ function openEditPrayerModal(studentId) {
   if (saveBtn) saveBtn.onclick = saveStudentPrayers;
 
   openModal("editStudentPrayerModal");
+}
+
+function openFriendPrayerSheetModal(studentId) {
+  const all = getAllStudentsRoster();
+  const s = all.find(st => st.id === studentId || st.name === studentId);
+  if (!s) return;
+
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const currentCleanName = (currentUser && currentUser.name) ? currentUser.name.replace(/\s*(학생|선생님|전도사|교사)$/, "").trim() : "";
+  const studentCleanName = (s.name || "").replace(/\s*(학생|선생님|전도사|교사)$/, "").trim();
+  const isMe = (currentUser && (currentUser.id === s.id || (currentCleanName && currentCleanName === studentCleanName)));
+  const canEdit = canEditStudentPrayer(s);
+
+  const gradeBadge = document.getElementById("friendPrayerSheetGradeBadge");
+  const teacherBadge = document.getElementById("friendPrayerSheetTeacherBadge");
+  const avatar = document.getElementById("friendPrayerSheetAvatar");
+  const studentName = document.getElementById("friendPrayerSheetStudentName");
+  const subtitle = document.getElementById("friendPrayerSheetSubtitle");
+  const listContainer = document.getElementById("friendPrayerSheetListContainer");
+  const actionArea = document.getElementById("friendPrayerSheetActionArea");
+
+  if (gradeBadge) gradeBadge.textContent = s.className || s.grade || "분반 친구";
+  if (teacherBadge) teacherBadge.textContent = s.teacherName ? `담당: ${s.teacherName}` : (s.roleInfo || "우리 분반");
+  if (avatar) avatar.textContent = s.avatar || (isMe ? "👦🏻" : "👧🏻");
+  if (studentName) {
+    studentName.innerHTML = `<span>${s.name}</span>${isMe ? '<span class="text-[11px] bg-orange-600 text-white font-bold px-1.5 py-0.5 rounded-md ml-1.5 align-middle">나</span>' : ''}`;
+  }
+  if (subtitle) {
+    subtitle.textContent = isMe 
+      ? "내가 작성한 분반 기도제목입니다. 언제든 수정할 수 있어요 🌱" 
+      : `${s.name} 친구를 위해 마음 모아 함께 기도해주세요 🙏`;
+  }
+
+  const prayers = s.prayers || [];
+  if (listContainer) {
+    if (prayers.length === 0) {
+      listContainer.innerHTML = `
+        <div style="text-align:center; padding:24px 16px; background:#fff7ed; border-radius:16px; border:1.5px dashed #fed7aa; color:#9a3412;">
+          <span style="font-size:26px; display:block; margin-bottom:6px;">🌱</span>
+          <p style="font-size:13.5px; font-weight:800; margin-bottom:3px;">등록된 기도제목이 없습니다</p>
+          <p style="font-size:11.5px; color:#78716c; line-height:1.4;">
+            ${isMe ? "나의 첫 기도제목을 등록하고 선생님, 친구들과 나눠보세요!" : "선생님과 분반 나눔 시간에 함께 기도제목을 나눌 예정이에요."}
+          </p>
+        </div>
+      `;
+    } else {
+      listContainer.innerHTML = prayers.map((p, idx) => {
+        const text = p.text || p;
+        const count = p.count || 0;
+        const prayed = !!p.prayed;
+        return `
+          <div style="background:#ffffff; border:1px solid #ffedd5; border-radius:14px; padding:12px 14px; box-shadow:0 2px 6px rgba(234,88,12,0.04); display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+            <div style="display:flex; align-items:flex-start; gap:9px; flex:1; min-width:0;">
+              <span style="color:#ea580c; font-size:14px; font-weight:bold; margin-top:1px; flex-shrink:0;">♥</span>
+              <span style="font-size:13px; color:#2d261e; font-weight:700; line-height:1.5; word-break:break-word;">${text}</span>
+            </div>
+            ${!isMe ? `
+              <button type="button" onclick="cheerPrayerForFriend('${s.id}', ${idx})" style="flex-shrink:0; font-size:11px; font-weight:800; border-radius:20px; padding:4px 9px; cursor:pointer; display:inline-flex; align-items:center; gap:3px; border:${prayed ? '1.5px solid #fda4af' : '1px solid #fed7aa'}; background:${prayed ? '#ffe4e6' : '#fff7ed'}; color:${prayed ? '#e11d48' : '#ea580c'}; transition:all 0.15s ease;" title="함께 기도하기">
+                <span>${prayed ? '❤️' : '🤍'}</span>
+                <span>${prayed ? '기도중' : '기도하기'}</span>
+                ${count > 0 ? `<span style="font-size:10px; font-weight:bold; opacity:0.85;">(${count})</span>` : ''}
+              </button>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  if (actionArea) {
+    if (isMe || canEdit) {
+      actionArea.innerHTML = `
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-secondary" data-close="friendPrayerSheetModal" style="flex:1; padding:12px; font-size:13px; font-weight:700; border-radius:12px;">
+            닫기
+          </button>
+          <button type="button" onclick="closeModal('friendPrayerSheetModal'); openEditPrayerModal('${s.id}')" style="flex:1.6; background:#ea580c; color:#fff; border:none; padding:12px; font-size:13px; font-weight:800; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; box-shadow:0 3px 8px rgba(234,88,12,0.25);">
+            <span>✏️</span> <span>기도제목 수정 / 추가</span>
+          </button>
+        </div>
+      `;
+    } else {
+      actionArea.innerHTML = `
+        <button type="button" onclick="showToast('${s.name} 친구를 위해 함께 마음 모아 기도합니다 🙏', 'success'); closeModal('friendPrayerSheetModal');" style="width:100%; background:#ea580c; color:#fff; border:none; padding:13px; font-size:13.5px; font-weight:800; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 8px rgba(234,88,12,0.25);">
+          <span>🙏</span> <span>${s.name} 친구를 위해 아멘으로 함께 기도합니다</span>
+        </button>
+      `;
+    }
+  }
+
+  openModal("friendPrayerSheetModal");
+}
+
+function cheerPrayerForFriend(studentId, prayerIndex) {
+  const all = getAllStudentsRoster();
+  const s = all.find(st => st.id === studentId || st.name === studentId);
+  if (!s || !s.prayers || !s.prayers[prayerIndex]) return;
+
+  const targetPrayer = s.prayers[prayerIndex];
+  targetPrayer.prayed = !targetPrayer.prayed;
+  targetPrayer.count = (targetPrayer.count || 0) + (targetPrayer.prayed ? 1 : -1);
+  if (targetPrayer.count < 0) targetPrayer.count = 0;
+
+  // Sync back to gradeClasses
+  if (Array.isArray(appState.gradeClasses)) {
+    appState.gradeClasses.forEach(c => {
+      (c.students || []).forEach(st => {
+        if (st.id === studentId || st.name === s.name) {
+          st.prayers = JSON.parse(JSON.stringify(s.prayers));
+        }
+      });
+    });
+  }
+
+  saveState();
+  openFriendPrayerSheetModal(studentId);
+  renderClassMinistrySection();
+  if (targetPrayer.prayed) {
+    showToast(`❤️ ${s.name} 친구를 위해 함께 기도합니다!`, "success");
+  } else {
+    showToast(`기도 응원을 취소했습니다.`, "info");
+  }
 }
 
 function openStudentDetailModal(studentId) {

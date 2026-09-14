@@ -1431,6 +1431,40 @@
       </div>
     </div>
 
+    <!-- Modal: [학생 전용] 친구 기도제목 열람 & 중보 바텀시트 -->
+    <div class="modal-backdrop" id="friendPrayerSheetModal" style="z-index: 1050;">
+      <div class="bottom-sheet" style="max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header" style="margin-bottom: 12px;">
+          <div>
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="px-2 py-0.5 rounded-md bg-orange-100 text-orange-800 text-[10.5px] font-extrabold" id="friendPrayerSheetGradeBadge">분반 친구</span>
+              <span class="text-[11px] font-semibold text-stone-500" id="friendPrayerSheetTeacherBadge">우리 분반</span>
+            </div>
+            <h3 class="sheet-title flex items-center gap-2 text-[17.5px]">
+              <span id="friendPrayerSheetAvatar" class="text-xl">👧🏻</span>
+              <span id="friendPrayerSheetStudentName">친구 이름</span>
+              <span class="text-[14px] font-normal text-stone-600">기도제목</span>
+            </h3>
+            <p class="text-[11px] font-medium text-stone-500 mt-1" id="friendPrayerSheetSubtitle">친구를 위해 마음 모아 함께 기도해주세요 🙏</p>
+          </div>
+          <button class="sheet-close-btn" data-close="friendPrayerSheetModal">✕</button>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto; padding-right: 2px;">
+          <!-- 기도제목 리스트 컨테이너 -->
+          <div id="friendPrayerSheetListContainer" class="space-y-2">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- 하단 액션 버튼 영역 -->
+        <div class="pt-3 border-t border-stone-100 mt-2" id="friendPrayerSheetActionArea">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
     <!-- Modal: 전체 학생 중보기도 나눔터 바텀시트 -->
     <div class="modal-backdrop" id="allPrayersModal" style="z-index: 1040;">
       <div class="bottom-sheet" style="max-height: 85vh; display: flex; flex-direction: column;">
