@@ -5578,6 +5578,7 @@ function renderAccountingSection() {
       `;
       allReceiptList.appendChild(el);
     });
+    }
   }
 
   // 3. Google Sheet table rows
