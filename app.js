@@ -609,6 +609,18 @@ const INITIAL_DATA = {
         isMine: true
       },
       {
+        id: 201,
+        date: "9/14",
+        title: "새친구 환영 웰컴 패키지 & 다과",
+        author: "소예진 선생님",
+        amount: 35000,
+        status: "승인대기",
+        category: "새친구/정착비",
+        store: "다이소/올리브영",
+        receiptUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80",
+        isMine: true
+      },
+      {
         id: 3,
         date: "8/30",
         title: "생일 케이크 및 축하선물",
@@ -5179,7 +5191,14 @@ function initReceiptSection() {
         document.getElementById("rcptStore").value = preset.store;
         document.getElementById("rcptPriceDisplay").innerHTML = `${preset.amount.toLocaleString()} <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>`;
         document.getElementById("rcptCategory").value = preset.category;
-        document.getElementById("rcptUser").value = preset.user;
+        
+        // 현재 로그인/시점의 사용자가 있으면 프리셋의 이름으로 덮어쓰지 않고 현재 사용자 유지
+        const activeUserNow = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+        if (!activeUserNow || activeUserNow.role === "pastor" || activeUserNow.isAdmin) {
+          document.getElementById("rcptUser").value = preset.user;
+        } else {
+          document.getElementById("rcptUser").value = activeUserNow.name;
+        }
         document.getElementById("rcptPurpose").value = preset.purpose;
 
         const scanTitle = document.getElementById("receiptScanStatusTitle");
@@ -5224,9 +5243,15 @@ function initReceiptSection() {
       const date = document.getElementById("rcptDate").value;
       const store = document.getElementById("rcptStore").value;
       const category = document.getElementById("rcptCategory").value;
-      const user = document.getElementById("rcptUser").value;
+      let user = document.getElementById("rcptUser").value;
       const purpose = document.getElementById("rcptPurpose").value;
       const amount = preset ? preset.amount : 45000;
+
+      // 교사(선생님) 권한인 경우 본인의 이름으로 확실히 청구 등록
+      const submitUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      if (submitUser && submitUser.name && !submitUser.isAdmin && submitUser.role !== "pastor") {
+        user = submitUser.name;
+      }
 
       // Extract month
       const monthMatch = date.match(/\d{4}[.-](\d{1,2})[.-]\d{1,2}/) || date.match(/(\d{1,2})[.-]\d{1,2}/);
@@ -5302,9 +5327,6 @@ function initReceiptSection() {
 
       setTimeout(() => {
         switchToTab("view-accounting");
-        setTimeout(() => {
-          if (typeof syncFromGoogleSheet === "function") syncFromGoogleSheet(false);
-        }, 1500);
       }, 600);
     });
   }
@@ -6187,7 +6209,8 @@ async function syncFromGoogleSheet(isManual = false) {
       if (receiptUrl === "[link removed]" || !receiptUrl.startsWith("http")) {
         receiptUrl = "https://images.unsplash.com/photo-1554415707-9e49017a1215?w=600&auto=format&fit=crop&q=80";
       }
-      const status = cellsV[9] || "정산완료";
+      const rawStatus = cellsV[9];
+      const status = (rawStatus && rawStatus.trim()) ? rawStatus.trim() : "승인대기";
       const anomaly = cellsV[10] || "정상";
       const memo = cellsV[11] || "";
 
@@ -6202,7 +6225,7 @@ async function syncFromGoogleSheet(isManual = false) {
 
       // Receipt item for Tab 1
       fetchedReceipts.push({
-        id: idx + 1,
+        id: "gsheet_" + (idx + 1),
         title: title,
         amount: amount,
         store: store,
@@ -6214,7 +6237,7 @@ async function syncFromGoogleSheet(isManual = false) {
         method: paymentMethod,
         purpose: purpose || title,
         receiptUrl: receiptUrl,
-        isMine: author.includes("하람") || author.includes("정하람")
+        isMine: false
       });
 
       // Ledger entry for Tab 2 (Numbers table)
@@ -6236,6 +6259,8 @@ async function syncFromGoogleSheet(isManual = false) {
 
     // 기존에 앱에서 관리자가 처리한 상태 및 숨김 플래그 보존
     const localStatusMap = new Map();
+    const locallyAddedReceipts = [];
+
     (appState.accounting.receipts || []).forEach(r => {
       localStatusMap.set(String(r.id), {
         status: r.status,
@@ -6243,12 +6268,17 @@ async function syncFromGoogleSheet(isManual = false) {
         hiddenFromMine: r.hiddenFromMine,
         paidDate: r.paidDate
       });
+      // 앱에서 새로 추가한 영수증 (id가 숫자인 Date.now() 기반)은 시트에 아직 없더라도 보존
+      if (typeof r.id === "number" || String(r.id).startsWith("new_") || String(r.id).length > 10) {
+        locallyAddedReceipts.push(r);
+      }
     });
 
     // 1월 historical entries from user's original Numbers screenshot
     const janEntries = (appState.accounting.ledgerEntries || []).filter(e => Number(e.month) === 1);
     appState.accounting.ledgerEntries = [...janEntries, ...fetchedLedgerEntries];
-    appState.accounting.receipts = fetchedReceipts.map(r => {
+    
+    const mappedGsheetReceipts = fetchedReceipts.map(r => {
       const local = localStatusMap.get(String(r.id));
       if (local) {
         return {
@@ -6261,6 +6291,9 @@ async function syncFromGoogleSheet(isManual = false) {
       }
       return r;
     });
+
+    // 로컬 추가 영수증을 최상단에 유지하고 시트 데이터와 결합
+    appState.accounting.receipts = [...locallyAddedReceipts, ...mappedGsheetReceipts];
 
     saveState();
     renderAccountingSection();
