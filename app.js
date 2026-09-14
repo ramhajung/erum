@@ -1866,7 +1866,12 @@ function renderClassMinistrySection() {
   containers.forEach(container => {
     let activeClass;
     if (isStudent && currentUser) {
-      activeClass = classes.find(c => c.students && c.students.some(s => s.name === currentUser.name || s.id === currentUser.id))
+      const studentCleanName = (currentUser.name || "").replace(/\s*(학생|새친구)?$/, "").trim();
+      activeClass = classes.find(c => c.students && c.students.some(s => {
+        const sClean = (s.name || "").replace(/\s*(학생|새친구)?$/, "").trim();
+        return s.id === currentUser.id || (sClean && sClean === studentCleanName);
+      }))
+        || (currentUser.duty && classes.find(c => c.grade && (currentUser.duty.includes(c.grade) || currentUser.duty.includes(c.grade.replace("반", "")))))
         || classes.find(c => c.id === "class_high3")
         || classes[0];
     } else if (isTeacher && currentUser) {
@@ -1906,6 +1911,56 @@ function renderClassMinistrySection() {
               </button>
             `;
           }).join('')}
+        </div>
+      `;
+    }
+
+    // 학생 시점일 때 본인 학생 객체 조회 및 나의 기도제목 카드 HTML 준비
+    let myPrayerCardHtml = "";
+    if (isStudent && currentUser) {
+      const studentCleanName = (currentUser.name || "").replace(/\s*(학생|새친구)?$/, "").trim();
+      const allRoster = (typeof getAllStudentsRoster === "function") ? getAllStudentsRoster() : (activeClass.students || []);
+      const meStudent = (activeClass.students || []).find(s => {
+        const sClean = (s.name || "").replace(/\s*(학생|새친구)?$/, "").trim();
+        return s.id === currentUser.id || (sClean && sClean === studentCleanName);
+      }) || allRoster.find(s => {
+        const sClean = (s.name || "").replace(/\s*(학생|새친구)?$/, "").trim();
+        return s.id === currentUser.id || (sClean && sClean === studentCleanName);
+      });
+
+      const prayerTargetId = meStudent ? meStudent.id : currentUser.id;
+      const myPrayers = (meStudent && Array.isArray(meStudent.prayers)) ? meStudent.prayers : [];
+
+      myPrayerCardHtml = `
+        <div class="card my-prayer-card" style="background:linear-gradient(135deg, #fffbf5 0%, #fff7ed 100%); border:1.5px solid #fed7aa; border-radius:18px; padding:15px; margin-bottom:16px; box-shadow:0 4px 12px rgba(234,88,12,0.06);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:15px;">🙏</span>
+              <span style="font-size:13.5px; font-weight:800; color:#9a3412;">나의 기도제목 관리</span>
+              <span style="font-size:10.5px; color:#ea580c; background:#ffedd5; padding:2px 7px; border-radius:10px; font-weight:700;">${myPrayers.length}개</span>
+            </div>
+            <button type="button" onclick="openEditPrayerModal('${prayerTargetId}')" style="font-size:12px; font-weight:800; color:#fff; background:#ea580c; border:none; border-radius:10px; padding:5px 11px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(234,88,12,0.25); transition:all 0.15s ease;">
+              <span>✏️</span> <span>기도제목 수정 / 추가</span>
+            </button>
+          </div>
+          ${myPrayers.length > 0 ? `
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              ${myPrayers.map((p, pIdx) => `
+                <div style="display:flex; align-items:flex-start; gap:7px; background:#ffffff; padding:9px 12px; border-radius:12px; border:1px solid #ffedd5; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+                  <span style="color:#ea580c; font-size:12px; font-weight:bold; margin-top:1px; flex-shrink:0;">♥</span>
+                  <span style="font-size:12.5px; color:#374151; font-weight:600; line-height:1.45; flex:1;">${p.text || p}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div style="text-align:center; padding:14px; background:#ffffff; border-radius:12px; border:1px dashed #fed7aa; color:#9a3412; font-size:12px;">
+              <p style="font-weight:700; margin-bottom:3px;">아직 등록된 기도제목이 없습니다 🌱</p>
+              <p style="color:#78716c; font-size:11.5px; margin-bottom:8px;">선생님과 나눌 기도제목을 적어보세요!</p>
+              <button type="button" onclick="openEditPrayerModal('${prayerTargetId}')" style="font-size:11.5px; font-weight:800; color:#ea580c; background:#fff7ed; border:1px solid #fed7aa; padding:4px 10px; border-radius:8px; cursor:pointer;">
+                ＋ 첫 기도제목 등록하기
+              </button>
+            </div>
+          `}
         </div>
       `;
     }
@@ -1951,6 +2006,9 @@ function renderClassMinistrySection() {
           </div>
         </div>
       </div>
+
+      <!-- 학생 시점: 나의 기도제목 카드 -->
+      ${myPrayerCardHtml}
 
       <!-- 해당 분반 학생 출결 & 목양 관리 -->
       <div class="section-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -2594,9 +2652,13 @@ function saveStudentPrayers() {
 
   saveState();
   closeModal("editStudentPrayerModal");
-  openStudentDetailModal(studentId);
+  const detailModal = document.getElementById("studentDetailModal");
+  if (detailModal && detailModal.classList.contains("open")) {
+    openStudentDetailModal(studentId);
+  }
   renderStudentRosterList();
   renderHomePrayersSection();
+  renderClassMinistrySection();
   const allModal = document.getElementById("allPrayersModal");
   if (allModal && allModal.classList.contains("open")) {
     filterAllPrayersModal(currentAllPrayersFilter || "all");
@@ -6573,6 +6635,7 @@ const ROLES = {
     activeClass: "active-student",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 새친구 환영 피드", subtitle: "새친구 환영 · 토요예배 섬김이 · 공지" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "새친구 & 배정 분반 공과 · 담임 선생님 · 분반 친구들" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "새친구 1:1 멘토링 & 심방 신청" }
     ],
@@ -6770,8 +6833,8 @@ function renderViewAsRoleModal() {
       badge: "새친구반 학생",
       badgeClass: "bg-teal-50 text-teal-700 border-teal-200",
       fallbackUserId: "u6",
-      tabs: ["홈", "새친구", "캘린더", "1:1상담"],
-      desc: "새친구 환영 대시보드, 정착 양육 현황 및 달란트 스탬프 포털",
+      tabs: ["홈", "공과반", "캘린더", "1:1상담"],
+      desc: "새친구 환영 대시보드, 배정 분반 공과 & 나의 기도제목 관리 포털",
       borderHover: "hover:border-teal-300"
     },
     {
