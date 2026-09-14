@@ -1990,16 +1990,22 @@ function renderClassMinistrySection() {
             <div style="font-size:11.5px; color:#78716c; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
               ${activeClass.teacherDuty}
             </div>
-            <div style="font-size:11px; color:#ea580c; font-weight:600; margin-top:2px;">
-              📞 ${activeClass.teacherPhone}
-            </div>
+            ${isStudent ? `
+              <div style="font-size:11px; color:#c2410c; font-weight:700; margin-top:3px; background:#ffedd5; display:inline-block; padding:2px 7px; border-radius:6px;">
+                우리 분반 담임
+              </div>
+            ` : `
+              <div style="font-size:11px; color:#ea580c; font-weight:600; margin-top:2px;">
+                📞 ${activeClass.teacherPhone}
+              </div>
+            `}
           </div>
           <div style="display:flex; gap:6px;">
             ${isTeacherSelf ? `
               <span style="font-size:11px; font-weight:800; color:#15803d; background:#dcfce7; padding:5px 10px; border-radius:10px; border:1px solid #86efac; display:inline-flex; align-items:center; gap:3px;">
                 <span>🧑🏻‍🏫</span> <span>담임 교사</span>
               </span>
-            ` : `
+            ` : isStudent ? `` : `
               <a href="tel:${activeClass.teacherPhone}" class="btn-icon" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #fed7aa; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px;" title="전화걸기">📞</a>
               <button type="button" class="btn-icon" onclick="showToast('${activeClass.teacherName} 선생님과의 1:1 카톡 상담창을 엽니다 💬', 'info')" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #fed7aa; display:flex; align-items:center; justify-content:center; font-size:16px;" title="카톡 대화">💬</button>
             `}
