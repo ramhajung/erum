@@ -5201,6 +5201,22 @@ function initReceiptSection() {
     currentUploadedImage = initialPreset.receiptUrl || "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80";
   }
 
+  // 현재 로그인된 사용자를 지출 담당자 기본값으로 선택
+  const activeUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const rcptUserEl = document.getElementById("rcptUser");
+  if (rcptUserEl && activeUser) {
+    const matchedOpt = Array.from(rcptUserEl.options).find(opt => opt.value.includes(activeUser.name) || activeUser.name.includes(opt.value));
+    if (matchedOpt) {
+      rcptUserEl.value = matchedOpt.value;
+    } else {
+      const newOpt = document.createElement("option");
+      newOpt.value = activeUser.name;
+      newOpt.textContent = activeUser.name;
+      newOpt.selected = true;
+      rcptUserEl.appendChild(newOpt);
+    }
+  }
+
   // Submit Receipt to Google Sheets
   if (submitBtn) {
     submitBtn.addEventListener("click", () => {
@@ -5322,33 +5338,68 @@ function renderAccountingSection() {
   }
 
   // 1. My Receipts (Teacher View)
+  const teacherLabel = document.getElementById("myReceiptTeacherLabel");
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const currentUserName = currentUser ? currentUser.name : "김대한 선생님";
+
+  if (teacherLabel) {
+    teacherLabel.textContent = `${currentUserName} 기준`;
+  }
+
   if (myReceiptList) {
     myReceiptList.innerHTML = "";
-    const myReceipts = appState.accounting.receipts.filter(r => r.isMine);
     
-    myReceipts.forEach(r => {
-      const isDone = r.status === "정산완료";
-      const el = document.createElement("div");
-      el.className = "expense-row-item";
-      el.innerHTML = `
-        <div class="expense-info">
-          <div class="expense-title" style="display:flex; align-items:center; gap:6px;">
-            <span>${r.title}</span>
-            <span class="smart-cat-pill">${r.category || "미분류"}</span>
-          </div>
-          <div class="expense-meta">${r.date} 제출 | ${r.store || "지정처"} | ${r.amount.toLocaleString()}원</div>
-          ${r.receiptUrl ? `
-            <div style="margin-top:4px;">
-              <button class="receipt-view-pill" onclick="openReceiptModalById(${r.id})">📷 영수증 원본 보기</button>
-            </div>
-          ` : ""}
-        </div>
-        <div class="expense-status-badge ${isDone ? "status-done" : "status-wait"}">
-          ${r.status} ${isDone ? "✓" : "⏳"}
+    // 현재 로그인된 사용자의 영수증만 필터링 (hiddenFromMine 플래그가 없거나 false인 항목)
+    const myReceipts = (appState.accounting.receipts || []).filter(r => {
+      if (r.hiddenFromMine) return false;
+      const rAuthor = (r.author || "").trim();
+      const uName = (currentUserName || "").trim();
+      const uShortName = uName.replace("선생님", "").replace("전도사", "").replace("집사님", "").replace("집사", "").trim();
+      
+      const isAuthorMatch = rAuthor.includes(uName) || (uShortName && rAuthor.includes(uShortName));
+      return isAuthorMatch || (r.isMine && (!r.author || r.author === uName));
+    });
+
+    if (myReceipts.length === 0) {
+      myReceiptList.innerHTML = `
+        <div style="text-align:center; padding:32px 16px; background:#fff; border:1px dashed #e5e7eb; border-radius:16px; color:#9ca3af;">
+          <div style="font-size:28px; margin-bottom:8px;">🧾</div>
+          <div style="font-size:13.5px; font-weight:700; color:#4b5563;">제출한 영수증 내역이 없습니다</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">하단 [+ 나의 영수증 사진 등록하기] 버튼으로 등록할 수 있습니다.</div>
         </div>
       `;
-      myReceiptList.appendChild(el);
-    });
+    } else {
+      myReceipts.forEach(r => {
+        const isDone = r.status === "정산완료";
+        const el = document.createElement("div");
+        el.className = "expense-row-item";
+        el.innerHTML = `
+          <div class="expense-info" style="flex:1; min-width:0;">
+            <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span>${r.title}</span>
+              <span class="smart-cat-pill">${r.category || "미분류"}</span>
+            </div>
+            <div class="expense-meta">${r.date} 제출 | ${r.store || "지정처"} | ${r.amount.toLocaleString()}원</div>
+            ${r.receiptUrl ? `
+              <div style="margin-top:4px;">
+                <button class="receipt-view-pill" onclick="openReceiptModalById(${r.id})">📷 영수증 원본 보기</button>
+              </div>
+            ` : ""}
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0;">
+            <div class="expense-status-badge ${isDone ? "status-done" : "status-wait"}">
+              ${r.status} ${isDone ? "✓" : "⏳"}
+            </div>
+            ${isDone ? `
+              <button type="button" class="btn-icon" onclick="confirmAndDismissReceipt(${r.id})" style="width:auto; height:auto; padding:3px 8px; border-radius:8px; font-size:11px; font-weight:800; background:#f0fdf4; border:1px solid #86efac; color:#15803d; cursor:pointer; display:inline-flex; align-items:center; gap:3px;" title="정산금 입금 확인 후 내 목록에서 정리">
+                <span>정산 확인 ✓</span>
+              </button>
+            ` : ''}
+          </div>
+        `;
+        myReceiptList.appendChild(el);
+      });
+    }
   }
 
   // 2. All Receipts (Admin View) with Open Accountant Anomaly & Categorization
@@ -5404,6 +5455,19 @@ function renderAccountingSection() {
   // 5. Render Open Accountant P&L and Month-End Close
   renderProfitLoss();
   renderMonthEndClose(liveBalance, totalExpense);
+}
+
+function confirmAndDismissReceipt(receiptId) {
+  const receipt = (appState.accounting.receipts || []).find(r => Number(r.id) === Number(receiptId));
+  if (!receipt) return;
+
+  const confirmMsg = `'${receipt.title}' (${receipt.amount.toLocaleString()}원) 정산금을 입금 확인하셨나요?\n\n선생님의 '내 영수증 목록'에서만 정리(삭제)되며, 교회 전체 회계 장부(전도사님/부장집사님 장부)에는 안전하게 보존됩니다.`;
+  if (confirm(confirmMsg)) {
+    receipt.hiddenFromMine = true;
+    saveState();
+    renderAccountingSection();
+    showToast(`✅ '${receipt.title}' 영수증이 정산 확인되어 목록에서 정리되었습니다.`);
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -6055,10 +6119,22 @@ async function syncFromGoogleSheet(isManual = false) {
       });
     });
 
+    // 기존에 교사가 '정산 확인'으로 숨긴 영수증 ID 세트 보존
+    const previouslyHiddenIds = new Set(
+      (appState.accounting.receipts || [])
+        .filter(r => r.hiddenFromMine)
+        .map(r => String(r.id))
+    );
+
     // 1월 historical entries from user's original Numbers screenshot
     const janEntries = (appState.accounting.ledgerEntries || []).filter(e => Number(e.month) === 1);
     appState.accounting.ledgerEntries = [...janEntries, ...fetchedLedgerEntries];
-    appState.accounting.receipts = fetchedReceipts;
+    appState.accounting.receipts = fetchedReceipts.map(r => {
+      if (previouslyHiddenIds.has(String(r.id))) {
+        return { ...r, hiddenFromMine: true };
+      }
+      return r;
+    });
 
     saveState();
     renderAccountingSection();
@@ -7160,6 +7236,7 @@ function switchMasterRole(roleKey, notify = true) {
   renderNewcomerMinistrySection();
   renderUpcomingEventsSection();
   renderHomePrayersSection();
+  renderAccountingSection();
   updateStaffBoxHomeBadge();
 
   // 7. Sonner Toast Feedback
@@ -7407,6 +7484,20 @@ function initRoleEvents() {
   const gotoAddBtn = document.getElementById("gotoAddReceiptBtn");
   if (gotoAddBtn) {
     gotoAddBtn.addEventListener("click", () => {
+      const activeUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      const rcptUserEl = document.getElementById("rcptUser");
+      if (rcptUserEl && activeUser) {
+        const matchedOpt = Array.from(rcptUserEl.options).find(opt => opt.value.includes(activeUser.name) || activeUser.name.includes(opt.value));
+        if (matchedOpt) {
+          rcptUserEl.value = matchedOpt.value;
+        } else {
+          const newOpt = document.createElement("option");
+          newOpt.value = activeUser.name;
+          newOpt.textContent = activeUser.name;
+          newOpt.selected = true;
+          rcptUserEl.appendChild(newOpt);
+        }
+      }
       switchToTab("view-receipt");
     });
   }
