@@ -2246,12 +2246,9 @@ function renderNewcomerMinistrySection() {
         }).join('')}
       </div>
 
-      <div style="display:flex; gap:8px; margin-top:16px;">
-        <button class="btn-primary" style="flex:1; background:#16a34a;" onclick="openModal('visitModal')">
-          <span>＋</span> <span>새친구 심방/상담 일지</span>
-        </button>
-        <button class="btn-secondary" style="flex:1; border-color:#bbf7d0; color:#166534; font-size:13px; font-weight:800;" onclick="addNewcomerStudent()">
-          <span>🌱</span> <span>새친구 등록</span>
+      <div style="margin-top:16px;">
+        <button class="btn-primary" style="width:100%; background:#16a34a; font-weight:800; padding:12px 16px; border-radius:14px; font-size:14px; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 10px rgba(22,163,74,0.2);" onclick="addNewcomerStudent()">
+          <span>🌱</span> <span>새친구 등록하기</span>
         </button>
       </div>
     `;
