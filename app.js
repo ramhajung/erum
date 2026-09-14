@@ -5548,6 +5548,65 @@ function renderAccountingSection() {
   // 5. Render Open Accountant P&L and Month-End Close
   renderProfitLoss();
   renderMonthEndClose(liveBalance, totalExpense);
+
+  // 6. 홈 화면 미승인 영수증 알림 배너 및 하단 탭 배지 갱신
+  updateAccountingNotificationBadges();
+}
+
+function updateAccountingNotificationBadges() {
+  const receipts = appState.accounting.receipts || [];
+  // 승인대기 중인 영수증 필터링 (승인대기 ⏳)
+  const pendingReceipts = receipts.filter(r => {
+    return r.status === "승인대기" || (!r.status && !r.isPaid);
+  });
+  const pendingCount = pendingReceipts.length;
+  let totalPendingAmount = 0;
+  pendingReceipts.forEach(r => {
+    totalPendingAmount += Number(r.amount) || 0;
+  });
+
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
+  const isPrivileged = (role === "pastor" || role === "accountant" || (currentUser && currentUser.isAdmin));
+
+  // 1. 하단 탭 바 [재정/회계] 탭에 레드 알림 배지 갱신
+  const accountingBadge = document.querySelector(".accounting-nav-badge");
+  if (accountingBadge) {
+    if (isPrivileged && pendingCount > 0) {
+      accountingBadge.textContent = pendingCount > 99 ? "99+" : pendingCount;
+      accountingBadge.classList.remove("hidden");
+    } else {
+      accountingBadge.classList.add("hidden");
+    }
+  }
+
+  // 2. 홈 화면 결재 대기 알림 배너 갱신
+  const homeBanner = document.getElementById("homeReceiptApprovalBanner");
+  const countTextEl = document.getElementById("homeReceiptCountText");
+  const subTextEl = document.getElementById("homeReceiptSubText");
+
+  if (homeBanner) {
+    if (isPrivileged && pendingCount > 0) {
+      homeBanner.classList.remove("hidden");
+      if (countTextEl) {
+        countTextEl.textContent = `영수증 청구 ${pendingCount}건 (총 ${totalPendingAmount.toLocaleString()}원)`;
+      }
+      if (subTextEl) {
+        const firstAuthor = pendingReceipts[0].author || "선생님";
+        const othersCount = pendingCount - 1;
+        if (othersCount > 0) {
+          subTextEl.textContent = `${firstAuthor} 외 ${othersCount}건의 영수증이 접수되어 결재를 기다립니다.`;
+        } else {
+          subTextEl.textContent = `${firstAuthor}의 영수증이 접수되어 결재를 기다립니다.`;
+        }
+      }
+      homeBanner.onclick = () => {
+        switchToTab("view-accounting");
+      };
+    } else {
+      homeBanner.classList.add("hidden");
+    }
+  }
 }
 
 function confirmAndDismissReceipt(receiptId) {
@@ -7441,7 +7500,14 @@ function renderRoleTabBar(roleConfig) {
     const fillStyle = isActive ? "font-variation-settings: 'FILL' 1;" : "";
     const wrapBg = isActive ? "bg-primary-fixed/50" : "";
     const isMeetingTab = (tab.target === "view-agenda");
-    const badgeHtml = isMeetingTab ? `<span class="meeting-nav-badge hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none shadow-sm">0</span>` : "";
+    const isAccountingTab = (tab.target === "view-accounting");
+    
+    let badgeHtml = "";
+    if (isMeetingTab) {
+      badgeHtml = `<span class="meeting-nav-badge hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none shadow-sm">0</span>`;
+    } else if (isAccountingTab) {
+      badgeHtml = `<span class="accounting-nav-badge hidden absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 bg-rose-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center leading-none shadow-sm ring-1 ring-white">0</span>`;
+    }
 
     btn.innerHTML = `
       <div class="tab-icon-wrap w-10 h-7 rounded-full flex items-center justify-center transition-colors relative ${wrapBg}">
@@ -7505,6 +7571,9 @@ function renderRoleTabBar(roleConfig) {
   });
 
   updateMeetingNavBadge();
+  if (typeof updateAccountingNotificationBadges === "function") {
+    updateAccountingNotificationBadges();
+  }
 }
 
 function initUserManagementEvents() {
