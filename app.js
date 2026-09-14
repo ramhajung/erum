@@ -1716,19 +1716,67 @@ function getNewcomerTeachers() {
 }
 
 function addNewcomerStudent() {
-  const name = prompt("새친구 학생의 이름을 입력하세요 (예: 송하은):");
-  if (!name || !name.trim()) return;
-  const grade = prompt("새친구의 학년을 입력하세요 (예: 고1):") || "고1";
-  const interests = prompt("새친구의 관심사나 특기를 입력하세요 (예: 축구, 보컬):") || "새 신앙생활";
+  openAddNewcomerModal();
+}
 
-  const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
+function openAddNewcomerModal() {
   const teachers = getNewcomerTeachers();
+  const mentorSelect = document.getElementById("newcomerMentorSelect");
   const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
-  let assignedMentor = teachers[0]?.name || "소예진 선생님";
-  if (currentUser && teachers.some(t => t.name === currentUser.name)) {
-    assignedMentor = currentUser.name;
+
+  if (mentorSelect) {
+    mentorSelect.innerHTML = teachers.map(t => {
+      const isMe = (currentUser && currentUser.name === t.name);
+      return `<option value="${t.name}" ${isMe ? "selected" : ""}>${t.name} (${t.duty || "멘토"})</option>`;
+    }).join("");
+    // 만약 현재 교사가 새친구 교사가 아니거나 기본값이 필요하면 첫번째 교사 선택
+    if (!currentUser || !teachers.some(t => t.name === currentUser.name)) {
+      if (mentorSelect.options.length > 0) mentorSelect.selectedIndex = 0;
+    }
   }
 
+  // 폼 초기화
+  const nameInput = document.getElementById("newcomerNameInput");
+  const gradeSelect = document.getElementById("newcomerGradeSelect");
+  const prayerInput = document.getElementById("newcomerPrayerInput");
+  const inviterInput = document.getElementById("newcomerInviterInput");
+  const interestsInput = document.getElementById("newcomerInterestsInput");
+  const phoneInput = document.getElementById("newcomerPhoneInput");
+
+  if (nameInput) nameInput.value = "";
+  if (gradeSelect) gradeSelect.value = "고1";
+  if (prayerInput) prayerInput.value = "새로운 교회와 예배에 기쁨으로 적응하고 좋은 믿음의 친구들을 만나도록";
+  if (inviterInput) inviterInput.value = "";
+  if (interestsInput) interestsInput.value = "";
+  if (phoneInput) phoneInput.value = "";
+
+  openModal("addNewcomerModal");
+}
+
+function handleAddNewcomerFormSubmit(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById("newcomerNameInput");
+  const gradeSelect = document.getElementById("newcomerGradeSelect");
+  const mentorSelect = document.getElementById("newcomerMentorSelect");
+  const prayerInput = document.getElementById("newcomerPrayerInput");
+  const inviterInput = document.getElementById("newcomerInviterInput");
+  const interestsInput = document.getElementById("newcomerInterestsInput");
+  const phoneInput = document.getElementById("newcomerPhoneInput");
+
+  const name = nameInput ? nameInput.value.trim() : "";
+  if (!name) {
+    showToast("새친구의 이름을 입력해주세요.", "error");
+    return;
+  }
+
+  const grade = gradeSelect ? gradeSelect.value : "고1";
+  const assignedMentor = mentorSelect ? mentorSelect.value : "소예진 선생님";
+  const prayerTopic = (prayerInput && prayerInput.value.trim()) ? prayerInput.value.trim() : "교회에 잘 적응하고 좋은 믿음의 친구들을 만나도록";
+  const inviter = inviterInput ? inviterInput.value.trim() : "";
+  const interests = interestsInput ? interestsInput.value.trim() : (inviter ? `${inviter} 인도` : "새 신앙생활");
+  const phone = phoneInput ? phoneInput.value.trim() : "010-0000-0000";
+
+  const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
   const templateSteps = (data.curriculum && Array.isArray(data.curriculum.steps) && data.curriculum.steps.length > 0)
     ? data.curriculum.steps
     : [
@@ -1739,33 +1787,49 @@ function addNewcomerStudent() {
 
   const totalStepsCount = templateSteps.length || 3;
 
-  data.students.unshift({
+  const newStudent = {
     id: "new_" + Date.now(),
-    name: name.trim(),
-    grade: grade.trim(),
+    name: name,
+    grade: grade,
     mentorName: assignedMentor,
     avatar: "👧🏻",
     registeredDate: new Date().toLocaleDateString("ko-KR"),
-    interests: interests.trim(),
-    prayerTopic: "교회에 잘 적응하고 좋은 믿음의 친구들을 만나도록",
+    interests: interests,
+    prayerTopic: prayerTopic,
+    inviter: inviter,
+    phone: phone,
     currentStep: 1,
     progressPercent: Math.round((1 / totalStepsCount) * 100),
-    targetClass: `${grade.trim()} 분반`,
+    targetClass: `${grade} 분반`,
     graduated: false,
+    prayers: [
+      { id: Date.now(), text: prayerTopic, count: 1, prayed: false }
+    ],
+    visits: [
+      { id: Date.now() + 1, date: new Date().getMonth() + 1 + "/" + new Date().getDate(), title: "새친구 등록 & 환영 인사", desc: `${assignedMentor} 담당 배정, 웰컴 축복 완료 ✓`, icon: "🌱" }
+    ],
     steps: templateSteps.map((st, idx) => ({
       week: st.week || (idx + 1),
       title: st.title,
       desc: st.desc,
       completed: idx === 0
     }))
-  });
+  };
+
+  data.students.unshift(newStudent);
   saveState();
+  closeModal("addNewcomerModal");
   renderNewcomerMinistrySection();
+  if (typeof renderStudentRosterList === "function") {
+    renderStudentRosterList();
+  }
+
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
   const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
   if (isPastor) {
-    showToast(`🌱 ${name.trim()} 학생이 등록되었습니다! (담당 멘토: ${assignedMentor})`);
+    showToast(`🌱 ${name} 학생이 등록되었습니다! (담당 멘토: ${assignedMentor})`);
   } else {
-    showToast(`🌱 ${name.trim()} 학생이 새친구반에 새로 등록되었습니다! 환영합니다!`);
+    showToast(`🌱 ${name} 학생이 새친구반에 새로 등록되었습니다! 환영합니다!`);
   }
 }
 
@@ -2279,6 +2343,10 @@ function ensureStudentProfileData(s, classInfo) {
     } else if (s.name === "한민준") {
       s.prayers = [
         { id: 71, text: "교회 처음인데 친구들과 잘 어울리고 정착하도록", count: 28, prayed: true }
+      ];
+    } else if (s.prayerTopic) {
+      s.prayers = [
+        { id: Date.now() + Math.floor(Math.random()*100), text: s.prayerTopic, count: 1, prayed: false }
       ];
     } else {
       s.prayers = [
@@ -6714,6 +6782,7 @@ function openEditUserModal(userId) {
       else if (user.duty.includes("고2")) matchedGrade = "고2";
       else if (user.duty.includes("고3")) matchedGrade = "고3";
       else if (user.duty.includes("새친구")) matchedGrade = "새친구반";
+      else if (user.duty.includes("졸업")) matchedGrade = "졸업";
     } else if (user.role === "student_new") {
       matchedGrade = "새친구반";
     }
@@ -6747,7 +6816,9 @@ function initEditUserEvents() {
       if (isStudent) {
         const gradeSelect = document.getElementById("editUserGradeSelect");
         const selectedGrade = gradeSelect ? gradeSelect.value : "고3";
-        duty = selectedGrade === "새친구반" ? "새친구반 학생" : `${selectedGrade} 학생`;
+        if (selectedGrade === "새친구반") duty = "새친구반 학생";
+        else if (selectedGrade === "졸업") duty = "졸업생 (청년부 연계)";
+        else duty = `${selectedGrade} 학생`;
       } else {
         const dutyInput = document.getElementById("editUserDutyInput");
         duty = dutyInput ? dutyInput.value.trim() : "";
@@ -6780,6 +6851,12 @@ function initEditUserEvents() {
   }
 }
 
+function initAddNewcomerEvents() {
+  const form = document.getElementById("addNewcomerForm");
+  if (form) {
+    form.addEventListener("submit", handleAddNewcomerFormSubmit);
+  }
+}
 
 // 삭제 확인 모달
 let _deleteTargetUserId = null;
@@ -10894,6 +10971,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuthScreen();
   initAddStudentToClassEvents();
   initTransferStudentEvents();
+  initAddNewcomerEvents();
   initPullToRefresh();
 
   checkAndAutoRollOverMeeting(true);
