@@ -10371,6 +10371,7 @@ function initChecklistEvents() {
       saveState();
       renderUpcomingEventsSection();
       renderChecklistSection();
+      if (typeof renderCalendarSection === "function") renderCalendarSection();
       closeModal("addEventModal");
       addEventForm.reset();
       showToast(`'${title}' 행사가 성공적으로 추가되었습니다! 🎉 (${dday})`);
@@ -10460,6 +10461,7 @@ function initChecklistEvents() {
       saveState();
       renderUpcomingEventsSection();
       renderChecklistSection();
+      if (typeof renderCalendarSection === "function") renderCalendarSection();
       closeModal("editEventModal");
       showToast(`'${newTitle}' 행사의 정보가 성공적으로 수정되었습니다! 👤✓`);
     });
@@ -10488,6 +10490,7 @@ function initChecklistEvents() {
       saveState();
       renderUpcomingEventsSection();
       renderChecklistSection();
+      if (typeof renderCalendarSection === "function") renderCalendarSection();
       closeModal("editEventModal");
       showToast(`'${targetEvent.title}' 행사가 삭제되었습니다. 🗑️`);
     });
@@ -10885,6 +10888,112 @@ function getAllCalendarBirthdays() {
   return baseBirthdays;
 }
 
+// 주요 행사(appState.events)와 사역 캘린더 일정(appState.calendarEvents)을 실시간 자동 통합하는 헬퍼 함수
+function getAllCalendarSchedules() {
+  const schedules = [];
+  const registeredEventTitles = new Set();
+
+  // 1. appState.events (주요 행사 및 체크리스트 연동 행사 - Single Source of Truth!)
+  if (appState.events && appState.events.length > 0) {
+    appState.events.forEach(event => {
+      if (!event.date) return;
+      registeredEventTitles.add(event.title.trim());
+
+      const icon = getSmartEventIcon(event.title, event.tag);
+      const iconPrefix = icon === "forest" ? "🏕️" : (icon === "cake" ? "🎂" : (icon === "menu_book" ? "📖" : (icon === "sports_soccer" ? "⚽" : (icon === "volunteer_activism" ? "❤️" : "🎉"))));
+      const displayTitle = event.title.startsWith(iconPrefix) ? event.title : `${iconPrefix} ${event.title}`;
+
+      // 텍스트로부터 시작일, 종료일, 시간 추출
+      const extracted = extractDatesFromText(event.date);
+
+      if (extracted.isMulti && extracted.startDate && extracted.endDate) {
+        // 다일 / 기간 행사: 시작일부터 종료일까지 매 날짜마다 캘린더에 일정 알약 추가
+        const [sy, sm, sd] = extracted.startDate.split("-").map(Number);
+        const [ey, em, ed] = extracted.endDate.split("-").map(Number);
+        const sDate = new Date(sy, sm - 1, sd);
+        const eDate = new Date(ey, em - 1, ed);
+
+        let curr = new Date(sDate);
+        let count = 0;
+        while (curr <= eDate && count < 30) {
+          const cy = curr.getFullYear();
+          const cm = String(curr.getMonth() + 1).padStart(2, "0");
+          const cd = String(curr.getDate()).padStart(2, "0");
+          const dateStr = `${cy}-${cm}-${cd}`;
+
+          schedules.push({
+            id: `${event.id}_${dateStr}`,
+            rawEventId: event.id,
+            title: displayTitle,
+            date: dateStr,
+            time: extracted.time,
+            location: event.location || "이룸교회",
+            manager: event.manager || "정하람 전도사",
+            tag: "주요행사",
+            color: "orange",
+            type: "event",
+            isMainEvent: true,
+            isPeriod: true,
+            eventRef: event
+          });
+
+          curr.setDate(curr.getDate() + 1);
+          count++;
+        }
+      } else if (extracted.startDate) {
+        // 단일 행사
+        schedules.push({
+          id: event.id,
+          rawEventId: event.id,
+          title: displayTitle,
+          date: extracted.startDate,
+          time: extracted.time,
+          location: event.location || "이룸교회",
+          manager: event.manager || "정하람 전도사",
+          tag: "주요행사",
+          color: "orange",
+          type: "event",
+          isMainEvent: true,
+          eventRef: event
+        });
+      }
+    });
+  }
+
+  // 2. appState.calendarEvents (캘린더 전용 등록 사역들)
+  const rawCalendarEvents = (appState.calendarEvents && appState.calendarEvents.length > 0)
+    ? appState.calendarEvents
+    : (INITIAL_DATA.calendarEvents || []);
+
+  rawCalendarEvents.forEach(evt => {
+    // 만약 주요 행사(appState.events)에 동일하거나 유사한 제목(예: '스카', '스카준비', '친구초청')이 이미 반영되어 있다면 중복 방지
+    const cleanTitle = (evt.title || "").replace(/^[^\w가-힣]+/, "").trim();
+    const isDuplicate = Array.from(registeredEventTitles).some(mainTitle => {
+      const cleanMain = mainTitle.replace(/^[^\w가-힣]+/, "").trim();
+      return cleanMain.includes(cleanTitle) || cleanTitle.includes(cleanMain);
+    });
+
+    if (!isDuplicate) {
+      schedules.push({
+        id: evt.id,
+        rawEventId: evt.id,
+        title: evt.title,
+        date: evt.date,
+        time: evt.time || "",
+        location: evt.location || "이룸교회",
+        manager: evt.manager || "",
+        tag: evt.tag || "사역",
+        color: evt.color || "yellow",
+        type: "event",
+        isMainEvent: false,
+        calendarEventRef: evt
+      });
+    }
+  });
+
+  return schedules;
+}
+
 function renderCalendarSection() {
   const isPastor = isCurrentRolePastor();
   const yearTitleEl = document.getElementById("calYearDisplay");
@@ -10911,7 +11020,7 @@ function renderCalendarSection() {
   const lastDate = new Date(currentCalendarYear, currentCalendarMonth, 0).getDate();
   const prevMonthLastDate = new Date(currentCalendarYear, currentCalendarMonth - 1, 0).getDate();
 
-  // Today marker (2026-09-09 or local real today)
+  // Today marker
   const now = new Date();
   const isCurrentRealMonth = (now.getFullYear() === currentCalendarYear && (now.getMonth() + 1) === currentCalendarMonth);
   const realTodayDate = now.getDate();
@@ -10921,9 +11030,9 @@ function renderCalendarSection() {
     selectedCalendarDay = isCurrentRealMonth ? realTodayDate : 1;
   }
 
-  // Current month's birthdays (회원가입/사용자 프로필 생일 자동 동기화) & events
+  // Current month's birthdays & integrated events (주요 행사 + 캘린더 사역 완전 동기화)
   const allBirthdays = getAllCalendarBirthdays();
-  const allEvents = (appState.calendarEvents && appState.calendarEvents.length > 0) ? appState.calendarEvents : INITIAL_DATA.calendarEvents;
+  const allEvents = getAllCalendarSchedules();
 
   const curBirthdays = allBirthdays.filter(b => Number(b.month) === Number(currentCalendarMonth));
   const curEvents = allEvents.filter(e => {
@@ -10956,10 +11065,10 @@ function renderCalendarSection() {
       pillsHtml += `<span class="cal-event-pill ${pillColor}" data-item-type="birthday" data-item-id="${b.id}">🎂 ${b.name}</span>`;
     });
 
-    // Render Event Pills
+    // Render Event Pills (주요 행사 및 사역)
     dayEvents.forEach(e => {
       const pillColor = e.color ? `pill-${e.color}` : "pill-orange";
-      pillsHtml += `<span class="cal-event-pill ${pillColor}" data-item-type="event" data-item-id="${e.id}">${e.title}</span>`;
+      pillsHtml += `<span class="cal-event-pill ${pillColor}" data-item-type="event" data-item-id="${e.id}" data-raw-event-id="${e.rawEventId || e.id}">${e.title}</span>`;
     });
 
     gridHtml += `
@@ -11033,7 +11142,7 @@ function renderDayScheduleCard(day) {
   const dayOfWeekName = dayNames[dateObj.getDay()];
 
   const allBirthdays = getAllCalendarBirthdays();
-  const allEvents = (appState.calendarEvents && appState.calendarEvents.length > 0) ? appState.calendarEvents : INITIAL_DATA.calendarEvents;
+  const allEvents = getAllCalendarSchedules();
 
   const curBirthdays = allBirthdays.filter(b => Number(b.month) === Number(currentCalendarMonth) && Number(b.day) === Number(day));
   const curEvents = allEvents.filter(e => {
@@ -11093,10 +11202,11 @@ function renderDayScheduleCard(day) {
       const tagColor = e.color === 'yellow' ? 'bg-amber-100 text-amber-800' : (e.color === 'green' ? 'bg-emerald-100 text-emerald-800' : 'bg-primary/15 text-primary');
       html += `
         <div class="p-2.5 rounded-xl border ${colorClass} flex items-center justify-between gap-2">
-          <div class="min-w-0 flex-1">
+          <div class="min-w-0 flex-1 cursor-pointer day-event-info-click" data-event-id="${e.id}" data-raw-id="${e.rawEventId || e.id}">
             <div class="flex items-center gap-1.5">
               <span class="text-[9.5px] font-extrabold px-1.5 py-0.2 rounded ${tagColor}">${e.tag || "사역"}</span>
               <span class="text-[12.5px] font-extrabold text-gray-900 truncate">${e.title}</span>
+              ${e.isPeriod ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-orange-100 text-orange-800 shrink-0">기간 행사</span>` : ''}
             </div>
             <div class="flex items-center gap-2 mt-1 text-[10.5px] text-gray-500 font-medium flex-wrap">
               ${e.time ? `<span>⏰ ${e.time}</span>` : ''}
@@ -11106,8 +11216,8 @@ function renderDayScheduleCard(day) {
           </div>
           ${isPastor ? `
             <div class="flex items-center gap-1 shrink-0">
-              <button type="button" class="day-event-edit-btn w-6 h-6 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-[11px] text-gray-600 active:scale-95 transition-all" data-event-id="${e.id}" title="일정 수정">✏️</button>
-              <button type="button" class="day-event-delete-btn w-6 h-6 rounded-lg bg-white border border-rose-200 hover:bg-rose-50 flex items-center justify-center text-[11px] text-rose-600 active:scale-95 transition-all" data-event-id="${e.id}" title="일정 삭제">🗑️</button>
+              <button type="button" class="day-event-edit-btn w-6 h-6 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-[11px] text-gray-600 active:scale-95 transition-all" data-event-id="${e.id}" data-raw-id="${e.rawEventId || e.id}" title="일정 수정">✏️</button>
+              <button type="button" class="day-event-delete-btn w-6 h-6 rounded-lg bg-white border border-rose-200 hover:bg-rose-50 flex items-center justify-center text-[11px] text-rose-600 active:scale-95 transition-all" data-event-id="${e.id}" data-raw-id="${e.rawEventId || e.id}" title="일정 삭제">🗑️</button>
             </div>
           ` : ''}
         </div>
@@ -11129,18 +11239,72 @@ function renderDayScheduleCard(day) {
     emptyAddBtn.onclick = () => openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, day);
   }
 
+  container.querySelectorAll(".day-event-info-click").forEach(infoEl => {
+    infoEl.onclick = () => {
+      const evtId = infoEl.dataset.eventId;
+      const allSchedules = getAllCalendarSchedules();
+      const target = allSchedules.find(e => String(e.id) === String(evtId) || String(e.rawEventId) === String(evtId));
+      if (!target) return;
+      if (target.isMainEvent && target.eventRef) {
+        if (isPastor) {
+          openEditEventModal(target.eventRef);
+        } else {
+          appState.currentChecklistEventId = target.eventRef.id;
+          saveState();
+          switchToTab("view-scheduler");
+          switchSchedulerSubTab("subTabChecklist");
+          renderChecklistSection();
+          showToast(`'${target.eventRef.title}' 행사 체크리스트로 이동했습니다. 📋`);
+        }
+      } else {
+        const evt = (appState.calendarEvents || []).find(e => String(e.id) === String(evtId));
+        if (evt) openManageCalendarItemModal("event", evt);
+      }
+    };
+  });
+
   container.querySelectorAll(".day-event-edit-btn").forEach(btn => {
     btn.onclick = () => {
       const evtId = btn.dataset.eventId;
-      const evt = (appState.calendarEvents || []).find(e => String(e.id) === String(evtId));
-      if (evt) openManageCalendarItemModal("event", evt);
+      const allSchedules = getAllCalendarSchedules();
+      const target = allSchedules.find(e => String(e.id) === String(evtId) || String(e.rawEventId) === String(evtId));
+      if (!target) return;
+
+      if (target.isMainEvent && target.eventRef) {
+        openEditEventModal(target.eventRef);
+      } else {
+        const evt = (appState.calendarEvents || []).find(e => String(e.id) === String(evtId));
+        if (evt) openManageCalendarItemModal("event", evt);
+      }
     };
   });
 
   container.querySelectorAll(".day-event-delete-btn").forEach(btn => {
     btn.onclick = () => {
       const evtId = btn.dataset.eventId;
-      handleDeleteCalendarItem("event", evtId);
+      const allSchedules = getAllCalendarSchedules();
+      const target = allSchedules.find(e => String(e.id) === String(evtId) || String(e.rawEventId) === String(evtId));
+      if (!target) return;
+
+      if (target.isMainEvent && target.eventRef) {
+        const count = (target.eventRef.items || []).length;
+        if (!confirm(`'${target.eventRef.title}' 행사를 삭제하시겠습니까?\n\n⚠️ 등록된 준비 체크리스트 ${count}건도 함께 완전히 삭제됩니다.`)) {
+          return;
+        }
+        appState.events = appState.events.filter(ev => ev.id !== target.eventRef.id);
+        if (appState.events.length > 0) {
+          appState.currentChecklistEventId = appState.events[0].id;
+        } else {
+          appState.currentChecklistEventId = null;
+        }
+        saveState();
+        renderUpcomingEventsSection();
+        renderChecklistSection();
+        renderCalendarSection();
+        showToast(`'${target.eventRef.title}' 행사가 성공적으로 삭제되었습니다! 🗑️`);
+      } else {
+        handleDeleteCalendarItem("event", evtId);
+      }
     };
   });
 }
@@ -11170,8 +11334,23 @@ function bindCalendarDynamicEvents() {
         const bday = allBirthdays.find(b => String(b.id) === String(itemId));
         if (bday) openManageCalendarItemModal("birthday", bday);
       } else if (itemType === "event") {
-        const evt = (appState.calendarEvents || []).find(ev => String(ev.id) === String(itemId));
-        if (evt) openManageCalendarItemModal("event", evt);
+        const allSchedules = getAllCalendarSchedules();
+        const target = allSchedules.find(ev => String(ev.id) === String(itemId) || String(ev.rawEventId) === String(itemId));
+        if (target && target.isMainEvent && target.eventRef) {
+          if (isPastor) {
+            openEditEventModal(target.eventRef);
+          } else {
+            appState.currentChecklistEventId = target.eventRef.id;
+            saveState();
+            switchToTab("view-scheduler");
+            switchSchedulerSubTab("subTabChecklist");
+            renderChecklistSection();
+            showToast(`'${target.eventRef.title}' 행사 체크리스트로 이동했습니다. 📋`);
+          }
+        } else {
+          const evt = (appState.calendarEvents || []).find(ev => String(ev.id) === String(itemId));
+          if (evt) openManageCalendarItemModal("event", evt);
+        }
       }
     });
   });
