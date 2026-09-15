@@ -93,9 +93,14 @@ async function fetchFromSupabase() {
 
 async function saveToSupabase(stateData) {
   try {
+    // Sanitize session state so cloud does not store a global active login session
+    const cloudData = Object.assign({}, stateData, {
+      isAuthenticated: false,
+      viewAsState: { isActive: false, viewRole: null, targetUserId: null, adminUserId: "u1" }
+    });
     const payload = {
       id: SUPABASE_CONFIG.docKey,
-      data: stateData,
+      data: cloudData,
       updated_at: new Date().toISOString()
     };
     const res = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/${SUPABASE_CONFIG.tableName}`, {
@@ -11556,7 +11561,15 @@ function initPullToRefresh() {
       try {
         const remoteData = await fetchFromSupabase();
         if (remoteData) {
-          appState = remoteData;
+          const localUserId = appState.currentUserId;
+          const localAuth = appState.isAuthenticated;
+          const localViewAs = appState.viewAsState;
+
+          appState = Object.assign({}, remoteData, {
+            currentUserId: localUserId,
+            isAuthenticated: localAuth,
+            viewAsState: localViewAs
+          });
           localStorage.setItem("yerang_app_state_v1", JSON.stringify(appState));
         }
       } catch (err) {
@@ -12087,9 +12100,18 @@ async function initSupabaseSync() {
     const remoteData = await fetchFromSupabase();
     if (remoteData) {
       console.log("[Supabase] Loaded remote state successfully");
-      appState = remoteData;
+      const localUserId = appState.currentUserId;
+      const localAuth = appState.isAuthenticated;
+      const localViewAs = appState.viewAsState;
+
+      appState = Object.assign({}, remoteData, {
+        currentUserId: localUserId,
+        isAuthenticated: localAuth,
+        viewAsState: localViewAs
+      });
       localStorage.setItem("yerang_app_state_v1", JSON.stringify(appState));
       renderAll();
+      checkAuthState();
       const currentUser = getCurrentUser();
       const role = currentUser ? currentUser.role : (appState.currentRole || "pastor");
       switchMasterRole(role, false);
