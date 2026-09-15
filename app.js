@@ -4,6 +4,56 @@
  */
 
 // =============================================================================
+// Security Utilities (XSS Sanitization & Cryptographic Password Protection)
+// =============================================================================
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+const DEFAULT_PW_HASH_1234 = "sha256$45a76460407c86257c262b0bd0fe7b0ecf85d8b04b67ecae3b7a44c2f7e844b9";
+
+async function hashPassword(plainText) {
+  if (!plainText) return "";
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode("yerang_salt_2026_" + plainText);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return "sha256$" + hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  } catch (e) {
+    return "plain$" + plainText;
+  }
+}
+
+async function verifyPassword(plainInput, storedHashOrPlain) {
+  if (!storedHashOrPlain) {
+    return plainInput === "1234";
+  }
+  if (storedHashOrPlain.startsWith("sha256$")) {
+    const calculated = await hashPassword(plainInput);
+    return calculated === storedHashOrPlain;
+  }
+  if (storedHashOrPlain.startsWith("plain$")) {
+    return storedHashOrPlain === ("plain$" + plainInput);
+  }
+  // Backward compatibility with legacy unhashed strings ("1234", "password", etc.)
+  return storedHashOrPlain === plainInput;
+}
+
+function isDefaultPassword(storedHashOrPlain) {
+  if (!storedHashOrPlain) return true;
+  if (storedHashOrPlain === "1234" || storedHashOrPlain === "password") return true;
+  return storedHashOrPlain === DEFAULT_PW_HASH_1234;
+}
+
+// =============================================================================
 // Supabase Cloud Realtime Database Configuration & Client
 // =============================================================================
 const SUPABASE_CONFIG = {
@@ -866,7 +916,7 @@ const INITIAL_DATA = {
       id: "u1",
       name: "정하람 전도사",
       username: "wjdgkfka7",
-      password: "0691",
+      password: DEFAULT_PW_HASH_1234,
       role: "pastor",
       duty: "중고등부 총괄 사역 & 설교",
       birthday: "1994-05-12",
@@ -878,7 +928,7 @@ const INITIAL_DATA = {
       id: "u2",
       name: "나하은 선생님",
       username: "accountant",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "accountant",
       duty: "중고등부 회계 & 재정 장부 결산",
       birthday: "1997-08-20",
@@ -890,7 +940,7 @@ const INITIAL_DATA = {
       id: "u3",
       name: "김대한 선생님",
       username: "teacher",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "teacher_grade",
       duty: "고3 담임 / 방송실 자막 & 미디어",
       birthday: "1995-11-03",
@@ -902,7 +952,7 @@ const INITIAL_DATA = {
       id: "u4",
       name: "소예진 선생님",
       username: "teacher2",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "teacher_new",
       duty: "새친구반 담임 / 찬양팀 멘토",
       birthday: "1998-03-15",
@@ -914,7 +964,7 @@ const INITIAL_DATA = {
       id: "u5",
       name: "양형모 학생",
       username: "student",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "student_grade",
       duty: "고3 분반 / 찬양팀 드럼 세션",
       birthday: "2008-04-22",
@@ -926,7 +976,7 @@ const INITIAL_DATA = {
       id: "u6",
       name: "김하람 학생",
       username: "student2",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "student_new",
       duty: "중2 / 새친구반 정착 학생",
       birthday: "2012-09-18",
@@ -938,7 +988,7 @@ const INITIAL_DATA = {
       id: "u7",
       name: "이유리 학생",
       username: "student3",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "student_grade",
       duty: "고3 분반 / 예배 헌금위원",
       birthday: "2008-07-14",
@@ -950,7 +1000,7 @@ const INITIAL_DATA = {
       id: "u8",
       name: "김예원 학생",
       username: "student4",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "student_grade",
       duty: "고2 분반 / 대표기도 섬김이",
       birthday: "2009-10-13",
@@ -962,7 +1012,7 @@ const INITIAL_DATA = {
       id: "u9",
       name: "박성준 학생",
       username: "student5",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "student_grade",
       duty: "고3 분반 / 수험생",
       birthday: "2008-11-20",
@@ -974,7 +1024,7 @@ const INITIAL_DATA = {
       id: "u10",
       name: "최민서 학생",
       username: "student6",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "student_grade",
       duty: "고2 분반 / 방송실 음향",
       birthday: "2009-06-08",
@@ -986,7 +1036,7 @@ const INITIAL_DATA = {
       id: "u11",
       name: "정도윤 학생",
       username: "student7",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "student_grade",
       duty: "고2 분반 / 찬양팀 베이스",
       birthday: "2009-02-17",
@@ -998,7 +1048,7 @@ const INITIAL_DATA = {
       id: "u12",
       name: "강태우 학생",
       username: "student8",
-      password: "password",
+      password: DEFAULT_PW_HASH_1234,
       role: "student_grade",
       duty: "중등부반 / 중등부 회장",
       birthday: "2011-05-30",
@@ -1096,8 +1146,10 @@ function loadState() {
       if (parsed.users && Array.isArray(parsed.users)) {
         parsed.users.forEach(u => {
           if (u.id === "u1" || u.role === "pastor") {
-            u.username = "wjdgkfka7";
-            u.password = "0691";
+            u.username = u.username || "wjdgkfka7";
+            if (!u.password) {
+              u.password = DEFAULT_PW_HASH_1234;
+            }
           }
           if (u.id === "u3" || (u.duty && u.duty.includes("고3") && u.role === "teacher")) {
             u.role = "teacher_grade";
@@ -1245,7 +1297,7 @@ function showToast(message, type = "success", duration = 3000) {
 
   const toast = document.createElement("div");
   toast.className = "sonner-toast";
-  toast.innerHTML = `${icons[type] || icons.success} <span>${message}</span>`;
+  toast.innerHTML = `${icons[type] || icons.success} <span>${escapeHtml(message)}</span>`;
   container.appendChild(toast);
 
   // Trigger enter animation (emil-design: scale from 0.95 to 1)
@@ -6912,13 +6964,30 @@ function isStudentRole(role) {
   return role === "student" || role === "student_grade" || role === "student_new";
 }
 
+function getActualAuthenticatedUser() {
+  if (!appState || !appState.isAuthenticated) return null;
+  const realId = (appState.viewAsState && appState.viewAsState.isActive && appState.viewAsState.adminUserId)
+    ? appState.viewAsState.adminUserId
+    : appState.currentUserId;
+  if (!appState.users || !Array.isArray(appState.users)) return null;
+  return appState.users.find(u => u.id === realId && !u.isPending) || null;
+}
+
 function isCurrentRolePastor() {
+  const actualUser = getActualAuthenticatedUser();
+  if (actualUser) {
+    return actualUser.role === "pastor" || !!actualUser.isAdmin;
+  }
   const currentUser = getCurrentUser();
-  return currentRole === "pastor" || (currentUser && currentUser.role === "pastor");
+  return (currentUser && (currentUser.role === "pastor" || currentUser.isAdmin)) || currentRole === "pastor";
 }
 
 // 행사 체크리스트 접근 권한 확인: 전도사, 선생님(공과반/새친구반/회계), 부장집사만 허용 (학생 제외)
 function canAccessChecklist() {
+  const actualUser = getActualAuthenticatedUser();
+  if (actualUser) {
+    return ["pastor", "teacher", "teacher_grade", "teacher_new", "accountant", "deacon"].includes(actualUser.role) || !!actualUser.isAdmin;
+  }
   const currentUser = getCurrentUser();
   const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
   return ["pastor", "teacher", "teacher_grade", "teacher_new", "accountant", "deacon"].includes(role);
@@ -6926,6 +6995,10 @@ function canAccessChecklist() {
 
 // 재정 영수증 승인/송금 결재 권한 확인: 전도사, 회계 선생님
 function canManageAccounting() {
+  const actualUser = getActualAuthenticatedUser();
+  if (actualUser) {
+    return actualUser.role === "pastor" || actualUser.role === "accountant" || !!actualUser.isAdmin;
+  }
   const currentUser = getCurrentUser();
   const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
   return role === "pastor" || role === "accountant" || (currentUser && currentUser.isAdmin);
@@ -6936,7 +7009,12 @@ function getCurrentUser() {
     appState.users = JSON.parse(JSON.stringify(INITIAL_DATA.users));
   }
   const user = appState.users.find(u => u.id === appState.currentUserId);
-  return user || appState.users[0];
+  if (user) return user;
+  if (appState.isAuthenticated) {
+    const actual = getActualAuthenticatedUser();
+    if (actual) return actual;
+  }
+  return appState.users[0];
 }
 
 function isViewAsMode() {
@@ -7201,7 +7279,7 @@ function renderUserSwitchGrid() {
         <span class="material-symbols-outlined text-[17px] text-amber-700">lock</span>
         <span>사용자 계정 보안 안내</span>
       </div>
-      현재 <strong>${currentUser.name} (${ROLE_NAMES[currentUser.role] || currentUser.duty || ""})</strong> 계정으로 로그인되어 있습니다.<br>
+      현재 <strong>${escapeHtml(currentUser.name)} (${escapeHtml(ROLE_NAMES[currentUser.role] || currentUser.duty || "")})</strong> 계정으로 로그인되어 있습니다.<br>
       <span class="text-amber-800 text-[11px]">다른 역할 화면 둘러보기(View-As) 및 계정 전환은 총괄 관리자(전도사) 전용 기능입니다.</span>
     `;
     container.appendChild(notice);
@@ -7214,12 +7292,12 @@ function renderUserSwitchGrid() {
         <div class="user-mgmt-avatar">${currentUser.avatar || "👤"}</div>
         <div>
           <div style="font-size:13.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
-            <span>${currentUser.name}</span>
+            <span>${escapeHtml(currentUser.name)}</span>
             ${ROLE_BADGES[currentUser.role] || ""}
           </div>
-          <div class="user-mgmt-duty">${currentUser.duty || ""}</div>
+          <div class="user-mgmt-duty">${escapeHtml(currentUser.duty || "")}</div>
           <div style="font-size:11px; color:#888; display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
-            <span>📞 ${currentUser.phone || "-"}</span>
+            <span>📞 ${escapeHtml(currentUser.phone || "-")}</span>
           </div>
         </div>
       </div>
@@ -7243,20 +7321,20 @@ function renderUserSwitchGrid() {
         <div class="user-mgmt-avatar">${user.avatar || "👤"}</div>
         <div>
           <div style="font-size:13.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
-            <span>${user.name}</span>
+            <span>${escapeHtml(user.name)}</span>
             ${ROLE_BADGES[user.role] || ""}
           </div>
-          <div class="user-mgmt-duty">${user.duty || ""}</div>
+          <div class="user-mgmt-duty">${escapeHtml(user.duty || "")}</div>
           <div style="font-size:11px; color:#888; display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
-            <span>📞 ${user.phone || "-"}</span>
-            ${user.birthday ? `<span style="color:#d97706; font-weight:700;">🎂 ${user.birthday}</span>` : ''}
+            <span>📞 ${escapeHtml(user.phone || "-")}</span>
+            ${user.birthday ? `<span style="color:#d97706; font-weight:700;">🎂 ${escapeHtml(user.birthday)}</span>` : ''}
           </div>
         </div>
       </div>
       <div>
         ${isCurrent 
           ? '<span style="font-size:12px; font-weight:700; color:var(--primary); padding:6px 10px; background:#f0e8fc; border-radius:8px;">접속중 ✓</span>' 
-          : `<button class="btn-secondary switch-to-user-btn" style="padding:6px 12px; font-size:12px;" data-user-id="${user.id}">${user.role === "pastor" ? "복귀하기" : "시점 전환"}</button>`
+          : `<button class="btn-secondary switch-to-user-btn" style="padding:6px 12px; font-size:12px;" data-user-id="${escapeHtml(user.id)}">${user.role === "pastor" ? "복귀하기" : "시점 전환"}</button>`
         }
       </div>
     `;
@@ -7309,31 +7387,31 @@ function renderUserManagerSection(filterCategory = "ALL") {
         <div class="user-mgmt-avatar">${user.avatar || "👤"}</div>
         <div class="user-mgmt-details" style="flex:1;">
           <div class="user-mgmt-name" style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
-            <span>${user.name}</span>
+            <span>${escapeHtml(user.name)}</span>
             ${pendingBadge}
             ${user.resetRequested ? '<span style="font-size:10.5px; background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:2px 7px; border-radius:6px; font-weight:800; display:inline-flex; align-items:center; gap:3px;">⚠️ 비번 초기화 요청</span>' : ''}
             ${ROLE_BADGES[user.role] || ""}
             ${isCurrent ? '<span style="font-size:10px; background:#e8def8; color:#4a148c; padding:2px 6px; border-radius:4px; margin-left:2px;">현재 본인</span>' : ''}
           </div>
-          <div class="user-mgmt-duty">${user.duty || "-"} · ${user.phone || ""}</div>
+          <div class="user-mgmt-duty">${escapeHtml(user.duty || "-")} · ${escapeHtml(user.phone || "")}</div>
           <div style="font-size:11px; color:#888; display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
-            ${user.username ? `<span>ID: ${user.username}</span>` : ''}
-            ${user.birthday ? `<span style="color:#d97706; font-weight:700;">🎂 생일: ${user.birthday}</span>` : ''}
+            ${user.username ? `<span>ID: ${escapeHtml(user.username)}</span>` : ''}
+            ${user.birthday ? `<span style="color:#d97706; font-weight:700;">🎂 생일: ${escapeHtml(user.birthday)}</span>` : ''}
           </div>
         </div>
       </div>
       <div style="display:flex; align-items:center; gap:6px; margin-top:8px; flex-wrap:wrap;">
         ${user.isPending ? `
-          <button type="button" class="approve-user-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:12px; font-weight:800; background:#10b981; color:white; border-radius:8px; border:none; cursor:pointer;">
+          <button type="button" class="approve-user-btn" data-user-id="${escapeHtml(user.id)}" style="padding:6px 10px; font-size:12px; font-weight:800; background:#10b981; color:white; border-radius:8px; border:none; cursor:pointer;">
             승인하기 ✓
           </button>
         ` : ''}
         ${user.resetRequested ? `
-          <button type="button" class="reset-pwd-admin-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:11.5px; font-weight:800; background:#ea580c; color:white; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; gap:3px; white-space:nowrap;" title="비밀번호를 1234로 초기화">
+          <button type="button" class="reset-pwd-admin-btn" data-user-id="${escapeHtml(user.id)}" style="padding:6px 10px; font-size:11.5px; font-weight:800; background:#ea580c; color:white; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; gap:3px; white-space:nowrap;" title="비밀번호를 1234로 초기화">
             🔑 1234 초기화
           </button>
         ` : ''}
-        <select class="role-select-dropdown" data-user-id="${user.id}" style="flex:1; min-width:130px;">
+        <select class="role-select-dropdown" data-user-id="${escapeHtml(user.id)}" style="flex:1; min-width:130px;">
           <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사</option>
           <option value="deacon" ${user.role === "deacon" ? "selected" : ""}>👔 부장집사님</option>
           <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 선생님(회계)</option>
@@ -7342,11 +7420,11 @@ function renderUserManagerSection(filterCategory = "ALL") {
           <option value="student_grade" ${(user.role === "student_grade" || (user.role === "student" && user.id !== "u6")) ? "selected" : ""}>👦🏻 학생(공과반)</option>
           <option value="student_new" ${(user.role === "student_new" || (user.role === "student" && user.id === "u6")) ? "selected" : ""}>🌱 학생(새친구반)</option>
         </select>
-        <button type="button" class="edit-user-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:12px; font-weight:700; background:#f5efff; color:#6c35c4; border-radius:8px; border:1.5px solid #e0c8ff; cursor:pointer; display:flex; align-items:center; gap:3px; white-space:nowrap;" title="계정 정보 수정">
+        <button type="button" class="edit-user-btn" data-user-id="${escapeHtml(user.id)}" style="padding:6px 10px; font-size:12px; font-weight:700; background:#f5efff; color:#6c35c4; border-radius:8px; border:1.5px solid #e0c8ff; cursor:pointer; display:flex; align-items:center; gap:3px; white-space:nowrap;" title="계정 정보 수정">
           <span>✏️</span> <span>수정</span>
         </button>
         ${!isCurrent ? `
-          <button type="button" class="delete-user-btn" data-user-id="${user.id}" data-user-name="${user.name}" style="padding:6px 9px; font-size:13px; background:#fff0f0; color:#ef4444; border-radius:8px; border:1.5px solid #fecaca; cursor:pointer; line-height:1; margin-left:auto;" title="계정 삭제">
+          <button type="button" class="delete-user-btn" data-user-id="${escapeHtml(user.id)}" data-user-name="${escapeHtml(user.name)}" style="padding:6px 9px; font-size:13px; background:#fff0f0; color:#ef4444; border-radius:8px; border:1.5px solid #fecaca; cursor:pointer; line-height:1; margin-left:auto;" title="계정 삭제">
             🗑️
           </button>
         ` : ''}
@@ -7366,7 +7444,7 @@ function renderUserManagerSection(filterCategory = "ALL") {
     if (resetBtn) {
       resetBtn.addEventListener("click", () => {
         if (confirm(`'${user.name}'님의 비밀번호를 기본 '1234'로 초기화하시겠습니까?`)) {
-          user.password = "1234";
+          user.password = DEFAULT_PW_HASH_1234;
           user.resetRequested = false;
           saveState();
           showToast(`✅ '${user.name}'님의 비밀번호가 '1234'로 초기화되었습니다.`);
@@ -7449,7 +7527,7 @@ function openEditUserModal(userId) {
   if (editResetBtn) {
     editResetBtn.onclick = () => {
       if (confirm(`'${user.name}'님의 비밀번호를 기본 '1234'로 초기화하시겠습니까?`)) {
-        user.password = "1234";
+        user.password = DEFAULT_PW_HASH_1234;
         user.resetRequested = false;
         saveState();
         showToast(`✅ '${user.name}'님의 비밀번호가 '1234'로 초기화되었습니다.`);
@@ -7534,6 +7612,12 @@ function initDeleteUserConfirm() {
   if (confirmBtn) {
     confirmBtn.addEventListener("click", () => {
       if (!_deleteTargetUserId) return;
+      const actualUser = getActualAuthenticatedUser();
+      if (actualUser && actualUser.id === _deleteTargetUserId) {
+        showToast("⚠️ 현재 로그인 중인 본인 계정은 삭제할 수 없습니다.", "warn");
+        closeModal("deleteUserConfirmModal");
+        return;
+      }
       const user = appState.users.find(u => u.id === _deleteTargetUserId);
       const name = user ? user.name : "";
       appState.users = appState.users.filter(u => u.id !== _deleteTargetUserId);
@@ -7601,13 +7685,13 @@ function renderMemberApprovalModal() {
         ${user.avatar || "👤"}
       </div>
       <div style="flex:1; min-width:0;">
-        <div style="font-size:14px; font-weight:800; color:#1e293b; margin-bottom:2px;">${user.name}</div>
-        <div style="font-size:11.5px; color:#64748b;">ID: ${user.username || "-"} · ${user.phone || "번호 없음"}</div>
+        <div style="font-size:14px; font-weight:800; color:#1e293b; margin-bottom:2px;">${escapeHtml(user.name)}</div>
+        <div style="font-size:11.5px; color:#64748b;">ID: ${escapeHtml(user.username || "-")} · ${escapeHtml(user.phone || "번호 없음")}</div>
         <div style="font-size:11px; color:#f59e0b; font-weight:700; margin-top:2px;">⏳ 승인 대기중</div>
       </div>
       <div style="display:flex; flex-direction:column; gap:6px; shrink:0;">
-        <button type="button" data-approve-id="${user.id}" style="padding:7px 12px; font-size:12px; font-weight:800; background:#10b981; color:white; border-radius:9px; border:none; cursor:pointer; white-space:nowrap;">✓ 승인</button>
-        <button type="button" data-reject-id="${user.id}" style="padding:7px 12px; font-size:12px; font-weight:800; background:#f1f5f9; color:#ef4444; border-radius:9px; border:1.5px solid #fecaca; cursor:pointer; white-space:nowrap;">✕ 거절</button>
+        <button type="button" data-approve-id="${escapeHtml(user.id)}" style="padding:7px 12px; font-size:12px; font-weight:800; background:#10b981; color:white; border-radius:9px; border:none; cursor:pointer; white-space:nowrap;">✓ 승인</button>
+        <button type="button" data-reject-id="${escapeHtml(user.id)}" style="padding:7px 12px; font-size:12px; font-weight:800; background:#f1f5f9; color:#ef4444; border-radius:9px; border:1.5px solid #fecaca; cursor:pointer; white-space:nowrap;">✕ 거절</button>
       </div>
     `;
 
@@ -10791,8 +10875,8 @@ function initCalendarEvents() {
 function updateTempPasswordBanner() {
   const tempBanner = document.getElementById("tempPasswordWarningBanner");
   if (!tempBanner) return;
-  const user = getCurrentUser();
-  if (user && (user.password === "1234" || !user.password)) {
+  const user = getActualAuthenticatedUser() || getCurrentUser();
+  if (user && isDefaultPassword(user.password)) {
     tempBanner.classList.remove("hidden");
   } else {
     tempBanner.classList.add("hidden");
@@ -10803,6 +10887,16 @@ function checkAuthState() {
   const authScreen = document.getElementById("authGateScreen");
   const mainShell = document.getElementById("mainAppShell");
   if (!authScreen || !mainShell) return;
+
+  // Validate session integrity against tampering
+  if (appState.isAuthenticated) {
+    const validUser = (appState.users || []).find(u => u.id === appState.currentUserId && !u.isPending);
+    if (!validUser) {
+      appState.isAuthenticated = false;
+      appState.currentUserId = null;
+      saveState();
+    }
+  }
 
   if (appState.isAuthenticated) {
     authScreen.classList.add("hidden-auth");
@@ -10861,7 +10955,7 @@ function loginUser(userId) {
 
   showToast(`✨ '${user.name}'님 환영합니다! (${ROLE_NAMES[user.role]})`);
 
-  if (user.password === "1234" || !user.password) {
+  if (isDefaultPassword(user.password)) {
     setTimeout(() => {
       showToast("🔑 현재 기본 비밀번호(1234)를 사용 중입니다. 프로필에서 새 비밀번호로 변경해주세요!", "warn", 5000);
     }, 1200);
@@ -10939,7 +11033,7 @@ function initAuthScreen() {
   // Standard Login Form (ID & Password)
   const standardForm = document.getElementById("standardLoginForm");
   if (standardForm) {
-    standardForm.addEventListener("submit", (e) => {
+    standardForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const usernameInput = document.getElementById("loginUsernameInput");
       const passwordInput = document.getElementById("loginPasswordInput");
@@ -10980,11 +11074,17 @@ function initAuthScreen() {
         return;
       }
 
-      // Check password (must match user.password or default '1234')
-      const expectedPassword = user.password || "1234";
-      if (password !== expectedPassword) {
+      // Check password (must match user.password or default '1234' with cryptographic verification)
+      const isPasswordValid = await verifyPassword(password, user.password);
+      if (!isPasswordValid) {
         showToast("⚠️ 비밀번호가 일치하지 않습니다.", "warn");
         return;
+      }
+
+      // Upgrade legacy plaintext password to secure SHA-256 hash upon successful login
+      if (!user.password || !user.password.startsWith("sha256$")) {
+        user.password = await hashPassword(password);
+        saveState();
       }
 
       loginUser(user.id);
@@ -10994,7 +11094,7 @@ function initAuthScreen() {
   // Auth Sign Up Form
   const signupForm = document.getElementById("authSignupForm");
   if (signupForm) {
-    signupForm.addEventListener("submit", (e) => {
+    signupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const name = document.getElementById("signupNameInput").value.trim();
       const username = document.getElementById("signupUsernameInput") ? document.getElementById("signupUsernameInput").value.trim() : "";
@@ -11019,11 +11119,12 @@ function initAuthScreen() {
       }
 
       const defaultRole = "teacher"; // Default newly registered members as teacher/servant
+      const hashedPassword = await hashPassword(password || "1234");
       const newUser = {
         id: "u_" + Date.now(),
         name: name,
         username: username,
-        password: password || "1234",
+        password: hashedPassword,
         role: defaultRole,
         duty: `${ROLE_NAMES[defaultRole]} (승인 대기)`,
         birthday: birthday || "",
@@ -11154,8 +11255,8 @@ function initFindAccountEvents() {
             <span>일치하는 회원 계정을 찾았습니다!</span>
           </div>
           <div class="my-2 leading-relaxed bg-white/80 p-2.5 rounded-lg border border-emerald-100">
-            성함: <b>${matched.name}</b> (${ROLE_NAMES[matched.role] || matched.duty || ""})<br>
-            아이디(ID): <strong class="text-primary text-[14px] px-2 py-0.5 bg-primary/10 rounded font-mono font-black">${matched.username || matched.name}</strong>
+            성함: <b>${escapeHtml(matched.name)}</b> (${escapeHtml(ROLE_NAMES[matched.role] || matched.duty || "")})<br>
+            아이디(ID): <strong class="text-primary text-[14px] px-2 py-0.5 bg-primary/10 rounded font-mono font-black">${escapeHtml(matched.username || matched.name)}</strong>
           </div>
           <button type="button" id="useFoundIdBtn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 transition-all text-white rounded-xl text-[12px] font-extrabold shadow-sm flex items-center justify-center gap-1">
             <span>이 아이디로 로그인하기</span>
@@ -11184,7 +11285,7 @@ function initFindAccountEvents() {
             <span>일치하는 계정 정보를 찾을 수 없습니다</span>
           </div>
           <p class="leading-relaxed text-rose-900 text-[11.5px]">
-            입력하신 이름(<strong>${nameVal}</strong>)과 휴대폰 번호로 등록된 계정이 없습니다.<br>
+            입력하신 이름(<strong>${escapeHtml(nameVal)}</strong>)과 휴대폰 번호로 등록된 계정이 없습니다.<br>
             오타가 없는지 확인하시거나 회원가입을 먼저 진행해주세요.
           </p>
         `;
@@ -11228,7 +11329,7 @@ function initFindAccountEvents() {
             <span>전도사님께 초기화 요청이 전송되었습니다!</span>
           </div>
           <div class="my-2 leading-relaxed bg-white/80 p-2.5 rounded-lg border border-amber-200 text-[11.5px]">
-            성함: <b>${matched.name}</b> (아이디: <span class="font-bold">${matched.username || matched.name}</span>)<br>
+            성함: <b>${escapeHtml(matched.name)}</b> (아이디: <span class="font-bold">${escapeHtml(matched.username || matched.name)}</span>)<br>
             상태: <span class="text-orange-700 font-bold">비밀번호 초기화 요청 등록 완료</span><br>
             전도사님이 관리자 화면에서 확인 후 비밀번호를 <b>1234</b>로 초기화해주시면 즉시 1234로 로그인하실 수 있습니다.
           </div>
@@ -11260,6 +11361,11 @@ function initChangePasswordEvents() {
 
   function openChangePwModal() {
     if (form) form.reset();
+    const realUser = getActualAuthenticatedUser() || getCurrentUser();
+    const noticeEl = document.getElementById("changePwTargetUserNotice");
+    if (noticeEl && realUser) {
+      noticeEl.textContent = `${realUser.name} (${realUser.username || ""}) 계정의 비밀번호 변경`;
+    }
     openModal("changePasswordModal");
   }
 
@@ -11267,10 +11373,10 @@ function initChangePasswordEvents() {
   if (bannerBtn) bannerBtn.addEventListener("click", openChangePwModal);
 
   if (form) {
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const currentUser = getCurrentUser();
-      if (!currentUser) {
+      const realUser = getActualAuthenticatedUser() || getCurrentUser();
+      if (!realUser) {
         showToast("⚠️ 로그인된 사용자를 찾을 수 없습니다.", "error");
         return;
       }
@@ -11283,9 +11389,9 @@ function initChangePasswordEvents() {
       const newPw = newInput ? newInput.value.trim() : "";
       const confirmPw = confirmInput ? confirmInput.value.trim() : "";
 
-      const expectedCurPw = currentUser.password || "1234";
+      const isCurValid = await verifyPassword(curPw, realUser.password || "1234");
 
-      if (curPw !== expectedCurPw) {
+      if (!isCurValid) {
         showToast("⚠️ 현재 비밀번호가 일치하지 않습니다.", "warn");
         if (curInput) curInput.focus();
         return;
@@ -11303,14 +11409,17 @@ function initChangePasswordEvents() {
         return;
       }
 
-      // Update user password and clear reset flag
-      currentUser.password = newPw;
-      currentUser.resetRequested = false;
+      // Hash the new password cryptographically
+      const hashedNewPw = await hashPassword(newPw);
+
+      // Update actual user password and clear reset flag
+      realUser.password = hashedNewPw;
+      realUser.resetRequested = false;
 
       // Update in appState.users array as well
-      const userInList = appState.users.find(u => u.id === currentUser.id);
+      const userInList = appState.users.find(u => u.id === realUser.id);
       if (userInList) {
-        userInList.password = newPw;
+        userInList.password = hashedNewPw;
         userInList.resetRequested = false;
       }
 
