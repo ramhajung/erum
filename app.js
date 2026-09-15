@@ -4,6 +4,81 @@
  */
 
 // =============================================================================
+// Supabase Cloud Realtime Database Configuration & Client
+// =============================================================================
+const SUPABASE_CONFIG = {
+  url: "https://fidfkbhfwumqncddgoaz.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpZGZrYmhmd3VtcW5jZGRnb2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NjMxNjYsImV4cCI6MjEwNDQzOTE2Nn0.6jL_OtzUNitU6dykEez7j_c2kWeWKYgyPGjH4bln_UE",
+  tableName: "yerang_kv",
+  docKey: "app_state_main"
+};
+
+let isSupabaseSyncing = false;
+let supabaseSaveDebounceTimer = null;
+
+async function fetchFromSupabase() {
+  try {
+    const res = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/${SUPABASE_CONFIG.tableName}?id=eq.${SUPABASE_CONFIG.docKey}&select=*`, {
+      method: "GET",
+      headers: {
+        "apikey": SUPABASE_CONFIG.anonKey,
+        "Authorization": `Bearer ${SUPABASE_CONFIG.anonKey}`,
+        "Content-Type": "application/json"
+      }
+    });
+    if (!res.ok) {
+      console.warn("[Supabase] Fetch failed with status:", res.status);
+      return null;
+    }
+    const rows = await res.json();
+    if (rows && rows.length > 0 && rows[0].data) {
+      return rows[0].data;
+    }
+    return null;
+  } catch (err) {
+    console.warn("[Supabase] Network/fetch error:", err);
+    return null;
+  }
+}
+
+async function saveToSupabase(stateData) {
+  try {
+    const payload = {
+      id: SUPABASE_CONFIG.docKey,
+      data: stateData,
+      updated_at: new Date().toISOString()
+    };
+    const res = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/${SUPABASE_CONFIG.tableName}`, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_CONFIG.anonKey,
+        "Authorization": `Bearer ${SUPABASE_CONFIG.anonKey}`,
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates"
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      console.warn("[Supabase] Upsert failed with status:", res.status);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn("[Supabase] Save error:", err);
+    return false;
+  }
+}
+
+function debounceSaveToSupabase(delayMs = 400) {
+  if (supabaseSaveDebounceTimer) {
+    clearTimeout(supabaseSaveDebounceTimer);
+  }
+  supabaseSaveDebounceTimer = setTimeout(async () => {
+    await saveToSupabase(appState);
+  }, delayMs);
+}
+
+// =============================================================================
 // 1. Initial Mock Data (Matches User Uploaded Images 1-5 Exactly)
 // =============================================================================
 
@@ -1151,6 +1226,7 @@ function syncCurrentMeetingAgendas() {
 function saveState() {
   syncCurrentMeetingAgendas();
   localStorage.setItem("yerang_app_state_v1", JSON.stringify(appState));
+  debounceSaveToSupabase();
 }
 
 // =============================================================================
@@ -11052,10 +11128,20 @@ function initPullToRefresh() {
       try { navigator.vibrate(15); } catch (err) {}
     }
 
-    // Perform reload of all live data & Google Sheet sync
-    const refreshTasks = [];
+    // 1. Supabase Cloud Database Sync
+    refreshTasks.push((async () => {
+      try {
+        const remoteData = await fetchFromSupabase();
+        if (remoteData) {
+          appState = remoteData;
+          localStorage.setItem("yerang_app_state_v1", JSON.stringify(appState));
+        }
+      } catch (err) {
+        console.warn("[Supabase] Pull-to-refresh sync error:", err);
+      }
+    })());
 
-    // 1. Google Sheets sync if on accounting tab
+    // 2. Google Sheets sync if on accounting tab
     if (typeof syncFromGoogleSheet === "function") {
       refreshTasks.push(new Promise(resolve => {
         syncFromGoogleSheet(false);
@@ -11063,7 +11149,7 @@ function initPullToRefresh() {
       }));
     }
 
-    // 2. Reload state from localStorage (or merge)
+    // 3. Fallback reload state from localStorage
     try {
       const saved = localStorage.getItem("yerang_app_state_v1");
       if (saved) {
@@ -11568,5 +11654,30 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("이룸교회 중고등부 예랑 앱에 오신 것을 환영합니다! 🌤️");
     }, 400);
   }
+
+  // Supabase Cloud Realtime Sync on App Launch
+  initSupabaseSync();
 });
+
+async function initSupabaseSync() {
+  try {
+    const remoteData = await fetchFromSupabase();
+    if (remoteData) {
+      console.log("[Supabase] Loaded remote state successfully");
+      appState = remoteData;
+      localStorage.setItem("yerang_app_state_v1", JSON.stringify(appState));
+      renderAll();
+      const currentUser = getCurrentUser();
+      const role = currentUser ? currentUser.role : (appState.currentRole || "pastor");
+      switchMasterRole(role, false);
+      renderUserHeaderBar();
+    } else {
+      // First time initialization: seed current local state to Supabase
+      console.log("[Supabase] Remote state empty. Seeding initial data to Supabase...");
+      await saveToSupabase(appState);
+    }
+  } catch (err) {
+    console.warn("[Supabase] Initial sync failed:", err);
+  }
+}
 
