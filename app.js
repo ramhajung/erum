@@ -12211,6 +12211,7 @@ function initPullToRefresh() {
   }
 
   function triggerRefresh() {
+    if (isRefreshing) return;
     isRefreshing = true;
     indicator.classList.remove("pulling");
     indicator.classList.add("refreshing");
@@ -12223,10 +12224,13 @@ function initPullToRefresh() {
       try { navigator.vibrate(15); } catch (err) {}
     }
 
-    // 1. Supabase Cloud Database Sync
+    const refreshTasks = [];
+
+    // 1. Supabase Cloud Database Sync (with 2.5s timeout)
     refreshTasks.push((async () => {
       try {
-        const remoteData = await fetchFromSupabase();
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2500));
+        const remoteData = await Promise.race([fetchFromSupabase(), timeoutPromise]);
         if (remoteData) {
           const localUserId = appState.currentUserId;
           const localAuth = appState.isAuthenticated;
@@ -12240,14 +12244,14 @@ function initPullToRefresh() {
           localStorage.setItem("yerang_app_state_v1", JSON.stringify(appState));
         }
       } catch (err) {
-        console.warn("[Supabase] Pull-to-refresh sync error:", err);
+        console.warn("[Supabase] Pull-to-refresh sync error/timeout:", err);
       }
     })());
 
     // 2. Google Sheets sync if on accounting tab
     if (typeof syncFromGoogleSheet === "function") {
       refreshTasks.push(new Promise(resolve => {
-        syncFromGoogleSheet(false);
+        try { syncFromGoogleSheet(false); } catch (e) {}
         setTimeout(resolve, 600);
       }));
     }
@@ -12262,11 +12266,21 @@ function initPullToRefresh() {
       console.warn("State reload warning:", e);
     }
 
+    // 4. Watchdog timer: Guarantee indicator dismisses within 3 seconds no matter what
+    const safetyTimer = setTimeout(() => {
+      if (isRefreshing) {
+        renderAll();
+        isRefreshing = false;
+        resetPullUI();
+      }
+    }, 3000);
+
     // Wait at least 650ms for satisfying visual feedback
     Promise.all([
       new Promise(r => setTimeout(r, 650)),
       ...refreshTasks
     ]).then(() => {
+      clearTimeout(safetyTimer);
       renderAll();
       showToast("🔄 모든 사역 데이터가 최신으로 새로고침되었습니다!", "success");
 
@@ -12275,7 +12289,9 @@ function initPullToRefresh() {
         isRefreshing = false;
         resetPullUI();
       }, 300);
-    }).catch(() => {
+    }).catch((err) => {
+      clearTimeout(safetyTimer);
+      console.warn("[PullToRefresh] Error:", err);
       renderAll();
       isRefreshing = false;
       resetPullUI();
