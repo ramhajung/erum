@@ -5218,10 +5218,15 @@ function renderAttendanceSection() {
     ? appState.attendance
     : appState.attendance.filter(att => isAttendanceAuthor(att, currentUser));
 
-  // 3. 나의 예배 불참/지각 등록 버튼: 전도사에게만 비노출 (선생님+학생 모두 노출)
+  // 3. 예배 불참/지각 등록 버튼 (전도사는 교사 대리 등록, 교사는 본인 등록)
   const openAbsentBtn = document.getElementById("openAbsentModalBtn");
   if (openAbsentBtn) {
-    openAbsentBtn.style.display = isPastor ? "none" : "";
+    openAbsentBtn.style.display = "flex";
+    if (isPastor) {
+      openAbsentBtn.innerHTML = `<span>＋</span> <span>교사 불참/지각 사유 등록 (대리 접수)</span>`;
+    } else {
+      openAbsentBtn.innerHTML = `<span>＋</span> <span>나의 예배 불참/지각 사전 등록</span>`;
+    }
   }
 
   // 4. 지난 출결 기록 버튼: 전도사에게만 노출 (선생님/학생에게는 비노출 🔒)
@@ -5243,6 +5248,7 @@ function renderAttendanceSection() {
       <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">이번 주 토요예배에 사전 결석 또는 지각 예정이실 경우<br>아래 버튼을 눌러 등록해주세요.</div>
     `;
     listEl.appendChild(emptyEl);
+    renderAttendingTeachersSection();
     return;
   }
 
@@ -5306,6 +5312,77 @@ function renderAttendanceSection() {
 
     listEl.appendChild(card);
   });
+
+  renderAttendingTeachersSection();
+}
+
+const MASTER_TEACHER_ROSTER = [
+  { name: "정하람 전도사", duty: "지도 교역자 / 설교", avatar: "🧑🏻‍💼" },
+  { name: "김대한 선생님", duty: "고3 담임 / 방송실 자막", avatar: "👨🏻‍💼" },
+  { name: "양선아 선생님", duty: "고2 담임 / 안내팀 지도", avatar: "👩🏻‍💼" },
+  { name: "소예진 선생님", duty: "중등부 담임 / 새친구 멘토", avatar: "👩🏻‍🏫" },
+  { name: "박지훈 선생님", duty: "새친구반 담임 / 찬양팀 멘토", avatar: "🧑🏻‍🏫" },
+  { name: "나하은 선생님", duty: "회계 / 재정 장부 결산", avatar: "💼" },
+  { name: "김희순 부장집사", duty: "부장집사 / 간식 및 총무", avatar: "👔" },
+  { name: "김신원 선생님", duty: "방송실 음향 / 미디어", avatar: "🧑🏻‍💻" },
+  { name: "이진우 선생님", duty: "찬양팀 세션 / 예배 준비", avatar: "🎸" }
+];
+
+function renderAttendingTeachersSection() {
+  const container = document.getElementById("attendingTeachersContainer");
+  if (!container) return;
+
+  function cleanName(n) {
+    return (n || "").replace(/\s*(선생님|집사님|부장집사|전도사|T|쌤)\s*/g, "").trim();
+  }
+
+  const absentNames = new Set((appState.attendance || []).map(a => cleanName(a.name)));
+  const attendingList = MASTER_TEACHER_ROSTER.filter(t => !absentNames.has(cleanName(t.name)));
+
+  // Update stat present count
+  const statPresentEl = document.getElementById("statPresentCount");
+  if (statPresentEl) statPresentEl.textContent = attendingList.length;
+
+  container.innerHTML = `
+    <div class="bg-white rounded-2xl p-3.5 border border-emerald-200/80 shadow-2xs">
+      <div class="flex items-center justify-between cursor-pointer select-none" id="togglePresentTeachersBtn">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-100"></span>
+          <span class="font-extrabold text-[13px] text-gray-800">정상 출석 예정 선생님</span>
+          <span class="text-[10.5px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">${attendingList.length}명</span>
+        </div>
+        <div class="flex items-center gap-1 text-emerald-700 text-[11px] font-bold">
+          <span>명단 열람</span>
+          <span class="material-symbols-outlined text-[17px] transition-transform duration-200" id="presentTeachersChevron">expand_more</span>
+        </div>
+      </div>
+      <div id="presentTeachersListGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-gray-100">
+        ${attendingList.map(t => `
+          <div class="p-2.5 rounded-xl bg-emerald-50/40 border border-emerald-100/80 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-7 h-7 rounded-full bg-white border border-emerald-200/60 flex items-center justify-center text-[13px] shrink-0 shadow-2xs">${t.avatar}</span>
+              <div class="min-w-0">
+                <div class="font-extrabold text-[12px] text-gray-800 leading-tight truncate">${t.name}</div>
+                <div class="text-[9.5px] text-gray-500 truncate mt-0.5">${t.duty}</div>
+              </div>
+            </div>
+            <span class="text-[10px] font-black text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">출석 ✓</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+
+  const toggleBtn = document.getElementById("togglePresentTeachersBtn");
+  const gridEl = document.getElementById("presentTeachersListGrid");
+  const chevron = document.getElementById("presentTeachersChevron");
+  if (toggleBtn && gridEl && chevron) {
+    toggleBtn.onclick = () => {
+      const isHidden = gridEl.style.display === "none";
+      gridEl.style.display = isHidden ? "grid" : "none";
+      chevron.style.transform = isHidden ? "rotate(0deg)" : "rotate(180deg)";
+    };
+  }
 }
 
 function openEditAbsentModal(attId) {
@@ -5551,7 +5628,9 @@ function initAttendanceEvents() {
   document.getElementById("absentForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const currentUser = getCurrentUser();
-    const name = (currentUser ? currentUser.name : document.getElementById("absentTeacherInput")?.value) || "선생님";
+    const inputVal = document.getElementById("absentTeacherInput")?.value?.trim();
+    const isPastor = (currentRole === "pastor");
+    const name = (isPastor && inputVal) ? inputVal : (currentUser ? currentUser.name : inputVal || "선생님");
     const status = document.getElementById("absentStatusInput").value;
     const reason = document.getElementById("absentReasonCategory").value;
     const memo = document.getElementById("absentMemoInput").value;
@@ -10589,6 +10668,7 @@ function initStaffBoxEvents() {
 const _initialCalDate = new Date();
 let currentCalendarYear = _initialCalDate.getFullYear() || 2026;
 let currentCalendarMonth = (_initialCalDate.getMonth() + 1) || 9; // Real-time month (1-12)
+let selectedCalendarDay = _initialCalDate.getDate() || 15;
 let selectedCalendarItem = null; // currently viewed item in manage modal
 
 // 회원가입 및 사용자 계정의 생일과 캘린더 생일을 실시간 통합/동기화하는 함수
@@ -10689,6 +10769,11 @@ function renderCalendarSection() {
   const isCurrentRealMonth = (now.getFullYear() === currentCalendarYear && (now.getMonth() + 1) === currentCalendarMonth);
   const realTodayDate = now.getDate();
 
+  // Selected date normalization
+  if (!selectedCalendarDay || selectedCalendarDay > lastDate) {
+    selectedCalendarDay = isCurrentRealMonth ? realTodayDate : 1;
+  }
+
   // Current month's birthdays (회원가입/사용자 프로필 생일 자동 동기화) & events
   const allBirthdays = getAllCalendarBirthdays();
   const allEvents = (appState.calendarEvents && appState.calendarEvents.length > 0) ? appState.calendarEvents : INITIAL_DATA.calendarEvents;
@@ -10709,6 +10794,7 @@ function renderCalendarSection() {
   // Current Month Cells
   for (let d = 1; d <= lastDate; d++) {
     const isToday = isCurrentRealMonth && (d === realTodayDate);
+    const isSelected = (d === selectedCalendarDay);
     const dayBirthdays = curBirthdays.filter(b => Number(b.day) === d);
     const dayEvents = curEvents.filter(e => {
       const dayPart = parseInt(e.date.split("-")[2], 10);
@@ -10730,7 +10816,7 @@ function renderCalendarSection() {
     });
 
     gridHtml += `
-      <div class="cal-cell ${isToday ? 'is-today' : ''}" data-day="${d}">
+      <div class="cal-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}" data-day="${d}">
         <span class="cal-num">${d}</span>
         ${pillsHtml}
       </div>
@@ -10746,7 +10832,10 @@ function renderCalendarSection() {
 
   grid.innerHTML = gridHtml;
 
-  // 4. Render Dynamic Birthday Showcase Card for Current Month
+  // 4. Render Dynamic Day Schedule Card for Selected Date
+  renderDayScheduleCard(selectedCalendarDay);
+
+  // 5. Render Dynamic Birthday Showcase Card for Current Month
   let bdayCardHtml = `
     <div class="birthday-title" style="display:flex; justify-content:space-between; align-items:center;">
       <div style="display:flex; align-items:center; gap:6px;">
@@ -10783,8 +10872,130 @@ function renderCalendarSection() {
 
   showcase.innerHTML = bdayCardHtml;
 
-  // 5. Attach Click Events to Interactive Elements
+  // 6. Attach Click Events to Interactive Elements
   bindCalendarDynamicEvents();
+}
+
+function renderDayScheduleCard(day) {
+  const container = document.getElementById("calendarDayScheduleCard");
+  if (!container) return;
+
+  const isPastor = isCurrentRolePastor();
+  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+  const dateObj = new Date(currentCalendarYear, currentCalendarMonth - 1, day);
+  const dayOfWeekName = dayNames[dateObj.getDay()];
+
+  const allBirthdays = getAllCalendarBirthdays();
+  const allEvents = (appState.calendarEvents && appState.calendarEvents.length > 0) ? appState.calendarEvents : INITIAL_DATA.calendarEvents;
+
+  const curBirthdays = allBirthdays.filter(b => Number(b.month) === Number(currentCalendarMonth) && Number(b.day) === Number(day));
+  const curEvents = allEvents.filter(e => {
+    if (!e.date) return false;
+    const parts = e.date.split("-");
+    return Number(parts[0]) === Number(currentCalendarYear) && Number(parts[1]) === Number(currentCalendarMonth) && Number(parts[2]) === Number(day);
+  });
+
+  const totalItems = curBirthdays.length + curEvents.length;
+
+  let html = `
+    <div class="bg-white rounded-2xl p-3.5 border border-primary/20 shadow-xs mb-3">
+      <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+        <div class="flex items-center gap-1.5">
+          <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-[13px]">📅</span>
+          <h3 class="font-extrabold text-[13.5px] text-gray-900">${currentCalendarMonth}월 ${day}일 (${dayOfWeekName}) 사역 일정</h3>
+          <span class="text-[10px] font-black px-2 py-0.2 rounded-full ${totalItems > 0 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}">${totalItems}건</span>
+        </div>
+        ${isPastor ? `
+          <button type="button" id="dayCardAddEventBtn" class="text-[11px] font-bold text-primary bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-lg flex items-center gap-0.5 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-[13px]">add</span>
+            <span>일정 추가</span>
+          </button>
+        ` : ''}
+      </div>
+  `;
+
+  if (totalItems === 0) {
+    html += `
+      <div class="py-3 text-center">
+        <p class="text-[12px] font-medium text-gray-400">등록된 사역 일정이 없습니다.</p>
+        ${isPastor ? `<button type="button" id="dayCardEmptyAddBtn" class="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"><span>＋</span> <span>이 날짜에 새 사역 등록</span></button>` : ''}
+      </div>
+    `;
+  } else {
+    html += `<div class="space-y-2 mt-2.5">`;
+
+    curBirthdays.forEach(b => {
+      html += `
+        <div class="p-2.5 rounded-xl bg-rose-50/70 border border-rose-100 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="w-7 h-7 rounded-full bg-white border border-rose-200/80 flex items-center justify-center text-[13px] shrink-0">🎂</span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[12.5px] font-extrabold text-gray-900">${b.name}</span>
+                <span class="text-[9.5px] font-bold px-1.5 py-0.2 rounded bg-rose-100 text-rose-700">${b.roleDesc || "생일"}</span>
+              </div>
+              <p class="text-[10.5px] text-gray-500 mt-0.5">예랑 공동체 생일 축하 🎉</p>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    curEvents.forEach(e => {
+      const colorClass = e.color === 'yellow' ? 'border-amber-200 bg-amber-50/60' : (e.color === 'green' ? 'border-emerald-200 bg-emerald-50/60' : 'border-primary/20 bg-orange-50/50');
+      const tagColor = e.color === 'yellow' ? 'bg-amber-100 text-amber-800' : (e.color === 'green' ? 'bg-emerald-100 text-emerald-800' : 'bg-primary/15 text-primary');
+      html += `
+        <div class="p-2.5 rounded-xl border ${colorClass} flex items-center justify-between gap-2">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[9.5px] font-extrabold px-1.5 py-0.2 rounded ${tagColor}">${e.tag || "사역"}</span>
+              <span class="text-[12.5px] font-extrabold text-gray-900 truncate">${e.title}</span>
+            </div>
+            <div class="flex items-center gap-2 mt-1 text-[10.5px] text-gray-500 font-medium flex-wrap">
+              ${e.time ? `<span>⏰ ${e.time}</span>` : ''}
+              ${e.location ? `<span>📍 ${e.location}</span>` : ''}
+              ${e.manager ? `<span>👤 ${e.manager}</span>` : ''}
+            </div>
+          </div>
+          ${isPastor ? `
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" class="day-event-edit-btn w-6 h-6 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-[11px] text-gray-600 active:scale-95 transition-all" data-event-id="${e.id}" title="일정 수정">✏️</button>
+              <button type="button" class="day-event-delete-btn w-6 h-6 rounded-lg bg-white border border-rose-200 hover:bg-rose-50 flex items-center justify-center text-[11px] text-rose-600 active:scale-95 transition-all" data-event-id="${e.id}" title="일정 삭제">🗑️</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  const addBtn = document.getElementById("dayCardAddEventBtn");
+  if (addBtn) {
+    addBtn.onclick = () => openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, day);
+  }
+  const emptyAddBtn = document.getElementById("dayCardEmptyAddBtn");
+  if (emptyAddBtn) {
+    emptyAddBtn.onclick = () => openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, day);
+  }
+
+  container.querySelectorAll(".day-event-edit-btn").forEach(btn => {
+    btn.onclick = () => {
+      const evtId = btn.dataset.eventId;
+      const evt = (appState.calendarEvents || []).find(e => String(e.id) === String(evtId));
+      if (evt) openManageCalendarItemModal("event", evt);
+    };
+  });
+
+  container.querySelectorAll(".day-event-delete-btn").forEach(btn => {
+    btn.onclick = () => {
+      const evtId = btn.dataset.eventId;
+      handleDeleteCalendarItem("event", evtId);
+    };
+  });
 }
 
 function bindCalendarDynamicEvents() {
@@ -10818,17 +11029,15 @@ function bindCalendarDynamicEvents() {
     });
   });
 
-  // C. Empty Calendar Cell Click
+  // C. Calendar Cell Click (Select Day and display Day Schedule Feed)
   document.querySelectorAll(".cal-cell:not(.other-month)").forEach(cell => {
     cell.addEventListener("click", () => {
-      const day = cell.dataset.day;
+      const day = parseInt(cell.dataset.day, 10);
       if (!day) return;
-      if (isPastor) {
-        // 전도사는 해당 날짜를 기본값으로 하여 일정/생일 등록 모달 오픈
-        openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, parseInt(day, 10));
-      } else {
-        showToast(`📅 ${currentCalendarMonth}월 ${day}일 사역 캘린더`, "info");
-      }
+      selectedCalendarDay = day;
+      document.querySelectorAll(".cal-cell").forEach(c => c.classList.remove("is-selected"));
+      cell.classList.add("is-selected");
+      renderDayScheduleCard(day);
     });
   });
 
@@ -10994,9 +11203,20 @@ function openEditCalendarItemModal(kind, item) {
 }
 
 function initCalendarEvents() {
-  // 1. Prev & Next Month Navigation Buttons
+  // 1. Prev & Next Month Navigation Buttons & Today Jump Button
   const prevBtn = document.getElementById("calPrevMonthBtn");
   const nextBtn = document.getElementById("calNextMonthBtn");
+  const todayBtn = document.getElementById("calTodayBtn");
+
+  if (todayBtn) {
+    todayBtn.addEventListener("click", () => {
+      const now = new Date();
+      currentCalendarYear = now.getFullYear();
+      currentCalendarMonth = now.getMonth() + 1;
+      selectedCalendarDay = now.getDate();
+      renderCalendarSection();
+    });
+  }
 
   if (prevBtn) {
     prevBtn.addEventListener("click", () => {
@@ -11005,6 +11225,7 @@ function initCalendarEvents() {
         currentCalendarMonth = 12;
         currentCalendarYear--;
       }
+      selectedCalendarDay = 1;
       renderCalendarSection();
     });
   }
@@ -11016,6 +11237,7 @@ function initCalendarEvents() {
         currentCalendarMonth = 1;
         currentCalendarYear++;
       }
+      selectedCalendarDay = 1;
       renderCalendarSection();
     });
   }

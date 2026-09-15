@@ -713,15 +713,21 @@
 
         <!-- Sub-View 1: 사역 캘린더 & 생일 관리 (Dynamic Month Navigation & Pastor CRUD) -->
         <div id="subViewCalendar">
-          <!-- 월별 이동 내비게이션: 왼쪽(년/월 표시), 오른쪽(◀ [몇월 사역 & 생일] ▶) -->
+          <!-- 월별 이동 내비게이션: 통합 깔끔 바 -->
           <div class="calendar-nav-bar">
-            <div class="calendar-header-left">
-              <span id="calYearDisplay" class="cal-year-badge">2026년 9월</span>
+            <div class="flex items-center gap-2">
+              <span class="w-8 h-8 rounded-xl bg-orange-50 text-primary flex items-center justify-center font-bold">
+                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+              </span>
+              <div>
+                <span id="calYearDisplay" class="cal-year-badge">2026년 9월</span>
+                <span id="calCurrentMonthTitle" style="display:none;">📅 9월 사역 & 생일</span>
+              </div>
             </div>
             <div class="calendar-month-selector">
-              <button class="cal-nav-btn" id="calPrevMonthBtn" title="이전 달">◀</button>
-              <span class="cal-current-title" id="calCurrentMonthTitle">📅 9월 사역 & 생일</span>
-              <button class="cal-nav-btn" id="calNextMonthBtn" title="다음 달">▶</button>
+              <button class="cal-nav-btn" id="calTodayBtn" title="오늘로 이동" type="button" style="font-size:11px; width:auto; padding:0 8px; font-weight:800;">오늘</button>
+              <button class="cal-nav-btn" id="calPrevMonthBtn" title="이전 달" type="button">◀</button>
+              <button class="cal-nav-btn" id="calNextMonthBtn" title="다음 달" type="button">▶</button>
             </div>
           </div>
 
@@ -730,13 +736,18 @@
             <!-- Day headers & Day cells rendered dynamically by renderCalendarSection() -->
           </div>
 
+          <!-- Dynamic Day Schedule Card (터치한 날짜의 상세 일정 피드) -->
+          <div id="calendarDayScheduleCard" class="calendar-day-schedule-card">
+            <!-- Populated dynamically by renderDayScheduleCard() -->
+          </div>
+
           <!-- Dynamic Birthday Showcase Card -->
           <div class="birthday-showcase-card" id="birthdayShowcaseCard">
             <!-- Rendered dynamically by renderCalendarSection() -->
           </div>
 
-          <!-- 하단 탭바에 가려지지 않도록 충분한 여백 공간 -->
-          <div class="subview-bottom-spacer" style="height: 60px;"></div>
+          <!-- 하단 탭바에 가려지지 않도록 충분한 안전 여백 -->
+          <div class="subview-bottom-spacer" style="height: 100px;"></div>
         </div>
 
         <!-- Sub-View 2: 행사 담당 & 체크리스트 (New Image 4) -->
@@ -782,6 +793,9 @@
               <span>＋</span> <span>새 체크리스트 추가</span>
             </button>
           </div>
+
+          <!-- 하단 탭바에 가려지지 않도록 충분한 안전 여백 -->
+          <div class="subview-bottom-spacer" style="height: 100px;"></div>
         </div>
 
         <!-- Sub-View 3: 예배 출결 & 대타 관리 (Image 3 from prompt 1) -->
@@ -810,10 +824,18 @@
             <!-- Populated by JS -->
           </div>
 
+          <!-- Attending Teachers Showcase (정상 출석 선생님 7명 명단) -->
+          <div id="attendingTeachersContainer" class="mt-3">
+            <!-- Populated by JS renderAttendingTeachersSection() -->
+          </div>
+
           <!-- Action Button -->
-          <button class="btn-orange" id="openAbsentModalBtn" style="background: linear-gradient(135deg, #f98967 0%, #ee6444 100%);">
+          <button class="btn-orange mt-3" id="openAbsentModalBtn" style="background: linear-gradient(135deg, #f98967 0%, #ee6444 100%);">
             <span>＋</span> <span>나의 예배 불참/지각 사전 등록</span>
           </button>
+
+          <!-- 하단 탭바에 가려지지 않도록 충분한 안전 여백 -->
+          <div class="subview-bottom-spacer" style="height: 100px;"></div>
         </div>
 
       </section>
