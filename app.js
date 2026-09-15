@@ -11086,6 +11086,46 @@ function initAuthScreen() {
     });
   }
 
+  // Real-time automatic formatting for Birthday (8 digits or 6 digits) and Phone
+  const signupBdayInput = document.getElementById("signupBirthdayInput");
+  if (signupBdayInput) {
+    signupBdayInput.addEventListener("input", (e) => {
+      let val = e.target.value.replace(/[^0-9]/g, "");
+      if (val.length > 8) val = val.slice(0, 8);
+      if (val.length <= 4) {
+        e.target.value = val;
+      } else if (val.length <= 6) {
+        e.target.value = val.slice(0, 4) + "-" + val.slice(4);
+      } else {
+        e.target.value = val.slice(0, 4) + "-" + val.slice(4, 6) + "-" + val.slice(6);
+      }
+    });
+    signupBdayInput.addEventListener("blur", (e) => {
+      const raw = e.target.value.trim();
+      const digits = raw.replace(/\D/g, "");
+      if (digits.length === 6) {
+        const yy = parseInt(digits.slice(0, 2), 10);
+        const y = yy <= 30 ? (2000 + yy) : (1900 + yy);
+        e.target.value = `${y}-${digits.slice(2, 4)}-${digits.slice(4, 6)}`;
+      }
+    });
+  }
+
+  const signupPhoneInput = document.getElementById("signupPhoneInput");
+  if (signupPhoneInput) {
+    signupPhoneInput.addEventListener("input", (e) => {
+      let val = e.target.value.replace(/[^0-9]/g, "");
+      if (val.length > 11) val = val.slice(0, 11);
+      if (val.length <= 3) {
+        e.target.value = val;
+      } else if (val.length <= 7) {
+        e.target.value = val.slice(0, 3) + "-" + val.slice(3);
+      } else {
+        e.target.value = val.slice(0, 3) + "-" + val.slice(3, 7) + "-" + val.slice(7);
+      }
+    });
+  }
+
   // Auth Sign Up Form
   const signupForm = document.getElementById("authSignupForm");
   if (signupForm) {
@@ -11094,8 +11134,8 @@ function initAuthScreen() {
       const name = document.getElementById("signupNameInput").value.trim();
       const username = document.getElementById("signupUsernameInput") ? document.getElementById("signupUsernameInput").value.trim() : "";
       const password = document.getElementById("signupPasswordInput") ? document.getElementById("signupPasswordInput").value.trim() : "";
-      const birthday = document.getElementById("signupBirthdayInput") ? document.getElementById("signupBirthdayInput").value.trim() : "";
-      const phone = document.getElementById("signupPhoneInput").value.trim();
+      let birthday = document.getElementById("signupBirthdayInput") ? document.getElementById("signupBirthdayInput").value.trim() : "";
+      const phone = document.getElementById("signupPhoneInput") ? document.getElementById("signupPhoneInput").value.trim() : "";
 
       if (!name) {
         showToast("⚠️ 성함을 입력해주세요.", "warn");
@@ -11104,6 +11144,35 @@ function initAuthScreen() {
       if (!username) {
         showToast("⚠️ 아이디를 입력해주세요.", "warn");
         return;
+      }
+
+      // Birthday Validation & Normalization
+      if (birthday) {
+        const digits = birthday.replace(/\D/g, "");
+        if (digits.length === 8) {
+          const y = parseInt(digits.slice(0, 4), 10);
+          const m = parseInt(digits.slice(4, 6), 10);
+          const d = parseInt(digits.slice(6, 8), 10);
+          const currentYear = new Date().getFullYear();
+          if (y < 1920 || y > currentYear || m < 1 || m > 12 || d < 1 || d > 31) {
+            showToast("⚠️ 생년월일 날짜가 올바른지 확인해주세요.", "warn");
+            return;
+          }
+          birthday = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+        } else if (digits.length === 6) {
+          const yy = parseInt(digits.slice(0, 2), 10);
+          const y = yy <= 30 ? (2000 + yy) : (1900 + yy);
+          const m = parseInt(digits.slice(2, 4), 10);
+          const d = parseInt(digits.slice(4, 6), 10);
+          if (m < 1 || m > 12 || d < 1 || d > 31) {
+            showToast("⚠️ 생년월일 날짜가 올바른지 확인해주세요.", "warn");
+            return;
+          }
+          birthday = `${y}-${digits.slice(2, 4)}-${digits.slice(4, 6)}`;
+        } else {
+          showToast("⚠️ 생년월일 8자리(예: 20090514)를 정확히 입력해주세요.", "warn");
+          return;
+        }
       }
 
       // Check for duplicate username
