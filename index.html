@@ -387,67 +387,67 @@
       <!-- ===================================================================
            TAB 0: 홈 대시보드 (Stitch Master Design)
            =================================================================== -->
-      <section class="screen-view active space-y-6" id="view-home">
+      <section class="screen-view active space-y-4" id="view-home">
         
         <!-- Section: Quick Actions (Role-Adaptive) -->
         <section aria-label="빠른 실행 메뉴" id="quickActionsSection">
 
           <!-- 1. 전도사용 Quick Actions (3열 대칭 그리드: 권한관리 + 회원승인 + 사역자 소통함) -->
-          <div id="pastorQuickActions" class="space-y-2.5">
-            <div class="grid grid-cols-3 gap-2.5">
+          <div id="pastorQuickActions" class="space-y-2">
+            <div class="grid grid-cols-3 gap-2">
               <!-- 1: 권한 관리 -->
-              <button id="adminUserMgmtBanner" class="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left flex flex-col justify-between" type="button">
-                <div class="w-8 h-8 rounded-xl bg-rose-50 text-primary flex items-center justify-center mb-2 shrink-0">
-                  <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+              <button id="adminUserMgmtBanner" class="p-2.5 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left flex flex-col justify-between" type="button">
+                <div class="w-7 h-7 rounded-xl bg-rose-50 text-primary flex items-center justify-center mb-1.5 shrink-0">
+                  <span class="material-symbols-outlined text-[17px]">admin_panel_settings</span>
                 </div>
                 <div>
-                  <div class="font-extrabold text-[12.5px] text-gray-800 leading-tight">권한 관리</div>
-                  <div class="text-[10px] text-gray-400 mt-0.5 whitespace-nowrap">교사 리더십</div>
+                  <div class="font-extrabold text-[12px] text-gray-800 leading-tight">권한 관리</div>
+                  <div class="text-[9.5px] text-gray-400 mt-0.5 whitespace-nowrap">교사 리더십</div>
                 </div>
               </button>
 
               <!-- 2: 회원승인 -->
-              <button id="openMemberApprovalBtn" class="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left flex flex-col justify-between relative" type="button">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-[18px]">how_to_reg</span>
+              <button id="openMemberApprovalBtn" class="p-2.5 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left flex flex-col justify-between relative" type="button">
+                <div class="flex items-center justify-between mb-1.5">
+                  <div class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-[17px]">how_to_reg</span>
                   </div>
-                  <span id="pendingCountBadge" class="hidden text-[9.5px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded-full border border-amber-200">
+                  <span id="pendingCountBadge" class="hidden text-[9px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded-full border border-amber-200">
                     <span id="pendingCountText">0명</span>
                   </span>
                 </div>
                 <div>
-                  <div class="font-extrabold text-[12.5px] text-gray-800 leading-tight">회원승인</div>
-                  <div class="text-[10px] text-emerald-600 font-semibold mt-0.5 whitespace-nowrap">신규 가입 검토</div>
+                  <div class="font-extrabold text-[12px] text-gray-800 leading-tight">회원승인</div>
+                  <div class="text-[9.5px] text-emerald-600 font-semibold mt-0.5 whitespace-nowrap">신규 가입 검토</div>
                 </div>
               </button>
 
               <!-- 3: 사역자 소통함 -->
-              <button id="openStaffBoxBtn" class="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left flex flex-col justify-between relative" type="button">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="w-8 h-8 rounded-xl bg-teal-50 text-secondary flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-[18px]">mark_chat_unread</span>
+              <button id="openStaffBoxBtn" class="p-2.5 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left flex flex-col justify-between relative" type="button">
+                <div class="flex items-center justify-between mb-1.5">
+                  <div class="w-7 h-7 rounded-xl bg-teal-50 text-secondary flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-[17px]">mark_chat_unread</span>
                   </div>
                 </div>
                 <div>
-                  <div class="font-extrabold text-[12.5px] text-gray-800 leading-tight">사역 소통함</div>
-                  <div id="staffBoxCountText" class="text-[10px] text-primary font-bold mt-0.5 truncate">새 소식 확인</div>
+                  <div class="font-extrabold text-[12px] text-gray-800 leading-tight">사역 소통함</div>
+                  <div id="staffBoxCountText" class="text-[9.5px] text-gray-400 font-medium mt-0.5 truncate">새 소식 없음</div>
                 </div>
               </button>
             </div>
 
             <!-- Full-width: 역할별 화면 둘러보기 (View-As 시뮬레이터 미니 바) -->
-            <button id="openViewAsBannerBtn" class="w-full bg-gradient-to-r from-amber-500/8 via-orange-500/8 to-amber-500/5 border border-amber-200/60 rounded-xl px-3.5 py-2.5 flex items-center justify-between hover:border-amber-300 active:scale-[0.99] transition-all text-left shadow-2xs" type="button">
+            <button id="openViewAsBannerBtn" class="w-full bg-gradient-to-r from-amber-500/8 via-orange-500/8 to-amber-500/5 border border-amber-200/60 rounded-xl px-3 py-2 flex items-center justify-between hover:border-amber-300 active:scale-[0.99] transition-all text-left shadow-2xs" type="button">
               <div class="flex items-center gap-2">
-                <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0">
-                  <span class="material-symbols-outlined text-[14px]">visibility</span>
+                <div class="w-5.5 h-5.5 rounded-md bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[13px]">visibility</span>
                 </div>
-                <span class="font-extrabold text-[12px] text-gray-800">역할별 화면 둘러보기</span>
-                <span class="text-[9.5px] font-black text-amber-700 bg-amber-100/90 px-1.5 py-0.2 rounded border border-amber-200/80">View-As</span>
+                <span class="font-extrabold text-[11.5px] text-gray-800">역할별 화면 둘러보기</span>
+                <span class="text-[9px] font-black text-amber-700 bg-amber-100/90 px-1.5 py-0.2 rounded border border-amber-200/80">View-As</span>
               </div>
-              <div class="flex items-center text-amber-700 font-bold text-[11px] gap-0.5 shrink-0">
+              <div class="flex items-center text-amber-700 font-bold text-[10.5px] gap-0.5 shrink-0">
                 <span>시점 선택</span>
-                <span class="material-symbols-outlined text-[15px]">chevron_right</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
               </div>
             </button>
           </div>
@@ -514,36 +514,36 @@
         </div>
 
         <!-- Notice Strip Banner: 금주 공지 (다가오는 주요 행사 상단 배치) -->
-        <div id="noticeBanner" class="bg-gradient-to-r from-white via-surface-card to-badge-terracotta-bg/30 rounded-2xl p-3 border border-primary/15 shadow-[0_4px_16px_rgba(150,67,43,0.06)] flex items-center justify-between gap-2.5 hover:border-primary/30 active:scale-[0.99] transition-all cursor-pointer group" role="button" tabindex="0" title="공지 히스토리 모아보기" onclick="openNoticesModal()">
+        <div id="noticeBanner" class="bg-gradient-to-r from-white via-surface-card to-badge-terracotta-bg/30 rounded-2xl p-2.5 border border-primary/15 shadow-[0_4px_16px_rgba(150,67,43,0.06)] flex items-center justify-between gap-2 hover:border-primary/30 active:scale-[0.99] transition-all cursor-pointer group" role="button" tabindex="0" title="공지 히스토리 모아보기" onclick="openNoticesModal()">
           <div class="flex items-center gap-2.5 min-w-0 pointer-events-none flex-1">
-            <div class="relative w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
-              <span class="material-symbols-outlined text-[17px]">campaign</span>
+            <div class="relative w-7 h-7 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
+              <span class="material-symbols-outlined text-[16px]">campaign</span>
             </div>
             <div class="leading-tight min-w-0 flex-1">
               <div class="flex items-center gap-1.5">
-                <span id="noticeBannerTag" class="text-[10.5px] font-bold px-1.5 py-0.5 rounded bg-primary-fixed text-primary border border-primary/20 shrink-0">금주 공지</span>
-                <span id="noticeBannerTime" class="text-[10.5px] font-semibold text-text-muted shrink-0">12시</span>
+                <span id="noticeBannerTag" class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-primary-fixed text-primary border border-primary/20 shrink-0">금주 공지</span>
+                <span id="noticeBannerTime" class="text-[10px] font-semibold text-text-muted shrink-0">12시</span>
               </div>
-              <p id="noticeBannerTitle" class="text-[13px] font-bold text-text-primary mt-0.5 group-hover:text-primary transition-colors truncate">전 학년 간식 타임! (식당 3층 모임)</p>
+              <p id="noticeBannerTitle" class="text-[12.5px] font-bold text-text-primary mt-0.5 group-hover:text-primary transition-colors truncate">전 학년 간식 타임! (식당 3층 모임)</p>
             </div>
           </div>
           <div class="flex items-center gap-1 shrink-0 pointer-events-none text-primary">
-            <div id="noticeBannerArrowBtn" class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" aria-label="공지 목록 보기">
-              <span class="material-symbols-outlined text-[15px]">chevron_right</span>
+            <div id="noticeBannerArrowBtn" class="w-5.5 h-5.5 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" aria-label="공지 목록 보기">
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
             </div>
           </div>
         </div>
 
         <!-- Section: 다가오는 주요 행사 (Carousel with Cool Highlight Hero Card) -->
-        <section aria-labelledby="events-heading" class="space-y-3.5">
+        <section aria-labelledby="events-heading" class="space-y-2.5">
           <div class="flex items-center justify-between px-1">
             <div class="flex items-center gap-2">
               <h2 class="text-headline-sm font-bold text-text-primary tracking-tight" id="events-heading">다가오는 주요 행사</h2>
               <span id="upcomingEventsCountBadge" class="text-[11px] font-bold bg-primary-fixed/60 text-primary px-2 py-0.5 rounded-full ring-1 ring-primary/15">3개</span>
             </div>
             <div class="flex items-center gap-1">
-              <button id="openAddEventHomeBtn" class="text-label-sm font-bold text-primary hover:text-primary-focus bg-primary-fixed/30 hover:bg-primary-fixed/50 px-2.5 py-1 rounded-full flex items-center gap-1 transition-colors" type="button" title="새 행사 추가">
-                <span class="material-symbols-outlined text-[15px]">add</span>
+              <button id="openAddEventHomeBtn" class="text-[11px] font-bold text-primary hover:text-primary-focus bg-primary-fixed/30 hover:bg-primary-fixed/50 px-2 py-0.5 rounded-full flex items-center gap-0.5 transition-colors" type="button" title="새 행사 추가">
+                <span class="material-symbols-outlined text-[14px]">add</span>
                 <span>행사 추가</span>
               </button>
               <button id="viewAllEventsBtn" class="text-label-sm font-label-sm text-text-secondary hover:text-primary font-bold flex items-center gap-0.5 transition-colors group" type="button">
@@ -554,13 +554,13 @@
           </div>
 
           <!-- Horizontal Scrollable Cards Container (Populated dynamically) -->
-          <div id="upcomingEventsContainer" class="flex gap-3.5 overflow-x-auto hide-scrollbar -mx-gutter-screen px-gutter-screen pb-2 snap-x snap-mandatory pt-1">
+          <div id="upcomingEventsContainer" class="flex gap-3 overflow-x-auto hide-scrollbar -mx-gutter-screen px-gutter-screen pb-1.5 snap-x snap-mandatory pt-0.5">
             <!-- Populated by JS renderUpcomingEventsSection() -->
           </div>
         </section>
 
         <!-- Section: 오늘 함께 기도해요 (학생부 중보기도 릴레이) -->
-        <section aria-labelledby="home-prayer-heading" class="space-y-3.5">
+        <section aria-labelledby="home-prayer-heading" class="space-y-2.5">
           <div class="flex items-center justify-between px-1">
             <div class="flex items-center gap-2">
               <h2 class="text-headline-sm font-bold text-text-primary tracking-tight flex items-center gap-1.5" id="home-prayer-heading">
@@ -568,7 +568,7 @@
                 <span class="text-base">🙏</span>
               </h2>
               <span class="text-[11px] font-extrabold bg-rose-50 text-rose-600 border border-rose-200/80 px-2 py-0.5 rounded-full" id="homePrayerTotalCountBadge">
-                중보기도
+                공동체 중보
               </span>
             </div>
             <button type="button" class="text-label-sm font-label-sm text-text-secondary hover:text-primary font-bold flex items-center gap-0.5 transition-colors group cursor-pointer" onclick="openAllPrayersModal()">
@@ -578,7 +578,7 @@
           </div>
 
           <!-- Horizontal Scrollable Prayer Cards Container -->
-          <div id="homePrayerCarouselContainer" class="flex gap-3 overflow-x-auto hide-scrollbar -mx-gutter-screen px-gutter-screen pb-2 snap-x snap-mandatory pt-1">
+          <div id="homePrayerCarouselContainer" class="flex gap-3 overflow-x-auto hide-scrollbar -mx-gutter-screen px-gutter-screen pb-1.5 snap-x snap-mandatory pt-0.5">
             <!-- Populated dynamically by renderHomePrayersSection() -->
           </div>
         </section>

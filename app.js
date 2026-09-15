@@ -3287,9 +3287,11 @@ function renderHomePrayersSection() {
 
   const allStudents = getAllStudentsRoster();
   const studentsWithPrayers = allStudents.filter(s => s.prayers && s.prayers.length > 0);
+  const teacherPrayers = getTeacherPrayers();
+  const totalCount = studentsWithPrayers.length + teacherPrayers.length;
 
   if (countBadge) {
-    countBadge.textContent = `학생 ${studentsWithPrayers.length}명 중보`;
+    countBadge.textContent = `공동체 중보 ${totalCount}건`;
   }
 
   if (studentsWithPrayers.length === 0) {
@@ -7615,7 +7617,13 @@ function renderUserHeaderBar() {
   const nameEl = document.getElementById("userHeaderName");
   const adminBanner = document.getElementById("adminUserMgmtBanner");
 
-  if (avatarEl) avatarEl.textContent = user.avatar || "👤";
+  let avatar = user.avatar || "👤";
+  if (user.role === "pastor" || user.id === "u1" || (user.name && user.name.includes("정하람")) || avatar.includes("✝") || avatar.includes("👑")) {
+    avatar = "🧑🏻‍💼";
+    user.avatar = "🧑🏻‍💼";
+  }
+
+  if (avatarEl) avatarEl.textContent = avatar;
   if (nameEl) {
     nameEl.textContent = user.name;
   }
@@ -8133,11 +8141,11 @@ function updateStaffBoxHomeBadge() {
 
   if (countText) {
     if (reviewCount > 0) {
-      countText.textContent = `${reviewCount}건 검토 대기중 ⏳`;
+      countText.textContent = `대기 ${reviewCount}건 ⏳`;
       countText.style.color = "#ea580c";
     } else {
-      countText.textContent = `모든 소통 확인 완료 ✓`;
-      countText.style.color = "#16a34a";
+      countText.textContent = `새 소식 없음`;
+      countText.style.color = "#9ca3af";
     }
   }
 
@@ -9432,109 +9440,109 @@ function renderUpcomingEventsSection() {
 
     if (event.theme === "terracotta" || (!event.theme && index === 0)) {
       // Hero Terracotta Gradient Card
-      article.className = "flex-shrink-0 w-[265px] snap-start bg-gradient-to-br from-[#9E4830] via-[#8B3B24] to-[#712D19] rounded-3xl p-4 text-white shadow-[0_12px_30px_rgba(150,67,43,0.28)] flex flex-col justify-between relative overflow-hidden group transition-all duration-200 cursor-pointer active:scale-98";
+      article.className = "flex-shrink-0 w-[265px] snap-start bg-gradient-to-br from-[#9E4830] via-[#8B3B24] to-[#712D19] rounded-2xl p-3.5 text-white shadow-[0_8px_24px_rgba(150,67,43,0.22)] flex flex-col justify-between relative overflow-hidden group transition-all duration-200 cursor-pointer active:scale-98";
       article.innerHTML = `
-        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
-        <div class="absolute right-3 bottom-2 text-white/[0.07] pointer-events-none select-none">
-          <span class="material-symbols-outlined text-[90px]">${event.icon || "menu_book"}</span>
+        <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/10 blur-lg pointer-events-none"></div>
+        <div class="absolute right-2.5 bottom-1 text-white/[0.07] pointer-events-none select-none">
+          <span class="material-symbols-outlined text-[80px]">${event.icon || "menu_book"}</span>
         </div>
-        <div class="space-y-3 z-10">
+        <div class="space-y-2.5 z-10">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/25 shadow-inner">
-              <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              <span class="text-white text-label-sm font-extrabold tracking-tight">${event.dday || "D-Day"}</span>
-              ${!isStudent ? `<span class="text-[10px] text-white/80 font-bold ml-1">· 준비 ${pct}%</span>` : ''}
+            <div class="flex items-center gap-1 bg-white/20 backdrop-blur-md px-2.5 py-0.8 rounded-full border border-white/25 shadow-inner">
+              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+              <span class="text-white text-[11px] font-extrabold tracking-tight">${event.dday || "D-Day"}</span>
+              ${!isStudent ? `<span class="text-[9.5px] text-white/80 font-bold ml-0.5">· 준비 ${pct}%</span>` : ''}
             </div>
-            <span class="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-md text-white flex items-center justify-center border border-white/20">
-              <span class="material-symbols-outlined text-[19px]">${event.icon || "menu_book"}</span>
+            <span class="w-7 h-7 rounded-lg bg-white/15 backdrop-blur-md text-white flex items-center justify-center border border-white/20">
+              <span class="material-symbols-outlined text-[17px]">${event.icon || "menu_book"}</span>
             </span>
           </div>
           <div>
-            <span class="text-[11px] font-semibold text-white/75 tracking-wider uppercase">${event.tag || "Special Event"}</span>
-            <h3 class="text-headline-md font-bold text-white tracking-tight mt-0.5">${event.title}</h3>
-            <p class="text-body-sm font-body-sm text-white/85 mt-0.5 line-clamp-1">${event.subTitle || ""}</p>
+            <span class="text-[10px] font-semibold text-white/75 tracking-wider uppercase">${event.tag || "Special Event"}</span>
+            <h3 class="text-[15.5px] font-extrabold text-white tracking-tight mt-0.5">${event.title}</h3>
+            <p class="text-[11.5px] text-white/85 mt-0.5 line-clamp-1">${event.subTitle || ""}</p>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-white/15 z-10 space-y-1.5 text-[12px]">
-          <div class="flex items-center gap-2 text-white font-semibold">
-            <div class="w-5 h-5 rounded-md bg-white/20 flex items-center justify-center">
-              <span class="material-symbols-outlined text-[13px] text-white">event</span>
+        <div class="mt-3 pt-2.5 border-t border-white/15 z-10 space-y-1 text-[11.5px]">
+          <div class="flex items-center gap-1.5 text-white font-semibold whitespace-nowrap">
+            <div class="w-4.5 h-4.5 rounded-md bg-white/20 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[12px] text-white">event</span>
             </div>
-            <span>${event.date || ""}</span>
+            <span class="truncate">${event.date || ""}</span>
           </div>
-          <div class="flex items-center gap-2 text-white/80 font-medium">
-            <div class="w-5 h-5 rounded-md bg-white/10 flex items-center justify-center">
-              <span class="material-symbols-outlined text-[13px] text-white/80">location_on</span>
+          <div class="flex items-center gap-1.5 text-white/80 font-medium whitespace-nowrap">
+            <div class="w-4.5 h-4.5 rounded-md bg-white/10 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[12px] text-white/80">location_on</span>
             </div>
-            <span>${event.location || "이룸교회"}</span>
+            <span class="truncate">${event.location || "이룸교회"}</span>
           </div>
         </div>
       `;
     } else if (event.theme === "butter") {
       // Warm Butter Card
-      article.className = "flex-shrink-0 w-[245px] snap-start bg-surface-card rounded-3xl p-4 border border-outline-variant/30 shadow-[0_8px_24px_rgba(60,50,40,0.06)] flex flex-col justify-between relative overflow-hidden group hover:border-accent-butter-text/50 transition-all cursor-pointer active:scale-98";
+      article.className = "flex-shrink-0 w-[265px] snap-start bg-surface-card rounded-2xl p-3.5 border border-outline-variant/30 shadow-[0_6px_20px_rgba(60,50,40,0.05)] flex flex-col justify-between relative overflow-hidden group hover:border-accent-butter-text/50 transition-all cursor-pointer active:scale-98";
       article.innerHTML = `
         <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-accent-butter/80 -z-0 pointer-events-none"></div>
-        <div class="space-y-3 z-10">
+        <div class="space-y-2.5 z-10">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <span class="px-2.5 py-1 rounded-full bg-accent-butter text-accent-butter-text text-label-sm font-bold tracking-tight border border-accent-butter-text/20">
+            <div class="flex items-center gap-1">
+              <span class="px-2.5 py-0.8 rounded-full bg-accent-butter text-accent-butter-text text-[11px] font-extrabold tracking-tight border border-accent-butter-text/20">
                 ${event.dday || "D-Day"}
               </span>
-              ${!isStudent ? `<span class="text-[10.5px] font-bold text-accent-butter-text bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/50">준비 ${pct}%</span>` : ''}
+              ${!isStudent ? `<span class="text-[9.5px] font-bold text-accent-butter-text bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200/50">준비 ${pct}%</span>` : ''}
             </div>
-            <span class="w-8 h-8 rounded-xl bg-amber-50 text-accent-butter-text flex items-center justify-center border border-amber-200/50">
-              <span class="material-symbols-outlined text-[19px]">${event.icon || "cake"}</span>
+            <span class="w-7 h-7 rounded-lg bg-amber-50 text-accent-butter-text flex items-center justify-center border border-amber-200/50">
+              <span class="material-symbols-outlined text-[17px]">${event.icon || "cake"}</span>
             </span>
           </div>
           <div>
-            <span class="text-[11px] font-semibold text-accent-butter-text tracking-wider uppercase">${event.tag || "Blessing"}</span>
-            <h3 class="text-headline-sm font-bold text-text-primary group-hover:text-accent-butter-text transition-colors">${event.title}</h3>
-            <p class="text-body-sm font-body-sm text-text-muted mt-0.5">${event.subTitle || ""}</p>
+            <span class="text-[10px] font-semibold text-accent-butter-text tracking-wider uppercase">${event.tag || "Blessing"}</span>
+            <h3 class="text-[15.5px] font-extrabold text-text-primary group-hover:text-accent-butter-text transition-colors">${event.title}</h3>
+            <p class="text-[11.5px] text-text-muted mt-0.5 line-clamp-1">${event.subTitle || ""}</p>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-surface-container z-10 space-y-1.5 text-[12px]">
-          <div class="flex items-center gap-2 font-semibold text-text-secondary">
-            <span class="material-symbols-outlined text-[15px] text-accent-butter-text">event</span>
-            <span>${event.date || ""}</span>
+        <div class="mt-3 pt-2.5 border-t border-surface-container z-10 space-y-1 text-[11.5px]">
+          <div class="flex items-center gap-1.5 font-semibold text-text-secondary whitespace-nowrap">
+            <span class="material-symbols-outlined text-[14px] text-accent-butter-text shrink-0">event</span>
+            <span class="truncate">${event.date || ""}</span>
           </div>
-          <div class="flex items-center gap-2 text-text-muted font-medium">
-            <span class="material-symbols-outlined text-[15px]">location_on</span>
-            <span>${event.location || "이룸교회"}</span>
+          <div class="flex items-center gap-1.5 text-text-muted font-medium whitespace-nowrap">
+            <span class="material-symbols-outlined text-[14px] shrink-0">location_on</span>
+            <span class="truncate">${event.location || "이룸교회"}</span>
           </div>
         </div>
       `;
     } else {
       // Sage Green or Default Card
-      article.className = "flex-shrink-0 w-[245px] snap-start bg-surface-card rounded-3xl p-4 border border-outline-variant/30 shadow-[0_8px_24px_rgba(60,50,40,0.06)] flex flex-col justify-between relative overflow-hidden group hover:border-secondary/50 transition-all cursor-pointer active:scale-98";
+      article.className = "flex-shrink-0 w-[265px] snap-start bg-surface-card rounded-2xl p-3.5 border border-outline-variant/30 shadow-[0_6px_20px_rgba(60,50,40,0.05)] flex flex-col justify-between relative overflow-hidden group hover:border-secondary/50 transition-all cursor-pointer active:scale-98";
       article.innerHTML = `
         <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-secondary/8 -z-0 pointer-events-none"></div>
-        <div class="space-y-3 z-10">
+        <div class="space-y-2.5 z-10">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <span class="px-2.5 py-1 rounded-full bg-badge-sage-bg text-badge-sage-text text-label-sm font-bold tracking-tight border border-secondary/20">
+            <div class="flex items-center gap-1">
+              <span class="px-2.5 py-0.8 rounded-full bg-badge-sage-bg text-badge-sage-text text-[11px] font-extrabold tracking-tight border border-secondary/20">
                 ${event.dday || "D-Day"}
               </span>
-              ${!isStudent ? `<span class="text-[10.5px] font-bold text-secondary bg-emerald-50 px-2 py-0.5 rounded-full border border-secondary/20">준비 ${pct}%</span>` : ''}
+              ${!isStudent ? `<span class="text-[9.5px] font-bold text-secondary bg-emerald-50 px-1.5 py-0.5 rounded-full border border-secondary/20">준비 ${pct}%</span>` : ''}
             </div>
-            <span class="w-8 h-8 rounded-xl bg-badge-sage-bg text-secondary flex items-center justify-center border border-secondary/20">
-              <span class="material-symbols-outlined text-[19px]">${event.icon || "volunteer_activism"}</span>
+            <span class="w-7 h-7 rounded-lg bg-badge-sage-bg text-secondary flex items-center justify-center border border-secondary/20">
+              <span class="material-symbols-outlined text-[17px]">${event.icon || "volunteer_activism"}</span>
             </span>
           </div>
           <div>
-            <span class="text-[11px] font-semibold text-secondary tracking-wider uppercase">${event.tag || "Open Sunday"}</span>
-            <h3 class="text-headline-sm font-bold text-text-primary group-hover:text-secondary transition-colors">${event.title}</h3>
-            <p class="text-body-sm font-body-sm text-text-muted mt-0.5">${event.subTitle || ""}</p>
+            <span class="text-[10px] font-semibold text-secondary tracking-wider uppercase">${event.tag || "Open Sunday"}</span>
+            <h3 class="text-[15.5px] font-extrabold text-text-primary group-hover:text-secondary transition-colors">${event.title}</h3>
+            <p class="text-[11.5px] text-text-muted mt-0.5 line-clamp-1">${event.subTitle || ""}</p>
           </div>
         </div>
-        <div class="mt-4 pt-3 border-t border-surface-container z-10 space-y-1.5 text-[12px]">
-          <div class="flex items-center gap-2 font-semibold text-text-secondary">
-            <span class="material-symbols-outlined text-[15px] text-secondary">event</span>
-            <span>${event.date || ""}</span>
+        <div class="mt-3 pt-2.5 border-t border-surface-container z-10 space-y-1 text-[11.5px]">
+          <div class="flex items-center gap-1.5 font-semibold text-text-secondary whitespace-nowrap">
+            <span class="material-symbols-outlined text-[14px] text-secondary shrink-0">event</span>
+            <span class="truncate">${event.date || ""}</span>
           </div>
-          <div class="flex items-center gap-2 text-text-muted font-medium">
-            <span class="material-symbols-outlined text-[15px]">location_on</span>
-            <span>${event.location || "이룸교회"}</span>
+          <div class="flex items-center gap-1.5 text-text-muted font-medium whitespace-nowrap">
+            <span class="material-symbols-outlined text-[14px] shrink-0">location_on</span>
+            <span class="truncate">${event.location || "이룸교회"}</span>
           </div>
         </div>
       `;
