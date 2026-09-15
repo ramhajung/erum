@@ -216,6 +216,86 @@ const INITIAL_DATA = {
       isCurrent: false
     }
   ],
+  teacherPrayers: [
+    {
+      id: "tp_1",
+      name: "정하람 전도사",
+      duty: "중고등부 총괄 사역 & 지도 교역자",
+      avatar: "🧑🏻‍💼",
+      badge: "지도 교역자",
+      badgeColor: "bg-amber-100 text-amber-900 border-amber-200/80",
+      phone: "010-1234-5678",
+      prayers: [
+        { id: "tp_1_1", text: "예랑 중고등부 모든 예배 가운데 성령님의 임재가 충만하고, 모든 학생과 선생님이 하나님을 깊이 인격적으로 만나는 은혜의 해가 되도록" },
+        { id: "tp_1_2", text: "말씀을 선포할 때 성령의 지혜와 능력을 주시고, 상처 입은 아이들의 마음을 주님의 긍휼과 사랑으로 보듬을 수 있도록" }
+      ]
+    },
+    {
+      id: "tp_2",
+      name: "김대한 선생님",
+      duty: "고3 담임 / 방송실 자막 & 미디어",
+      avatar: "🧑🏻‍🏫",
+      badge: "고3반 담임",
+      badgeColor: "bg-orange-100 text-orange-900 border-orange-200/80",
+      phone: "010-3456-7890",
+      prayers: [
+        { id: "tp_2_1", text: "수능과 입시를 앞둔 고3 아이들이 불안해하지 않고 하나님의 선하신 인도하심을 신뢰하는 믿음의 사람이 되도록" },
+        { id: "tp_2_2", text: "지치지 않는 영육간의 강건함을 주시고, 미디어와 방송실 사역을 통해 예배에 은혜의 통로로 쓰임받도록" }
+      ]
+    },
+    {
+      id: "tp_3",
+      name: "이은혜 선생님",
+      duty: "고2 담임 / 예배 안내팀 지도",
+      avatar: "👩🏻‍🏫",
+      badge: "고2반 담임",
+      badgeColor: "bg-sky-100 text-sky-900 border-sky-200/80",
+      phone: "010-7788-9900",
+      prayers: [
+        { id: "tp_3_1", text: "고2 아이들이 학업과 신앙의 균형을 잘 지키고, 예배의 참된 기쁨과 하나님 나라의 비전을 발견하도록" },
+        { id: "tp_3_2", text: "예배 안내 사역을 통해 교회에 오는 모든 아이들이 따뜻한 사랑과 환영을 경험하도록" }
+      ]
+    },
+    {
+      id: "tp_4",
+      name: "박진우 선생님",
+      duty: "중등부 담임 / 새친구 사역 멘토",
+      avatar: "🧑🏻‍🏫",
+      badge: "중등부 담임",
+      badgeColor: "bg-teal-100 text-teal-900 border-teal-200/80",
+      phone: "010-8899-0011",
+      prayers: [
+        { id: "tp_4_1", text: "사춘기를 지나는 중등부 아이들이 마음 문을 활짝 열고 주님 안에서 참된 평안과 지혜를 얻도록" },
+        { id: "tp_4_2", text: "아이들과 소통할 때 따뜻한 공감과 지혜를 주시고, 서로 사랑하고 아껴주는 분반 공동체가 되도록" }
+      ]
+    },
+    {
+      id: "tp_5",
+      name: "소예진 선생님",
+      duty: "새친구반 전담 담임 / 찬양팀 멘토",
+      avatar: "👩🏻‍🏫",
+      badge: "새친구반 담임",
+      badgeColor: "bg-emerald-100 text-emerald-900 border-emerald-200/80",
+      phone: "010-4567-8901",
+      prayers: [
+        { id: "tp_5_1", text: "새로 온 친구들이 낯설어하지 않고 교회 공동체에 잘 정착하며, 복음의 씨앗이 믿음으로 싹트도록" },
+        { id: "tp_5_2", text: "찬양팀 세션과 싱어 친구들이 기교보다 먼저 하나님을 온전히 경배하는 신실한 예배자로 자라가도록" }
+      ]
+    },
+    {
+      id: "tp_6",
+      name: "나하은 선생님",
+      duty: "중고등부 회계 & 재정 장부 결산",
+      avatar: "💼",
+      badge: "부서 회계",
+      badgeColor: "bg-purple-100 text-purple-900 border-purple-200/80",
+      phone: "010-2345-6789",
+      prayers: [
+        { id: "tp_6_1", text: "부서에 맡겨진 귀한 헌금과 재정이 다음 세대 영혼을 살리는 일에 투명하고 지혜롭게 사용되도록" },
+        { id: "tp_6_2", text: "중고등부를 위해 수고하시는 모든 선생님들의 가정과 삶에 하나님의 평강과 풍성한 복이 넘치도록" }
+      ]
+    }
+  ],
   currentSelectedClassId: "class_high3",
   gradeClasses: [
     {
@@ -1223,6 +1303,9 @@ function loadState() {
       }
       if (!parsed.notices || !Array.isArray(parsed.notices) || parsed.notices.length === 0) {
         parsed.notices = JSON.parse(JSON.stringify(INITIAL_DATA.notices));
+      }
+      if (!parsed.teacherPrayers || !Array.isArray(parsed.teacherPrayers) || parsed.teacherPrayers.length === 0) {
+        parsed.teacherPrayers = JSON.parse(JSON.stringify(INITIAL_DATA.teacherPrayers));
       }
       if (!parsed.attendanceHistory || !Array.isArray(parsed.attendanceHistory) || parsed.attendanceHistory.length === 0) {
         parsed.attendanceHistory = JSON.parse(JSON.stringify(INITIAL_DATA.attendanceHistory));
@@ -3276,50 +3359,205 @@ function renderHomePrayersSection() {
   }).join('');
 }
 
+function getTeacherPrayers() {
+  if (appState && Array.isArray(appState.teacherPrayers) && appState.teacherPrayers.length > 0) {
+    return appState.teacherPrayers;
+  }
+  return INITIAL_DATA.teacherPrayers || [];
+}
+
+function canEditTeacherPrayer(teacher) {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : (appState ? appState.user : null);
+  if (!currentUser) return false;
+  if (currentUser.role === "pastor" || currentUser.isAdmin) return true;
+  if (currentUser.name && teacher.name && currentUser.name.trim() === teacher.name.trim()) return true;
+  if (currentUser.id && teacher.id && currentUser.id === teacher.id) return true;
+  return false;
+}
+
+let currentAllPrayersCategory = "all"; // "all" | "student" | "teacher"
+let currentAllPrayersStudentGrade = "all"; // "all" | "고3" | "고2" | "중등부" | "새친구"
+
 function openAllPrayersModal() {
-  filterAllPrayersModal(currentAllPrayersFilter || "all");
+  filterAllPrayersModal(currentAllPrayersCategory || "all", currentAllPrayersStudentGrade || "all");
   openModal("allPrayersModal");
   const listContainer = document.getElementById("allPrayersModalListContainer");
   if (listContainer) listContainer.scrollTop = 0;
 }
 
-function filterAllPrayersModal(grade = "all") {
-  currentAllPrayersFilter = grade;
+function filterAllPrayersModal(category = "all", studentGrade = null) {
+  if (category) currentAllPrayersCategory = category;
+  if (studentGrade !== null) currentAllPrayersStudentGrade = studentGrade;
 
-  // Filter chips active styling
+  // 1. Update 3-Segment Category Tab Styling
   document.querySelectorAll("#allPrayersFilterBar .all-prayers-filter-chip").forEach(chip => {
-    const g = chip.dataset.grade;
-    if (g === grade) {
-      chip.className = "all-prayers-filter-chip active text-[12px] font-extrabold px-3 py-1 rounded-full bg-primary text-white border border-primary transition-all shadow-xs cursor-pointer";
+    const cat = chip.dataset.category;
+    if (cat === currentAllPrayersCategory) {
+      chip.className = "all-prayers-filter-chip active py-1.5 rounded-xl text-[12.5px] font-extrabold bg-primary text-white border border-primary transition-all shadow-xs cursor-pointer text-center";
     } else {
-      chip.className = "all-prayers-filter-chip text-[12px] font-extrabold px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer";
+      chip.className = "all-prayers-filter-chip py-1.5 rounded-xl text-[12.5px] font-extrabold bg-transparent text-stone-600 border border-transparent hover:bg-white/60 transition-all cursor-pointer text-center";
     }
   });
+
+  // 2. Toggle Student Grade Sub-Filter Bar
+  const subFilterEl = document.getElementById("allPrayersStudentSubFilter");
+  if (subFilterEl) {
+    if (currentAllPrayersCategory === "student") {
+      subFilterEl.classList.remove("hidden");
+      document.querySelectorAll("#allPrayersStudentSubFilter .all-prayers-sub-chip").forEach(chip => {
+        const g = chip.dataset.grade;
+        if (g === currentAllPrayersStudentGrade) {
+          chip.className = "all-prayers-sub-chip active text-[11px] font-extrabold px-2.5 py-0.8 rounded-full bg-stone-800 text-white border border-stone-800 transition-all cursor-pointer";
+        } else {
+          chip.className = "all-prayers-sub-chip text-[11px] font-extrabold px-2.5 py-0.8 rounded-full bg-stone-100 text-stone-600 border border-stone-200/80 hover:bg-stone-200/60 transition-all cursor-pointer";
+        }
+      });
+    } else {
+      subFilterEl.classList.add("hidden");
+    }
+  }
 
   const listContainer = document.getElementById("allPrayersModalListContainer");
   if (!listContainer) return;
 
   const allStudents = getAllStudentsRoster();
   const studentsWithPrayers = allStudents.filter(s => s.prayers && s.prayers.length > 0);
+  const teacherPrayers = getTeacherPrayers();
 
-  const filtered = grade === "all"
-    ? studentsWithPrayers
-    : studentsWithPrayers.filter(s => {
-        if (grade === "새친구") return s.isNewcomer || (s.className && s.className.includes("새친구"));
-        return (s.className && s.className.includes(grade)) || (s.grade && s.grade.includes(grade));
-      });
+  let html = "";
 
-  if (filtered.length === 0) {
-    listContainer.innerHTML = `
-      <div class="py-12 text-center text-stone-400 bg-stone-50 rounded-2xl border border-stone-200/60">
-        <span class="text-2xl block mb-1">🙏</span>
-        <p class="text-xs font-bold text-stone-600">해당 학년에 등록된 기도제목이 없습니다.</p>
+  if (currentAllPrayersCategory === "teacher") {
+    html = `
+      <div class="space-y-2.5 pt-1">
+        <div class="flex items-center justify-between pb-1 px-1">
+          <span class="text-xs font-black text-stone-800">🧑🏻‍🏫 선생님 & 교역자 기도제목 (${teacherPrayers.length}명)</span>
+          <span class="text-[11px] font-semibold text-stone-400">우리 선생님들을 축복하며 기도해요 🙏</span>
+        </div>
+        ${renderTeacherPrayersCards(teacherPrayers)}
       </div>
     `;
-    return;
+  } else if (currentAllPrayersCategory === "student") {
+    const filtered = currentAllPrayersStudentGrade === "all"
+      ? studentsWithPrayers
+      : studentsWithPrayers.filter(s => {
+          if (currentAllPrayersStudentGrade === "새친구") return s.isNewcomer || (s.className && s.className.includes("새친구"));
+          return (s.className && s.className.includes(currentAllPrayersStudentGrade)) || (s.grade && s.grade.includes(currentAllPrayersStudentGrade));
+        });
+    html = `
+      <div class="space-y-2.5 pt-1">
+        <div class="flex items-center justify-between pb-1 px-1">
+          <span class="text-xs font-black text-stone-800">🧑🏻‍🎓 예랑 학생부 기도제목 (${filtered.length}명)</span>
+          <span class="text-[11px] font-semibold text-stone-400">한마음으로 함께하는 기도</span>
+        </div>
+        ${renderStudentPrayersCards(filtered)}
+      </div>
+    `;
+  } else {
+    // "all": Both Teachers and Students
+    html = `
+      <div class="space-y-3 pt-1">
+        <!-- Teachers Section -->
+        <div class="flex items-center justify-between pt-0.5 pb-0.5 px-1">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[12.5px] font-black text-stone-800">🧑🏻‍🏫 선생님 & 교역자 기도제목</span>
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200/80">${teacherPrayers.length}명</span>
+          </div>
+          <span class="text-[11px] font-semibold text-amber-800/80">선생님을 축복해요 🙏</span>
+        </div>
+        <div class="space-y-2.5">
+          ${renderTeacherPrayersCards(teacherPrayers)}
+        </div>
+
+        <!-- Students Section -->
+        <div class="flex items-center justify-between pt-4 pb-0.5 px-1 border-t border-stone-100 mt-5">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[12.5px] font-black text-stone-800">🧑🏻‍🎓 학생부 기도제목</span>
+            <span class="text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-orange-100 text-orange-900 border border-orange-200/80">${studentsWithPrayers.length}명</span>
+          </div>
+          <span class="text-[11px] font-semibold text-stone-400">선생님과 함께하는 기도</span>
+        </div>
+        <div class="space-y-2.5">
+          ${renderStudentPrayersCards(studentsWithPrayers)}
+        </div>
+      </div>
+    `;
   }
 
-  listContainer.innerHTML = filtered.map(s => {
+  listContainer.innerHTML = html;
+}
+
+function filterStudentSubGrade(grade) {
+  filterAllPrayersModal("student", grade);
+}
+
+function renderTeacherPrayersCards(teachers) {
+  if (!teachers || teachers.length === 0) {
+    return `
+      <div class="py-10 text-center text-stone-400 bg-stone-50 rounded-2xl border border-stone-200/60">
+        <span class="text-2xl block mb-1">🙏</span>
+        <p class="text-xs font-bold text-stone-600">등록된 선생님 기도제목이 없습니다.</p>
+      </div>
+    `;
+  }
+
+  return teachers.map(t => {
+    const canEdit = canEditTeacherPrayer(t);
+    return `
+      <div class="bg-white rounded-2xl p-3.5 border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-all">
+        <!-- Top Row: Avatar, Name, Badge, Duty, Edit btn -->
+        <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-stone-100">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/70 flex items-center justify-center text-xl flex-shrink-0 shadow-2xs">
+              ${t.avatar || '🧑🏻‍🏫'}
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[14px] font-black text-stone-900">${t.name}</span>
+                <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded-md ${t.badgeColor || 'bg-amber-100 text-amber-900 border border-amber-200'}">
+                  ${t.badge || '선생님'}
+                </span>
+              </div>
+              <div class="text-[11px] font-medium text-stone-500 truncate">${t.duty || '중고등부 교사'} · ${(t.prayers || []).length}개 기도제목</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            ${canEdit ? `
+              <button type="button" onclick="openEditTeacherPrayerModal('${t.id}')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-lg text-[11px] font-extrabold cursor-pointer transition-colors flex items-center gap-1">
+                <span>✏️</span> <span>수정</span>
+              </button>
+            ` : `
+              <button type="button" onclick="cheerPrayerForTeacher('${t.name}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-700 border border-rose-200/70 rounded-lg text-[11px] font-extrabold cursor-pointer transition-all flex items-center gap-1">
+                <span>🙏</span> <span>함께 기도해요</span>
+              </button>
+            `}
+          </div>
+        </div>
+
+        <!-- Prayers List -->
+        <div class="space-y-1.5 pt-2.5">
+          ${(t.prayers || []).map(p => `
+            <div class="flex items-start gap-2 bg-amber-50/40 rounded-xl p-2.5 border border-amber-100/70 text-xs text-stone-800 font-medium leading-relaxed">
+              <span class="text-rose-500 text-xs flex-shrink-0 mt-0.5">♥</span>
+              <span class="flex-1">${p.text}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderStudentPrayersCards(students) {
+  if (!students || students.length === 0) {
+    return `
+      <div class="py-10 text-center text-stone-400 bg-stone-50 rounded-2xl border border-stone-200/60">
+        <span class="text-2xl block mb-1">🙏</span>
+        <p class="text-xs font-bold text-stone-600">해당 조건에 등록된 학생 기도제목이 없습니다.</p>
+      </div>
+    `;
+  }
+
+  return students.map(s => {
     const canEdit = canEditStudentPrayer(s);
     return `
       <div class="bg-white rounded-2xl p-3.5 border border-stone-200/80 shadow-2xs hover:border-orange-300 transition-all">
@@ -3363,6 +3601,104 @@ function filterAllPrayersModal(grade = "all") {
       </div>
     `;
   }).join('');
+}
+
+function cheerPrayerForTeacher(teacherName) {
+  showToast(`🙏 ${teacherName}을 위해 한마음으로 함께 기도했습니다! 은혜 가득한 하루 되세요 ✨`, "success");
+}
+
+let editingTeacherPrayerData = {
+  teacherId: null,
+  prayers: []
+};
+
+function openEditTeacherPrayerModal(teacherId) {
+  const teachers = getTeacherPrayers();
+  const targetTeacher = teachers.find(t => t.id === teacherId);
+  if (!targetTeacher) return;
+
+  editingTeacherPrayerData = {
+    teacherId: targetTeacher.id,
+    prayers: JSON.parse(JSON.stringify(targetTeacher.prayers || []))
+  };
+
+  const nameEl = document.getElementById("editTeacherModalName");
+  const badgeEl = document.getElementById("editTeacherModalBadge");
+  const dutyEl = document.getElementById("editTeacherModalDuty");
+  const inputEl = document.getElementById("newTeacherPrayerTextInput");
+
+  if (nameEl) nameEl.textContent = targetTeacher.name;
+  if (badgeEl) badgeEl.textContent = targetTeacher.badge || "선생님 기도제목";
+  if (dutyEl) dutyEl.textContent = targetTeacher.duty || "";
+  if (inputEl) inputEl.value = "";
+
+  renderEditTeacherPrayerItems();
+  openModal("editTeacherPrayerModal");
+}
+
+function renderEditTeacherPrayerItems() {
+  const container = document.getElementById("editTeacherPrayerItemsContainer");
+  if (!container) return;
+
+  if (editingTeacherPrayerData.prayers.length === 0) {
+    container.innerHTML = `
+      <div class="py-6 text-center text-xs text-stone-400 bg-stone-50 rounded-xl border border-dashed border-stone-200">
+        등록된 기도제목이 없습니다. 아래 입력창에서 추가해 주세요.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = editingTeacherPrayerData.prayers.map((p, idx) => `
+    <div class="flex items-center gap-2 bg-stone-50 p-2 rounded-xl border border-stone-200/80">
+      <span class="text-rose-500 text-xs flex-shrink-0">♥</span>
+      <input type="text" value="${p.text.replace(/"/g, '&quot;')}" class="flex-1 bg-transparent text-xs text-stone-800 font-medium focus:outline-none border-b border-transparent focus:border-amber-500 py-1" oninput="updateTempTeacherPrayerItem(${idx}, this)">
+      <button type="button" onclick="deleteTempTeacherPrayerItem(${idx})" class="w-6 h-6 rounded-full hover:bg-rose-100 text-stone-400 hover:text-rose-600 flex items-center justify-center text-xs transition-colors flex-shrink-0 cursor-pointer" title="삭제">
+        ✕
+      </button>
+    </div>
+  `).join('');
+}
+
+function updateTempTeacherPrayerItem(idx, inp) {
+  if (editingTeacherPrayerData.prayers[idx]) {
+    editingTeacherPrayerData.prayers[idx].text = inp.value;
+  }
+}
+
+function deleteTempTeacherPrayerItem(idx) {
+  editingTeacherPrayerData.prayers.splice(idx, 1);
+  renderEditTeacherPrayerItems();
+}
+
+function addNewTeacherPrayerItem() {
+  const inp = document.getElementById("newTeacherPrayerTextInput");
+  if (!inp || !inp.value.trim()) {
+    showToast("새 기도제목 내용을 입력해 주세요.", "warn");
+    return;
+  }
+  editingTeacherPrayerData.prayers.push({
+    id: `tp_${Date.now()}`,
+    text: inp.value.trim()
+  });
+  inp.value = "";
+  renderEditTeacherPrayerItems();
+}
+
+function saveTeacherPrayers() {
+  const teachers = getTeacherPrayers();
+  const targetTeacher = teachers.find(t => t.id === editingTeacherPrayerData.teacherId);
+  if (!targetTeacher) return;
+
+  const valid = editingTeacherPrayerData.prayers.filter(p => p.text && p.text.trim().length > 0);
+  targetTeacher.prayers = valid;
+
+  if (!appState.teacherPrayers) appState.teacherPrayers = teachers;
+  saveState();
+
+  closeModal("editTeacherPrayerModal");
+  filterAllPrayersModal(currentAllPrayersCategory);
+  showToast(`🎉 ${targetTeacher.name}의 기도제목이 성공적으로 저장되었습니다! ✨`, "success");
 }
 
 function initStudentEvents() {
@@ -3426,6 +3762,25 @@ function initStudentEvents() {
       }
     });
   }
+
+  // Teacher prayer management modal events
+  const addTeacherPrayerBtn = document.getElementById("addNewTeacherPrayerItemBtn");
+  if (addTeacherPrayerBtn) {
+    addTeacherPrayerBtn.addEventListener("click", addNewTeacherPrayerItem);
+  }
+  const saveTeacherPrayersBtn = document.getElementById("saveTeacherPrayersBtn");
+  if (saveTeacherPrayersBtn) {
+    saveTeacherPrayersBtn.addEventListener("click", saveTeacherPrayers);
+  }
+  const newTeacherPrayerInp = document.getElementById("newTeacherPrayerTextInput");
+  if (newTeacherPrayerInp) {
+    newTeacherPrayerInp.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addNewTeacherPrayerItem();
+      }
+    });
+  }
 }
 
 window.openStudentDetailModal = openStudentDetailModal;
@@ -3438,6 +3793,14 @@ window.saveStudentPrayers = saveStudentPrayers;
 window.renderHomePrayersSection = renderHomePrayersSection;
 window.openAllPrayersModal = openAllPrayersModal;
 window.filterAllPrayersModal = filterAllPrayersModal;
+window.filterStudentSubGrade = filterStudentSubGrade;
+window.openEditTeacherPrayerModal = openEditTeacherPrayerModal;
+window.updateTempTeacherPrayerItem = updateTempTeacherPrayerItem;
+window.deleteTempTeacherPrayerItem = deleteTempTeacherPrayerItem;
+window.addNewTeacherPrayerItem = addNewTeacherPrayerItem;
+window.saveTeacherPrayers = saveTeacherPrayers;
+window.cheerPrayerForTeacher = cheerPrayerForTeacher;
+window.getTeacherPrayers = getTeacherPrayers;
 window.makePhoneCall = makePhoneCall;
 window.sendKakaoMessage = sendKakaoMessage;
 window.incrementPrayerCount = incrementPrayerCount;

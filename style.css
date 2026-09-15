@@ -1778,6 +1778,7 @@ button:active, .btn:active, .interactive-card:active {
 #allPrayersModal .bottom-sheet,
 #friendPrayerSheetModal .bottom-sheet,
 #editStudentPrayerModal .bottom-sheet,
+#editTeacherPrayerModal .bottom-sheet,
 #noticesHistoryModal .bottom-sheet {
   display: flex !important;
   flex-direction: column !important;
@@ -1845,6 +1846,7 @@ button:active, .btn:active, .interactive-card:active {
 #allPrayersModal .sheet-close-btn,
 #friendPrayerSheetModal .sheet-close-btn,
 #editStudentPrayerModal .sheet-close-btn,
+#editTeacherPrayerModal .sheet-close-btn,
 #noticesHistoryModal .sheet-close-btn {
   display: flex !important;
   width: 30px;
@@ -1866,6 +1868,7 @@ button:active, .btn:active, .interactive-card:active {
 #allPrayersModal .sheet-close-btn:hover,
 #friendPrayerSheetModal .sheet-close-btn:hover,
 #editStudentPrayerModal .sheet-close-btn:hover,
+#editTeacherPrayerModal .sheet-close-btn:hover,
 #noticesHistoryModal .sheet-close-btn:hover {
   background: #e7e2dc;
   color: #292524;
@@ -1875,6 +1878,7 @@ button:active, .btn:active, .interactive-card:active {
 #allPrayersModal .sheet-close-btn:active,
 #friendPrayerSheetModal .sheet-close-btn:active,
 #editStudentPrayerModal .sheet-close-btn:active,
+#editTeacherPrayerModal .sheet-close-btn:active,
 #noticesHistoryModal .sheet-close-btn:active {
   transform: scale(0.92);
 }
