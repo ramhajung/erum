@@ -7311,6 +7311,7 @@ function renderUserManagerSection(filterCategory = "ALL") {
           <div class="user-mgmt-name" style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
             <span>${user.name}</span>
             ${pendingBadge}
+            ${user.resetRequested ? '<span style="font-size:10.5px; background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:2px 7px; border-radius:6px; font-weight:800; display:inline-flex; align-items:center; gap:3px;">⚠️ 비번 초기화 요청</span>' : ''}
             ${ROLE_BADGES[user.role] || ""}
             ${isCurrent ? '<span style="font-size:10px; background:#e8def8; color:#4a148c; padding:2px 6px; border-radius:4px; margin-left:2px;">현재 본인</span>' : ''}
           </div>
@@ -7321,13 +7322,18 @@ function renderUserManagerSection(filterCategory = "ALL") {
           </div>
         </div>
       </div>
-      <div style="display:flex; align-items:center; gap:6px; margin-top:8px;">
+      <div style="display:flex; align-items:center; gap:6px; margin-top:8px; flex-wrap:wrap;">
         ${user.isPending ? `
           <button type="button" class="approve-user-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:12px; font-weight:800; background:#10b981; color:white; border-radius:8px; border:none; cursor:pointer;">
             승인하기 ✓
           </button>
         ` : ''}
-        <select class="role-select-dropdown" data-user-id="${user.id}" style="flex:1;">
+        ${user.resetRequested ? `
+          <button type="button" class="reset-pwd-admin-btn" data-user-id="${user.id}" style="padding:6px 10px; font-size:11.5px; font-weight:800; background:#ea580c; color:white; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; gap:3px; white-space:nowrap;" title="비밀번호를 1234로 초기화">
+            🔑 1234 초기화
+          </button>
+        ` : ''}
+        <select class="role-select-dropdown" data-user-id="${user.id}" style="flex:1; min-width:130px;">
           <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사</option>
           <option value="deacon" ${user.role === "deacon" ? "selected" : ""}>👔 부장집사님</option>
           <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 선생님(회계)</option>
@@ -7352,6 +7358,20 @@ function renderUserManagerSection(filterCategory = "ALL") {
     if (approveBtn) {
       approveBtn.addEventListener("click", () => {
         approveUser(user.id);
+      });
+    }
+
+    // Reset password button event
+    const resetBtn = card.querySelector(".reset-pwd-admin-btn");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        if (confirm(`'${user.name}'님의 비밀번호를 기본 '1234'로 초기화하시겠습니까?`)) {
+          user.password = "1234";
+          user.resetRequested = false;
+          saveState();
+          showToast(`✅ '${user.name}'님의 비밀번호가 '1234'로 초기화되었습니다.`);
+          renderUserManagerSection();
+        }
       });
     }
 
@@ -7423,6 +7443,20 @@ function openEditUserModal(userId) {
   const bdayInput = document.getElementById("editUserBirthdayInput");
   if (bdayInput) bdayInput.value = user.birthday || "";
   document.getElementById("editUserPhoneInput").value = user.phone || "";
+
+  // Reset password in edit modal
+  const editResetBtn = document.getElementById("editUserResetPwBtn");
+  if (editResetBtn) {
+    editResetBtn.onclick = () => {
+      if (confirm(`'${user.name}'님의 비밀번호를 기본 '1234'로 초기화하시겠습니까?`)) {
+        user.password = "1234";
+        user.resetRequested = false;
+        saveState();
+        showToast(`✅ '${user.name}'님의 비밀번호가 '1234'로 초기화되었습니다.`);
+        renderUserManagerSection();
+      }
+    };
+  }
 
   openModal("editUserModal");
 }
@@ -10754,6 +10788,17 @@ function initCalendarEvents() {
 // 10-1. Authentication & Onboarding Gate Engine
 // =============================================================================
 
+function updateTempPasswordBanner() {
+  const tempBanner = document.getElementById("tempPasswordWarningBanner");
+  if (!tempBanner) return;
+  const user = getCurrentUser();
+  if (user && (user.password === "1234" || !user.password)) {
+    tempBanner.classList.remove("hidden");
+  } else {
+    tempBanner.classList.add("hidden");
+  }
+}
+
 function checkAuthState() {
   const authScreen = document.getElementById("authGateScreen");
   const mainShell = document.getElementById("mainAppShell");
@@ -10762,6 +10807,7 @@ function checkAuthState() {
   if (appState.isAuthenticated) {
     authScreen.classList.add("hidden-auth");
     mainShell.classList.remove("hidden-app");
+    updateTempPasswordBanner();
   } else {
     authScreen.classList.remove("hidden-auth");
     mainShell.classList.add("hidden-app");
@@ -10811,7 +10857,15 @@ function loginUser(userId) {
   if (authScreen) authScreen.classList.add("hidden-auth");
   if (mainShell) mainShell.classList.remove("hidden-app");
 
+  updateTempPasswordBanner();
+
   showToast(`✨ '${user.name}'님 환영합니다! (${ROLE_NAMES[user.role]})`);
+
+  if (user.password === "1234" || !user.password) {
+    setTimeout(() => {
+      showToast("🔑 현재 기본 비밀번호(1234)를 사용 중입니다. 프로필에서 새 비밀번호로 변경해주세요!", "warn", 5000);
+    }, 1200);
+  }
 }
 
 function logoutUser() {
@@ -10827,6 +10881,9 @@ function logoutUser() {
   const mainShell = document.getElementById("mainAppShell");
   if (authScreen) authScreen.classList.remove("hidden-auth");
   if (mainShell) mainShell.classList.add("hidden-app");
+
+  const tempBanner = document.getElementById("tempPasswordWarningBanner");
+  if (tempBanner) tempBanner.classList.add("hidden");
 
   populateLoginUserSelect();
   closeModal("userSwitchModal");
@@ -10923,8 +10980,9 @@ function initAuthScreen() {
         return;
       }
 
-      // Check password (accept password match or default '1234' / 'password')
-      if (user.password && user.password !== password && password !== "1234" && password !== "password") {
+      // Check password (must match user.password or default '1234')
+      const expectedPassword = user.password || "1234";
+      if (password !== expectedPassword) {
         showToast("⚠️ 비밀번호가 일치하지 않습니다.", "warn");
         return;
       }
@@ -11000,11 +11058,267 @@ function initAuthScreen() {
     });
   }
 
+  // Initialize Account Recovery (Find ID & Request Password Reset)
+  initFindAccountEvents();
+
+  // Initialize In-App Password Change
+  initChangePasswordEvents();
+
   // Logout button inside User Switcher Modal
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       logoutUser();
+    });
+  }
+}
+
+function initFindAccountEvents() {
+  const openBtn = document.getElementById("openFindAccountModalBtn");
+  const tabIdBtn = document.getElementById("findAccountTabIdBtn");
+  const tabPwBtn = document.getElementById("findAccountTabPwBtn");
+  const idPanel = document.getElementById("findAccountIdPanel");
+  const pwPanel = document.getElementById("findAccountPwPanel");
+  const idForm = document.getElementById("findAccountIdForm");
+  const pwForm = document.getElementById("requestResetPwForm");
+  const idResultBox = document.getElementById("findIdResultBox");
+  const pwResultBox = document.getElementById("resetPwResultBox");
+
+  const cleanPhone = (p) => (p || "").replace(/[^0-9]/g, "");
+
+  if (openBtn) {
+    openBtn.addEventListener("click", () => {
+      if (idForm) idForm.reset();
+      if (pwForm) pwForm.reset();
+      if (idResultBox) {
+        idResultBox.classList.add("hidden");
+        idResultBox.innerHTML = "";
+      }
+      if (pwResultBox) {
+        pwResultBox.classList.add("hidden");
+        pwResultBox.innerHTML = "";
+      }
+      // Default to tab 1 (아이디 찾기)
+      showIdTab();
+      openModal("findAccountModal");
+    });
+  }
+
+  function showIdTab() {
+    if (tabIdBtn) tabIdBtn.className = "py-2 text-[12.5px] font-extrabold rounded-lg transition-all bg-white text-primary shadow-xs";
+    if (tabPwBtn) tabPwBtn.className = "py-2 text-[12.5px] font-bold rounded-lg transition-all text-text-muted hover:text-text-primary";
+    if (idPanel) idPanel.classList.remove("hidden");
+    if (pwPanel) pwPanel.classList.add("hidden");
+  }
+
+  function showPwTab() {
+    if (tabPwBtn) tabPwBtn.className = "py-2 text-[12.5px] font-extrabold rounded-lg transition-all bg-white text-primary shadow-xs";
+    if (tabIdBtn) tabIdBtn.className = "py-2 text-[12.5px] font-bold rounded-lg transition-all text-text-muted hover:text-text-primary";
+    if (pwPanel) pwPanel.classList.remove("hidden");
+    if (idPanel) idPanel.classList.add("hidden");
+  }
+
+  if (tabIdBtn && tabPwBtn) {
+    tabIdBtn.addEventListener("click", showIdTab);
+    tabPwBtn.addEventListener("click", showPwTab);
+  }
+
+  // Find ID submission
+  if (idForm) {
+    idForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById("findIdNameInput");
+      const phoneInput = document.getElementById("findIdPhoneInput");
+
+      const nameVal = nameInput ? nameInput.value.trim() : "";
+      const phoneVal = phoneInput ? cleanPhone(phoneInput.value) : "";
+
+      if (!nameVal || !phoneVal) {
+        showToast("⚠️ 이름과 휴대폰 번호를 모두 입력해주세요.", "warn");
+        return;
+      }
+
+      const matched = appState.users.find(u => 
+        u.name && u.name.trim().toLowerCase() === nameVal.toLowerCase() &&
+        cleanPhone(u.phone) === phoneVal &&
+        phoneVal.length >= 8
+      );
+
+      if (!idResultBox) return;
+
+      if (matched) {
+        idResultBox.className = "mt-3 p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/80 text-emerald-950 text-[12.5px]";
+        idResultBox.innerHTML = `
+          <div class="flex items-center gap-1.5 font-extrabold text-[13px] text-emerald-800 mb-1">
+            <span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+            <span>일치하는 회원 계정을 찾았습니다!</span>
+          </div>
+          <div class="my-2 leading-relaxed bg-white/80 p-2.5 rounded-lg border border-emerald-100">
+            성함: <b>${matched.name}</b> (${ROLE_NAMES[matched.role] || matched.duty || ""})<br>
+            아이디(ID): <strong class="text-primary text-[14px] px-2 py-0.5 bg-primary/10 rounded font-mono font-black">${matched.username || matched.name}</strong>
+          </div>
+          <button type="button" id="useFoundIdBtn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 transition-all text-white rounded-xl text-[12px] font-extrabold shadow-sm flex items-center justify-center gap-1">
+            <span>이 아이디로 로그인하기</span>
+            <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+          </button>
+        `;
+        idResultBox.classList.remove("hidden");
+
+        const useBtn = document.getElementById("useFoundIdBtn");
+        if (useBtn) {
+          useBtn.addEventListener("click", () => {
+            const loginUsernameInput = document.getElementById("loginUsernameInput");
+            if (loginUsernameInput) {
+              loginUsernameInput.value = matched.username || matched.name;
+            }
+            closeModal("findAccountModal");
+            const loginPasswordInput = document.getElementById("loginPasswordInput");
+            if (loginPasswordInput) loginPasswordInput.focus();
+          });
+        }
+      } else {
+        idResultBox.className = "mt-3 p-3.5 rounded-xl border border-rose-200 bg-rose-50/80 text-rose-950 text-[12px]";
+        idResultBox.innerHTML = `
+          <div class="flex items-center gap-1 font-extrabold text-rose-800 mb-1">
+            <span class="material-symbols-outlined text-[17px]">error</span>
+            <span>일치하는 계정 정보를 찾을 수 없습니다</span>
+          </div>
+          <p class="leading-relaxed text-rose-900 text-[11.5px]">
+            입력하신 이름(<strong>${nameVal}</strong>)과 휴대폰 번호로 등록된 계정이 없습니다.<br>
+            오타가 없는지 확인하시거나 회원가입을 먼저 진행해주세요.
+          </p>
+        `;
+        idResultBox.classList.remove("hidden");
+      }
+    });
+  }
+
+  // Request Password Reset submission
+  if (pwForm) {
+    pwForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById("resetPwNameInput");
+      const phoneInput = document.getElementById("resetPwPhoneInput");
+
+      const nameVal = nameInput ? nameInput.value.trim() : "";
+      const phoneVal = phoneInput ? cleanPhone(phoneInput.value) : "";
+
+      if (!nameVal || !phoneVal) {
+        showToast("⚠️ 이름과 휴대폰 번호를 모두 입력해주세요.", "warn");
+        return;
+      }
+
+      const matched = appState.users.find(u => 
+        u.name && u.name.trim().toLowerCase() === nameVal.toLowerCase() &&
+        cleanPhone(u.phone) === phoneVal &&
+        phoneVal.length >= 8
+      );
+
+      if (!pwResultBox) return;
+
+      if (matched) {
+        matched.resetRequested = true;
+        matched.resetRequestedAt = new Date().toISOString();
+        saveState();
+
+        pwResultBox.className = "mt-3 p-3.5 rounded-xl border border-amber-300 bg-amber-50/90 text-amber-950 text-[12px]";
+        pwResultBox.innerHTML = `
+          <div class="flex items-center gap-1.5 font-extrabold text-[13px] text-amber-900 mb-1">
+            <span class="material-symbols-outlined text-[18px] text-amber-600">mark_email_read</span>
+            <span>전도사님께 초기화 요청이 전송되었습니다!</span>
+          </div>
+          <div class="my-2 leading-relaxed bg-white/80 p-2.5 rounded-lg border border-amber-200 text-[11.5px]">
+            성함: <b>${matched.name}</b> (아이디: <span class="font-bold">${matched.username || matched.name}</span>)<br>
+            상태: <span class="text-orange-700 font-bold">비밀번호 초기화 요청 등록 완료</span><br>
+            전도사님이 관리자 화면에서 확인 후 비밀번호를 <b>1234</b>로 초기화해주시면 즉시 1234로 로그인하실 수 있습니다.
+          </div>
+          <p class="text-[11px] text-amber-800">초기화가 완료되면 로그인 후 프로필에서 원하시는 비밀번호로 변경해주세요.</p>
+        `;
+        pwResultBox.classList.remove("hidden");
+        showToast(`📨 '${matched.name}'님의 비밀번호 초기화 요청이 전도사님께 전달되었습니다.`, "success", 5000);
+      } else {
+        pwResultBox.className = "mt-3 p-3.5 rounded-xl border border-rose-200 bg-rose-50/80 text-rose-950 text-[12px]";
+        pwResultBox.innerHTML = `
+          <div class="flex items-center gap-1 font-extrabold text-rose-800 mb-1">
+            <span class="material-symbols-outlined text-[17px]">error</span>
+            <span>일치하는 계정 정보를 찾을 수 없습니다</span>
+          </div>
+          <p class="leading-relaxed text-rose-900 text-[11.5px]">
+            입력하신 이름과 전화번호가 등록된 정보와 일치하지 않습니다. 이름과 번호를 다시 확인해주세요.
+          </p>
+        `;
+        pwResultBox.classList.remove("hidden");
+      }
+    });
+  }
+}
+
+function initChangePasswordEvents() {
+  const openBtn = document.getElementById("openChangePasswordModalBtn");
+  const bannerBtn = document.getElementById("bannerChangePasswordBtn");
+  const form = document.getElementById("changePasswordForm");
+
+  function openChangePwModal() {
+    if (form) form.reset();
+    openModal("changePasswordModal");
+  }
+
+  if (openBtn) openBtn.addEventListener("click", openChangePwModal);
+  if (bannerBtn) bannerBtn.addEventListener("click", openChangePwModal);
+
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        showToast("⚠️ 로그인된 사용자를 찾을 수 없습니다.", "error");
+        return;
+      }
+
+      const curInput = document.getElementById("currentPasswordInput");
+      const newInput = document.getElementById("newPasswordInput");
+      const confirmInput = document.getElementById("confirmNewPasswordInput");
+
+      const curPw = curInput ? curInput.value.trim() : "";
+      const newPw = newInput ? newInput.value.trim() : "";
+      const confirmPw = confirmInput ? confirmInput.value.trim() : "";
+
+      const expectedCurPw = currentUser.password || "1234";
+
+      if (curPw !== expectedCurPw) {
+        showToast("⚠️ 현재 비밀번호가 일치하지 않습니다.", "warn");
+        if (curInput) curInput.focus();
+        return;
+      }
+
+      if (newPw.length < 4) {
+        showToast("⚠️ 새 비밀번호는 4자리 이상으로 설정해주세요.", "warn");
+        if (newInput) newInput.focus();
+        return;
+      }
+
+      if (newPw !== confirmPw) {
+        showToast("⚠️ 새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.", "warn");
+        if (confirmInput) confirmInput.focus();
+        return;
+      }
+
+      // Update user password and clear reset flag
+      currentUser.password = newPw;
+      currentUser.resetRequested = false;
+
+      // Update in appState.users array as well
+      const userInList = appState.users.find(u => u.id === currentUser.id);
+      if (userInList) {
+        userInList.password = newPw;
+        userInList.resetRequested = false;
+      }
+
+      saveState();
+      closeModal("changePasswordModal");
+      form.reset();
+      updateTempPasswordBanner();
+      showToast("🎉 비밀번호가 성공적으로 변경되었습니다!", "success", 4000);
     });
   }
 }
