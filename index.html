@@ -330,7 +330,7 @@
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-primary ring-2 ring-white"></span>
             </span>
-            <h1 class="text-[15px] font-extrabold text-text-primary tracking-tight truncate">이룸교회 중고등부 예랑</h1>
+            <h1 class="text-[15px] font-extrabold text-text-primary tracking-tight truncate">이룸교회 예랑 중고등부</h1>
           </div>
           <div class="flex items-center gap-1 mt-0.5 whitespace-nowrap">
             <span class="material-symbols-outlined text-[13px] text-text-muted shrink-0">calendar_today</span>
@@ -342,7 +342,7 @@
         <button id="openUserSwitchModalBtn" aria-label="담당 목회자 프로필 정보" class="flex items-center gap-1.5 bg-surface-card/95 backdrop-blur-md border border-white/80 rounded-full py-1 pl-1.5 pr-2.5 shadow-[0_2px_12px_rgba(60,50,40,0.06)] active:scale-95 transition-all duration-150 hover:bg-surface-card hover:border-primary/30 group shrink-0 whitespace-nowrap" type="button">
           <div class="relative shrink-0">
             <span id="userHeaderAvatar" class="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center text-[14px] font-bold shadow-sm ring-2 ring-white">
-              ✝️
+              🧑🏻‍💼
             </span>
             <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white"></span>
           </div>
@@ -393,64 +393,62 @@
         <!-- Section: Quick Actions (Role-Adaptive) -->
         <section aria-label="빠른 실행 메뉴" id="quickActionsSection">
 
-          <!-- 1. 전도사용 Quick Actions (2열 그리드: 권한관리/회원승인 + 사역자 소통함) -->
-          <div id="pastorQuickActions" class="grid grid-cols-2 gap-3">
-            <!-- Left: 권한 관리 + 회원승인 묶음 박스 -->
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-              <!-- 권한 관리 -->
-              <button id="adminUserMgmtBanner" class="flex items-center gap-3 p-4 active:bg-gray-50 transition-all text-left border-b border-gray-100" type="button">
-                <div class="w-9 h-9 rounded-xl bg-rose-50 text-primary flex items-center justify-center shrink-0">
-                  <span class="material-symbols-outlined text-[19px]">admin_panel_settings</span>
+          <!-- 1. 전도사용 Quick Actions (3열 대칭 그리드: 권한관리 + 회원승인 + 사역자 소통함) -->
+          <div id="pastorQuickActions" class="space-y-2.5">
+            <div class="grid grid-cols-3 gap-2.5">
+              <!-- 1: 권한 관리 -->
+              <button id="adminUserMgmtBanner" class="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left flex flex-col justify-between" type="button">
+                <div class="w-8 h-8 rounded-xl bg-rose-50 text-primary flex items-center justify-center mb-2 shrink-0">
+                  <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
                 </div>
                 <div>
-                  <div class="font-bold text-[13px] text-gray-800 leading-tight">권한 관리</div>
-                  <div class="text-[11px] text-gray-400 mt-0.5">교사 및 리더십</div>
+                  <div class="font-extrabold text-[12.5px] text-gray-800 leading-tight">권한 관리</div>
+                  <div class="text-[10px] text-gray-400 mt-0.5 whitespace-nowrap">교사 리더십</div>
                 </div>
               </button>
 
-              <!-- 회원승인 -->
-              <button id="openMemberApprovalBtn" class="flex items-center gap-3 p-4 active:bg-gray-50 transition-all text-left flex-1" type="button">
-                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                  <span class="material-symbols-outlined text-[19px]">how_to_reg</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-bold text-[13px] text-gray-800 leading-tight">회원승인</span>
-                    <span id="pendingCountBadge" class="hidden text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">
-                      <span id="pendingCountText">0명</span>
-                    </span>
+              <!-- 2: 회원승인 -->
+              <button id="openMemberApprovalBtn" class="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left flex flex-col justify-between relative" type="button">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-[18px]">how_to_reg</span>
                   </div>
-                  <div class="text-[11px] text-gray-400 mt-0.5">승인 · 거절 관리</div>
+                  <span id="pendingCountBadge" class="hidden text-[9.5px] font-black text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded-full border border-amber-200">
+                    <span id="pendingCountText">0명</span>
+                  </span>
+                </div>
+                <div>
+                  <div class="font-extrabold text-[12.5px] text-gray-800 leading-tight">회원승인</div>
+                  <div class="text-[10px] text-emerald-600 font-semibold mt-0.5 whitespace-nowrap">신규 가입 검토</div>
+                </div>
+              </button>
+
+              <!-- 3: 사역자 소통함 -->
+              <button id="openStaffBoxBtn" class="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left flex flex-col justify-between relative" type="button">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="w-8 h-8 rounded-xl bg-teal-50 text-secondary flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-[18px]">mark_chat_unread</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="font-extrabold text-[12.5px] text-gray-800 leading-tight">사역 소통함</div>
+                  <div id="staffBoxCountText" class="text-[10px] text-primary font-bold mt-0.5 truncate">새 소식 확인</div>
                 </div>
               </button>
             </div>
 
-            <!-- Right: 사역자 소통함 (전도사 확인 및 승인용) -->
-            <button id="openStaffBoxBtn" class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all text-left" type="button">
-              <div class="w-10 h-10 rounded-xl bg-teal-50 text-secondary flex items-center justify-center mb-3">
-                <span class="material-symbols-outlined text-[20px]">mark_chat_unread</span>
-              </div>
-              <div class="font-bold text-[14px] text-gray-800 leading-tight">사역자 소통함</div>
-              <div id="staffBoxCountText" class="text-[12px] text-primary font-semibold mt-0.5">3건 새 소식</div>
-            </button>
-
-            <!-- Full-width: 역할별 화면 둘러보기 (View-As 시뮬레이터 바로가기) -->
-            <button id="openViewAsBannerBtn" class="col-span-2 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-300/60 rounded-2xl p-3.5 flex items-center justify-between hover:border-amber-400 active:scale-98 transition-all text-left shadow-sm" type="button">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-orange-500/20 shrink-0">
-                  <span class="material-symbols-outlined text-[20px]">visibility</span>
+            <!-- Full-width: 역할별 화면 둘러보기 (View-As 시뮬레이터 미니 바) -->
+            <button id="openViewAsBannerBtn" class="w-full bg-gradient-to-r from-amber-500/8 via-orange-500/8 to-amber-500/5 border border-amber-200/60 rounded-xl px-3.5 py-2.5 flex items-center justify-between hover:border-amber-300 active:scale-[0.99] transition-all text-left shadow-2xs" type="button">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[14px]">visibility</span>
                 </div>
-                <div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-extrabold text-[13.5px] text-gray-900 leading-tight">역할별 화면 둘러보기</span>
-                    <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-md border border-amber-200">View-As</span>
-                  </div>
-                  <div class="text-[11px] text-gray-500 mt-0.5">공과반·새친구반 학생 및 교사 시점 시뮬레이션</div>
-                </div>
+                <span class="font-extrabold text-[12px] text-gray-800">역할별 화면 둘러보기</span>
+                <span class="text-[9.5px] font-black text-amber-700 bg-amber-100/90 px-1.5 py-0.2 rounded border border-amber-200/80">View-As</span>
               </div>
-              <div class="flex items-center text-amber-600 font-bold text-[12px] gap-0.5 shrink-0">
+              <div class="flex items-center text-amber-700 font-bold text-[11px] gap-0.5 shrink-0">
                 <span>시점 선택</span>
-                <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                <span class="material-symbols-outlined text-[15px]">chevron_right</span>
               </div>
             </button>
           </div>
@@ -517,23 +515,22 @@
         </div>
 
         <!-- Notice Strip Banner: 금주 공지 (다가오는 주요 행사 상단 배치) -->
-        <div id="noticeBanner" class="bg-gradient-to-r from-white via-surface-card to-badge-terracotta-bg/30 rounded-2xl p-3.5 border border-primary/15 shadow-[0_4px_16px_rgba(150,67,43,0.06)] flex items-center justify-between gap-3 hover:border-primary/30 active:scale-[0.99] transition-all cursor-pointer group" role="button" tabindex="0" title="공지 히스토리 모아보기" onclick="openNoticesModal()">
-          <div class="flex items-center gap-3 min-w-0 pointer-events-none">
-            <div class="relative w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
-              <span class="material-symbols-outlined text-[19px]">campaign</span>
+        <div id="noticeBanner" class="bg-gradient-to-r from-white via-surface-card to-badge-terracotta-bg/30 rounded-2xl p-3 border border-primary/15 shadow-[0_4px_16px_rgba(150,67,43,0.06)] flex items-center justify-between gap-2.5 hover:border-primary/30 active:scale-[0.99] transition-all cursor-pointer group" role="button" tabindex="0" title="공지 히스토리 모아보기" onclick="openNoticesModal()">
+          <div class="flex items-center gap-2.5 min-w-0 pointer-events-none flex-1">
+            <div class="relative w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-primary/30 group-hover:scale-105 transition-transform">
+              <span class="material-symbols-outlined text-[17px]">campaign</span>
             </div>
             <div class="leading-tight min-w-0 flex-1">
-              <div class="flex items-center gap-2">
-                <span id="noticeBannerTag" class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-primary-fixed text-primary border border-primary/20 shrink-0">금주 공지</span>
-                <span id="noticeBannerTime" class="text-[11px] font-semibold text-text-muted shrink-0">12시</span>
+              <div class="flex items-center gap-1.5">
+                <span id="noticeBannerTag" class="text-[10.5px] font-bold px-1.5 py-0.5 rounded bg-primary-fixed text-primary border border-primary/20 shrink-0">금주 공지</span>
+                <span id="noticeBannerTime" class="text-[10.5px] font-semibold text-text-muted shrink-0">12시</span>
               </div>
-              <p id="noticeBannerTitle" class="text-body-sm font-bold text-text-primary mt-1 group-hover:text-primary transition-colors truncate">전 학년 간식 타임! (식당 3층 모임)</p>
+              <p id="noticeBannerTitle" class="text-[13px] font-bold text-text-primary mt-0.5 group-hover:text-primary transition-colors truncate">전 학년 간식 타임! (식당 3층 모임)</p>
             </div>
           </div>
-          <div class="flex items-center gap-1.5 shrink-0 pointer-events-none">
-            <span class="text-[11px] font-extrabold text-primary/80 group-hover:text-primary transition-colors">모아보기</span>
-            <div id="noticeBannerArrowBtn" class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" aria-label="공지 목록 보기">
-              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          <div class="flex items-center gap-1 shrink-0 pointer-events-none text-primary">
+            <div id="noticeBannerArrowBtn" class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" aria-label="공지 목록 보기">
+              <span class="material-symbols-outlined text-[15px]">chevron_right</span>
             </div>
           </div>
         </div>
@@ -1279,7 +1276,7 @@
         <div class="tab-icon-wrap w-10 h-7 flex items-center justify-center">
           <span class="material-symbols-outlined text-[23px]">menu_book</span>
         </div>
-        <span class="text-[11px] font-semibold tracking-tight">공과/새친구반</span>
+        <span class="text-[10.5px] font-semibold tracking-tight whitespace-nowrap">공과/목양</span>
       </button>
       <!-- 4: 회의 -->
       <button class="tab-btn flex flex-col items-center justify-center text-text-muted hover:text-primary gap-0.5 py-1 px-3 rounded-2xl hover:bg-surface-container/60 transition-colors duration-150 active:scale-95" data-target="view-agenda" data-title="이번 주 교사 회의 안건" data-subtitle="2026.09.12 토요 교사 회의 안건" type="button">

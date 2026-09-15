@@ -914,7 +914,7 @@ const INITIAL_DATA = {
     { id: "bday_6", month: 8, day: 30, name: "김희순 집사", roleDesc: "부장집사님", avatar: "👔" },
     { id: "bday_7", month: 9, day: 10, name: "김대한T", roleDesc: "선생님(공과반)", avatar: "🧑🏻‍🏫" },
     { id: "bday_8", month: 11, day: 7, name: "나하은T", roleDesc: "선생님(회계)", avatar: "💼" },
-    { id: "bday_9", month: 12, day: 19, name: "정하람 전도사", roleDesc: "전도사", avatar: "✝️" }
+    { id: "bday_9", month: 12, day: 19, name: "정하람 전도사", roleDesc: "전도사", avatar: "🧑🏻‍💼" }
   ],
   users: [
     {
@@ -926,7 +926,7 @@ const INITIAL_DATA = {
       duty: "중고등부 총괄 사역 & 설교",
       birthday: "1994-05-12",
       phone: "010-1234-5678",
-      avatar: "✝️",
+      avatar: "🧑🏻‍💼",
       isAdmin: true
     },
     {
@@ -1091,10 +1091,14 @@ function loadState() {
       if (!parsed.users || parsed.users.length === 0) {
         parsed.users = JSON.parse(JSON.stringify(INITIAL_DATA.users));
       } else {
-        // Migrate u1 pastor avatar from 👑 to ✝️ if still present in localStorage
+        // Migrate u1 pastor avatar from legacy 👑 or ✝️ to 🧑🏻‍💼
         const pastorUser = parsed.users.find(u => u.id === "u1" || u.role === "pastor");
-        if (pastorUser && pastorUser.avatar === "👑") {
-          pastorUser.avatar = "✝️";
+        if (pastorUser && (pastorUser.avatar === "👑" || pastorUser.avatar === "✝️")) {
+          pastorUser.avatar = "🧑🏻‍💼";
+        }
+        const pastorBday = (parsed.birthdays || []).find(b => b.name && b.name.includes("정하람"));
+        if (pastorBday && (pastorBday.avatar === "👑" || pastorBday.avatar === "✝️")) {
+          pastorBday.avatar = "🧑🏻‍💼";
         }
       }
       if (!parsed.currentUserId) {
@@ -6775,9 +6779,9 @@ const ROLES = {
     tagClass: "tag-pastor",
     activeClass: "active-pastor",
     tabs: [
-      { target: "view-home", icon: "home", label: "홈", title: "이룸교회 중고등부 예랑", subtitle: "2026년 10월 17일 (토)" },
+      { target: "view-home", icon: "home", label: "홈", title: "이룸교회 예랑 중고등부", subtitle: "2026년 10월 17일 (토)" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스마트 스케줄러", subtitle: "사역 캘린더 · 생일 · 행사 D-Day · 토요예배 출결" },
-      { target: "view-students", icon: "menu_book", label: "공과/새친구반", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
+      { target: "view-students", icon: "menu_book", label: "공과/목양", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
       { target: "view-agenda", icon: "diversity_3", label: "회의", title: "이번 주 교사 회의 안건", subtitle: "2026.09.12 토요 교사 회의 안건" },
       { target: "view-accounting", icon: "account_balance_wallet", label: "재정", title: "부서 재정 및 회계 장부", subtitle: "실시간 실잔액 및 전체 교사 영수증 감독" }
     ],
@@ -6811,7 +6815,7 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
-      { target: "view-students", icon: "menu_book", label: "공과/새친구반", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
+      { target: "view-students", icon: "menu_book", label: "공과/목양", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
@@ -6952,7 +6956,7 @@ const ROLE_BADGES = {
 };
 
 const DEFAULT_AVATARS = {
-  pastor: "✝️",
+  pastor: "🧑🏻‍💼",
   accountant: "💼",
   deacon: "👔",
   teacher_grade: "🧑🏻‍🏫",
