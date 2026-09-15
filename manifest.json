@@ -1,11 +1,11 @@
 {
-  "name": "이룸교회 중고등부 예랑",
+  "name": "이룸교회 예랑 중고등부",
   "short_name": "예랑",
-  "description": "이룸교회 중고등부 스마트 사역 관리 앱",
+  "description": "이룸교회 예랑 중고등부 스마트 사역 관리 앱",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#faf7f2",
-  "theme_color": "#fed8c3",
+  "background_color": "#FAF9F6",
+  "theme_color": "#96432b",
   "orientation": "portrait",
   "icons": [
     {
