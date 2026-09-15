@@ -9652,14 +9652,19 @@ function getAvailableLeaders() {
     "김대한 선생님",
     "소예진 선생님",
     "양선아 선생님",
+    "박지훈 선생님",
     "나하은 선생님",
-    "김희순 집사"
+    "김희순 부장집사님",
+    "김신원 선생님",
+    "이진우 선생님"
   ];
   const leaderSet = new Set(defaultLeaders);
   if (appState.users && Array.isArray(appState.users)) {
     appState.users.forEach(u => {
       if (!isStudentRole(u.role) && u.name) {
-        leaderSet.add(u.name);
+        let n = u.name;
+        if (n === "김희순 집사") n = "김희순 부장집사님";
+        leaderSet.add(n);
       }
     });
   }
@@ -9685,7 +9690,11 @@ function setupManagerChipsSelector({
 
   let selectedSet = new Set(
     (initialManagers || [])
-      .map(m => (m || "").trim())
+      .map(m => {
+        let n = (m || "").trim();
+        if (n === "김희순 집사") n = "김희순 부장집사님";
+        return n;
+      })
       .filter(Boolean)
   );
 
@@ -10217,6 +10226,41 @@ function initChecklistEvents() {
   }
 
   // --- 행사 정보 & 총괄 담당자 수정 모달 (Edit Event & General Manager) ---
+  function updateThemePaletteChips(selectedTheme) {
+    const palette = document.getElementById("editEventThemePalette");
+    const themeInput = document.getElementById("editEventThemeSelect");
+    if (themeInput) themeInput.value = selectedTheme;
+    if (!palette) return;
+
+    palette.querySelectorAll(".theme-palette-chip").forEach(chip => {
+      const theme = chip.dataset.theme;
+      const isSelected = (theme === selectedTheme);
+      chip.classList.toggle("active", isSelected);
+      if (isSelected) {
+        chip.style.border = "2px solid #ea580c";
+        chip.style.background = "#fff7ed";
+        chip.style.color = "#9a3412";
+        chip.style.fontWeight = "800";
+      } else {
+        chip.style.border = "1px solid #e2e8f0";
+        chip.style.background = "#ffffff";
+        chip.style.color = "#475569";
+        chip.style.fontWeight = "700";
+      }
+    });
+  }
+
+  // Bind palette click events
+  const editPalette = document.getElementById("editEventThemePalette");
+  if (editPalette) {
+    editPalette.querySelectorAll(".theme-palette-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const theme = chip.dataset.theme;
+        updateThemePaletteChips(theme);
+      });
+    });
+  }
+
   function openEditEventModal(event) {
     if (!event) event = getActiveChecklistEvent();
     if (!event) return;
@@ -10225,17 +10269,46 @@ function initChecklistEvents() {
     const titleInput = document.getElementById("editEventTitleInput");
     const subTitleInput = document.getElementById("editEventSubTitleInput");
     const ddayInput = document.getElementById("editEventDdayInput");
-    const themeSelect = document.getElementById("editEventThemeSelect");
     const dateInput = document.getElementById("editEventDateInput");
     const locationInput = document.getElementById("editEventLocationInput");
 
     if (idInput) idInput.value = event.id;
     if (titleInput) titleInput.value = event.title || "";
     if (subTitleInput) subTitleInput.value = event.subTitle || "";
-    if (ddayInput) ddayInput.value = event.dday || "";
     if (dateInput) dateInput.value = event.date || "";
     if (locationInput) locationInput.value = event.location || "";
-    if (themeSelect) themeSelect.value = event.theme || "sage";
+
+    // 실시간 정확한 D-Day 자동 계산 및 동기화 (기존 하드코딩된 값 무시하고 현재 날짜 기준 즉시 계산)
+    const autoDday = calculateDdayFromDateString(event.date);
+    if (ddayInput) {
+      ddayInput.value = autoDday || event.dday || "D-Day";
+    }
+
+    // 카드 테마 컬러 팔레트 칩 동기화
+    const currentTheme = event.theme || "terracotta";
+    updateThemePaletteChips(currentTheme);
+
+    // 달력 날짜 선택기(Native DatePicker) 연동
+    const datePicker = document.getElementById("editEventDatePicker");
+    if (datePicker) {
+      datePicker.onchange = () => {
+        if (!datePicker.value) return;
+        const [y, m, d] = datePicker.value.split("-").map(Number);
+        const dt = new Date(y, m - 1, d);
+        const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+        const dayOfWeek = dayNames[dt.getDay()];
+        let timePart = "10:00";
+        const currentText = dateInput.value;
+        const timeMatch = currentText.match(/(\d{1,2}:\d{2})/);
+        if (timeMatch) timePart = timeMatch[1];
+
+        dateInput.value = `${m}월 ${d}일 (${dayOfWeek}) ${timePart}`;
+        const newDday = calculateDdayFromDateString(dateInput.value);
+        if (newDday && ddayInput) {
+          ddayInput.value = newDday;
+        }
+      };
+    }
 
     // 총괄 담당자 복수 선택 칩 시스템 구성
     const existingManagers = (event.manager || "")
@@ -10252,14 +10325,12 @@ function initChecklistEvents() {
       initialManagers: existingManagers.length > 0 ? existingManagers : ["정하람 전도사"]
     });
 
-    // 수정 모달: 행사 일시 입력 시 D-Day 실시간 자동 계산 리스너
-    const editEventDateInput = document.getElementById("editEventDateInput");
-    const editEventDdayInput = document.getElementById("editEventDdayInput");
-    if (editEventDateInput && editEventDdayInput) {
-      editEventDateInput.oninput = () => {
-        const calculated = calculateDdayFromDateString(editEventDateInput.value);
+    // 수정 모달: 행사 일시 텍스트 직접 입력 시 D-Day 실시간 자동 계산 리스너
+    if (dateInput && ddayInput) {
+      dateInput.oninput = () => {
+        const calculated = calculateDdayFromDateString(dateInput.value);
         if (calculated) {
-          editEventDdayInput.value = calculated;
+          ddayInput.value = calculated;
         }
       };
     }
@@ -10294,8 +10365,8 @@ function initChecklistEvents() {
       const newDate = document.getElementById("editEventDateInput").value.trim();
       let newDday = document.getElementById("editEventDdayInput").value.trim();
 
-      if (!newDday && newDate) {
-        newDday = calculateDdayFromDateString(newDate) || targetEvent.dday || "D-Day";
+      if (newDate) {
+        newDday = calculateDdayFromDateString(newDate) || newDday || "D-Day";
       }
 
       const managerVal = document.getElementById("editEventManagerValue")?.value || "";
@@ -10315,11 +10386,11 @@ function initChecklistEvents() {
       renderUpcomingEventsSection();
       renderChecklistSection();
       closeModal("editEventModal");
-      showToast(`'${newTitle}' 행사의 총괄 담당자가 [${newManager}](으)로 수정되었습니다! 👤✓`);
+      showToast(`'${newTitle}' 행사의 정보가 성공적으로 수정되었습니다! 👤✓`);
     });
   }
 
-  // 행사 삭제 버튼 리스너
+  // 행사 삭제 버튼 리스너 (안전 재확인 강화)
   const deleteEventBtn = document.getElementById("deleteEventModalBtn");
   if (deleteEventBtn) {
     deleteEventBtn.addEventListener("click", () => {
@@ -10327,7 +10398,8 @@ function initChecklistEvents() {
       const targetEvent = appState.events.find(ev => ev.id === eventId);
       if (!targetEvent) return;
 
-      if (!confirm(`'${targetEvent.title}' 행사를 정말 삭제하시겠습니까?\n(해당 행사의 체크리스트 항목도 함께 삭제됩니다)`)) {
+      const itemCount = (targetEvent.items || []).length;
+      if (!confirm(`'${targetEvent.title}' 행사를 정말 삭제하시겠습니까?\n\n⚠️ 등록된 준비 체크리스트 ${itemCount}건도 함께 완전히 삭제됩니다.`)) {
         return;
       }
 

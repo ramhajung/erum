@@ -2091,8 +2091,18 @@
           </div>
           <div class="grid grid-cols-2 gap-2.5">
             <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">행사 일시</label>
-              <input type="text" id="editEventDateInput" placeholder="예: 12.25 또는 10월 25일" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
+              <label style="font-size:12px; font-weight:700; color:#334155; display:flex; align-items:center; justify-content:space-between;">
+                <span>행사 일시</span>
+                <label for="editEventDatePicker" class="text-[11px] font-bold text-primary hover:underline cursor-pointer flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[13px]">calendar_month</span>
+                  <span>달력선택</span>
+                </label>
+              </label>
+              <div class="relative flex items-center">
+                <input type="text" id="editEventDateInput" placeholder="예: 10월 25일 (토) 10:00" style="width:100%; padding:9px 34px 9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
+                <input type="date" id="editEventDatePicker" style="position:absolute; right:6px; opacity:0; width:26px; height:26px; cursor:pointer;" title="달력에서 일자 선택">
+                <span class="material-symbols-outlined text-[16px] text-gray-400 absolute right-2.5 pointer-events-none">calendar_today</span>
+              </div>
             </div>
             <div class="form-group">
               <label style="font-size:12px; font-weight:700; color:#c2410c; display:flex; align-items:center; justify-content:space-between;">
@@ -2102,18 +2112,26 @@
               <input type="text" id="editEventDdayInput" required style="width:100%; padding:9px 12px; border:1.5px solid #fed7aa; border-radius:10px; font-size:13px; font-weight:800; color:#c2410c; background:#fffbf7;">
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-2.5">
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
-              <input type="text" id="editEventLocationInput" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
-            </div>
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">카드 테마 컬러</label>
-              <select id="editEventThemeSelect" style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:700; background:#fff;">
-                <option value="terracotta">🍂 테라코타 (브라운)</option>
-                <option value="butter">🧈 웜 버터 (골드)</option>
-                <option value="sage">🌿 세이지 (그린)</option>
-              </select>
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
+            <input type="text" id="editEventLocationInput" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
+          </div>
+          <div class="form-group">
+            <label style="font-size:12px; font-weight:700; color:#334155; margin-bottom: 6px; display:block;">카드 테마 컬러</label>
+            <input type="hidden" id="editEventThemeSelect" value="terracotta">
+            <div id="editEventThemePalette" class="grid grid-cols-3 gap-2">
+              <button type="button" class="theme-palette-chip active flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border-2 text-[11.5px] font-extrabold transition-all" data-theme="terracotta" style="border-color:#ea580c; background:#fff7ed; color:#9a3412;">
+                <span class="w-3 h-3 rounded-full bg-[#ea580c] ring-2 ring-white shrink-0"></span>
+                <span>테라코타</span>
+              </button>
+              <button type="button" class="theme-palette-chip flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border border-gray-200 text-[11.5px] font-bold transition-all" data-theme="butter" style="background:#fff; color:#475569;">
+                <span class="w-3 h-3 rounded-full bg-[#f59e0b] ring-2 ring-white shrink-0"></span>
+                <span>웜 버터</span>
+              </button>
+              <button type="button" class="theme-palette-chip flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border border-gray-200 text-[11.5px] font-bold transition-all" data-theme="sage" style="background:#fff; color:#475569;">
+                <span class="w-3 h-3 rounded-full bg-[#059669] ring-2 ring-white shrink-0"></span>
+                <span>세이지</span>
+              </button>
             </div>
           </div>
 
