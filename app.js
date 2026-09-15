@@ -11025,16 +11025,6 @@ function initAuthScreen() {
     pendingBackBtn.addEventListener("click", showLoginTab);
   }
 
-  // 1-Click Demo Quick Logins
-  document.querySelectorAll(".demo-login-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const uid = btn.dataset.userId;
-      if (uid) {
-        loginUser(uid);
-      }
-    });
-  });
-
   // Standard Login Form (ID & Password)
   const standardForm = document.getElementById("standardLoginForm");
   if (standardForm) {
