@@ -1763,13 +1763,27 @@ button:active, .btn:active, .interactive-card:active {
   width: 100%;
   background: white;
   border-radius: 28px 28px 0 0;
-  padding: 20px 22px 36px;
+  padding: 16px 20px 36px;
   box-shadow: var(--shadow-sheet);
   transform: translateY(100%);
   transition: transform var(--duration-drawer) var(--ease-out);
-  max-height: 85%;
+  max-height: min(82dvh, calc(100dvh - 76px));
+  max-height: 82%;
   overflow-y: auto;
   z-index: 160;
+}
+
+/* Modals with fixed header and scrollable inner list (prevent top clipping on scroll) */
+.bottom-sheet.sheet-fixed-header,
+#allPrayersModal .bottom-sheet,
+#friendPrayerSheetModal .bottom-sheet,
+#editStudentPrayerModal .bottom-sheet,
+#noticesHistoryModal .bottom-sheet {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  max-height: min(80dvh, calc(100dvh - 80px)) !important;
+  padding: 16px 20px 24px !important;
 }
 
 .modal-backdrop.open .bottom-sheet {
@@ -1781,12 +1795,13 @@ button:active, .btn:active, .interactive-card:active {
   height: 5px;
   background: #d6ccbf;
   border-radius: var(--radius-full);
-  margin: 0 auto 16px;
+  margin: 0 auto 14px;
   cursor: grab;
   position: relative;
   transition: background 0.15s, transform 0.15s;
   touch-action: none;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .sheet-handle:active {
@@ -1812,7 +1827,7 @@ button:active, .btn:active, .interactive-card:active {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .sheet-title {
@@ -1823,6 +1838,45 @@ button:active, .btn:active, .interactive-card:active {
 
 .sheet-close-btn {
   display: none !important;
+}
+
+/* Show delicate circular close button on list-heavy modals */
+.sheet-close-btn.visible-close,
+#allPrayersModal .sheet-close-btn,
+#friendPrayerSheetModal .sheet-close-btn,
+#editStudentPrayerModal .sheet-close-btn,
+#noticesHistoryModal .sheet-close-btn {
+  display: flex !important;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f4f0ec;
+  align-items: center;
+  justify-content: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #78716c;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.sheet-close-btn.visible-close:hover,
+#allPrayersModal .sheet-close-btn:hover,
+#friendPrayerSheetModal .sheet-close-btn:hover,
+#editStudentPrayerModal .sheet-close-btn:hover,
+#noticesHistoryModal .sheet-close-btn:hover {
+  background: #e7e2dc;
+  color: #292524;
+}
+
+.sheet-close-btn.visible-close:active,
+#allPrayersModal .sheet-close-btn:active,
+#friendPrayerSheetModal .sheet-close-btn:active,
+#editStudentPrayerModal .sheet-close-btn:active,
+#noticesHistoryModal .sheet-close-btn:active {
+  transform: scale(0.92);
 }
 
 .form-group {

@@ -3279,6 +3279,8 @@ function renderHomePrayersSection() {
 function openAllPrayersModal() {
   filterAllPrayersModal(currentAllPrayersFilter || "all");
   openModal("allPrayersModal");
+  const listContainer = document.getElementById("allPrayersModalListContainer");
+  if (listContainer) listContainer.scrollTop = 0;
 }
 
 function filterAllPrayersModal(grade = "all") {
@@ -8215,8 +8217,11 @@ function openModal(modalId) {
   }
   const sheet = modal.querySelector(".bottom-sheet");
   if (sheet) {
+    sheet.scrollTop = 0;
     sheet.style.transition = "transform var(--duration-drawer) var(--ease-out)";
     sheet.style.transform = "translateY(0)";
+    const innerScroll = sheet.querySelector("#allPrayersModalListContainer, #friendPrayerSheetListContainer, [style*='overflow-y'], .overflow-y-auto");
+    if (innerScroll) innerScroll.scrollTop = 0;
   }
   modal.classList.add("open");
   modal.style.display = "flex";
@@ -8302,7 +8307,8 @@ function initSheetDragToDismiss() {
     function onPointerDown(e) {
       // Only drag if scrolled to top (scrollTop <= 0) or dragging directly from handle
       const isHandle = e.target.closest(".sheet-handle");
-      if (!isHandle && sheet.scrollTop > 5) return;
+      const innerScroll = e.target.closest("#allPrayersModalListContainer, #friendPrayerSheetListContainer, [style*='overflow-y'], .overflow-y-auto");
+      if (!isHandle && (sheet.scrollTop > 5 || (innerScroll && innerScroll.scrollTop > 2))) return;
 
       startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
       currentY = startY;
@@ -8313,12 +8319,17 @@ function initSheetDragToDismiss() {
 
     function onPointerMove(e) {
       if (!isDragging) return;
+      const innerScroll = e.target.closest("#allPrayersModalListContainer, #friendPrayerSheetListContainer, [style*='overflow-y'], .overflow-y-auto");
+      if (!isHandleDrag && innerScroll && innerScroll.scrollTop > 0) {
+        isDragging = false;
+        return;
+      }
       const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
       const diffY = clientY - startY;
 
       // Only allow downward drag
       if (diffY > 0) {
-        if (e.cancelable) e.preventDefault();
+        if (e.cancelable && isHandleDrag) e.preventDefault();
         currentY = clientY;
         sheet.style.transform = `translateY(${diffY}px)`;
       } else {
