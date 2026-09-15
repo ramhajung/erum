@@ -2002,38 +2002,45 @@
             <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
             <input type="text" id="newEventLocationInput" placeholder="예: 이룸교회 비전홀" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
           </div>
-          <div class="grid grid-cols-2 gap-2.5">
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">행사 일시 *</label>
-              <input type="text" id="newEventDateInput" placeholder="예: 12.25 또는 10월 25일" required style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
-            </div>
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#c2410c; display:flex; align-items:center; justify-content:space-between;">
-                <span>D-Day (자동계산)</span>
-                <span style="font-size:10px; font-weight:600; color:#059669;">⚡자동</span>
+          <!-- 행사 일정 및 스마트 D-Day 설정 (당일 / 기간 행사 지원) -->
+          <div class="form-group" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <label style="font-size:12.5px; font-weight:800; color:#1e293b; display:flex; align-items:center; gap:5px;">
+                <span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+                <span>행사 일정 & D-Day</span>
               </label>
-              <input type="text" id="newEventDdayInput" placeholder="일시 입력 시 자동계산" required style="width:100%; padding:9px 12px; border:1.5px solid #fed7aa; border-radius:10px; font-size:13px; font-weight:800; color:#c2410c; background:#fffbf7;">
+              <div style="display:flex; gap:3px; background:#e2e8f0; padding:2px; border-radius:8px;">
+                <button type="button" id="newEventSingleDayTab" style="font-size:11px; font-weight:800; padding:3px 9px; border-radius:6px; border:none; background:#fff; color:#0f172a; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.06);">당일</button>
+                <button type="button" id="newEventMultiDayTab" style="font-size:11px; font-weight:700; padding:3px 9px; border-radius:6px; border:none; background:transparent; color:#64748b; cursor:pointer;">기간(수련회/캠프)</button>
+              </div>
             </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2.5">
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">카드 테마 컬러</label>
-              <select id="newEventThemeInput" style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:700; background:#fff;">
-                <option value="terracotta">🍂 테라코타 (프리미엄 브라운)</option>
-                <option value="butter">🧈 웜 버터 (골드 옐로우)</option>
-                <option value="sage" selected>🌿 세이지 (차분한 그린)</option>
-              </select>
+
+            <!-- 날짜 선택 행 -->
+            <div class="grid grid-cols-2 gap-2" style="margin-bottom:8px;">
+              <div>
+                <span style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">시작일 *</span>
+                <input type="date" id="newEventStartDatePicker" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:700; background:#fff; color:#0f172a;">
+              </div>
+              <div id="newEventEndDateWrapper" style="display:none;">
+                <span style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">종료일 *</span>
+                <input type="date" id="newEventEndDatePicker" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:700; background:#fff; color:#0f172a;">
+              </div>
+              <div id="newEventTimeWrapper">
+                <span style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">시작 시간 (선택)</span>
+                <input type="time" id="newEventTimePicker" value="10:00" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:700; background:#fff; color:#0f172a;">
+              </div>
             </div>
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155;">아이콘</label>
-              <select id="newEventIconInput" style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; background:#fff;">
-                <option value="celebration">🎉 축하 (celebration)</option>
-                <option value="volunteer_activism">❤️ 사랑/초청 (volunteer_activism)</option>
-                <option value="menu_book">📖 말씀/도서 (menu_book)</option>
-                <option value="cake">🎂 생일/기념 (cake)</option>
-                <option value="campaign">📢 공지/선포 (campaign)</option>
-                <option value="hiking">🏕️ 수련회/캠프 (hiking)</option>
-              </select>
+
+            <!-- 자동 포맷팅 문구 및 실시간 D-Day -->
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:8px; padding-top:8px; border-top:1px dashed #cbd5e1;">
+              <div>
+                <span style="font-size:10.5px; font-weight:700; color:#64748b; display:block; margin-bottom:3px;">표시 문구 (직접 수정 가능)</span>
+                <input type="text" id="newEventDateInput" placeholder="예: 10월 25일 (토) 10:00" required style="width:100%; padding:7px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:700; color:#334155; background:#fff;">
+              </div>
+              <div>
+                <span style="font-size:10.5px; font-weight:700; color:#c2410c; display:block; margin-bottom:3px;">D-Day (자동)</span>
+                <input type="text" id="newEventDdayInput" readonly placeholder="D-Day" required style="width:100%; padding:7px 8px; border:1px solid #fed7aa; border-radius:8px; font-size:12px; font-weight:800; color:#c2410c; background:#fffbf7; text-align:center;">
+              </div>
             </div>
           </div>
           <div class="form-group">
@@ -2089,50 +2096,51 @@
             <label style="font-size:12px; font-weight:700; color:#334155;">부제목 / 설명</label>
             <input type="text" id="editEventSubTitleInput" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
           </div>
-          <div class="grid grid-cols-2 gap-2.5">
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#334155; display:flex; align-items:center; justify-content:space-between;">
-                <span>행사 일시</span>
-                <label for="editEventDatePicker" class="text-[11px] font-bold text-primary hover:underline cursor-pointer flex items-center gap-0.5">
-                  <span class="material-symbols-outlined text-[13px]">calendar_month</span>
-                  <span>달력선택</span>
-                </label>
+          <!-- 행사 일정 및 스마트 D-Day 설정 (당일 / 기간 행사 지원) -->
+          <div class="form-group" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:12px 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <label style="font-size:12.5px; font-weight:800; color:#1e293b; display:flex; align-items:center; gap:5px;">
+                <span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+                <span>행사 일정 & D-Day</span>
               </label>
-              <div class="relative flex items-center">
-                <input type="text" id="editEventDateInput" placeholder="예: 10월 25일 (토) 10:00" style="width:100%; padding:9px 34px 9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px; font-weight:600;">
-                <input type="date" id="editEventDatePicker" style="position:absolute; right:6px; opacity:0; width:26px; height:26px; cursor:pointer;" title="달력에서 일자 선택">
-                <span class="material-symbols-outlined text-[16px] text-gray-400 absolute right-2.5 pointer-events-none">calendar_today</span>
+              <div style="display:flex; gap:3px; background:#e2e8f0; padding:2px; border-radius:8px;">
+                <button type="button" id="editEventSingleDayTab" style="font-size:11px; font-weight:800; padding:3px 9px; border-radius:6px; border:none; background:#fff; color:#0f172a; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.06);">당일</button>
+                <button type="button" id="editEventMultiDayTab" style="font-size:11px; font-weight:700; padding:3px 9px; border-radius:6px; border:none; background:transparent; color:#64748b; cursor:pointer;">기간(수련회/캠프)</button>
               </div>
             </div>
-            <div class="form-group">
-              <label style="font-size:12px; font-weight:700; color:#c2410c; display:flex; align-items:center; justify-content:space-between;">
-                <span>D-Day</span>
-                <span style="font-size:10px; font-weight:600; color:#059669;">⚡일시 변경 시 자동계산</span>
-              </label>
-              <input type="text" id="editEventDdayInput" required style="width:100%; padding:9px 12px; border:1.5px solid #fed7aa; border-radius:10px; font-size:13px; font-weight:800; color:#c2410c; background:#fffbf7;">
+
+            <!-- 날짜 선택 행 -->
+            <div class="grid grid-cols-2 gap-2" style="margin-bottom:8px;">
+              <div>
+                <span style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">시작일 *</span>
+                <input type="date" id="editEventStartDatePicker" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:700; background:#fff; color:#0f172a;">
+              </div>
+              <div id="editEventEndDateWrapper" style="display:none;">
+                <span style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">종료일 *</span>
+                <input type="date" id="editEventEndDatePicker" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:700; background:#fff; color:#0f172a;">
+              </div>
+              <div id="editEventTimeWrapper">
+                <span style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">시작 시간 (선택)</span>
+                <input type="time" id="editEventTimePicker" value="10:00" style="width:100%; padding:7px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; font-weight:700; background:#fff; color:#0f172a;">
+              </div>
+            </div>
+
+            <!-- 자동 포맷팅 문구 및 실시간 D-Day -->
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:8px; padding-top:8px; border-top:1px dashed #cbd5e1;">
+              <div>
+                <span style="font-size:10.5px; font-weight:700; color:#64748b; display:block; margin-bottom:3px;">표시 문구 (직접 수정 가능)</span>
+                <input type="text" id="editEventDateInput" placeholder="예: 10월 25일 (토) 10:00" required style="width:100%; padding:7px 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:700; color:#334155; background:#fff;">
+              </div>
+              <div>
+                <span style="font-size:10.5px; font-weight:700; color:#c2410c; display:block; margin-bottom:3px;">D-Day (자동)</span>
+                <input type="text" id="editEventDdayInput" readonly placeholder="D-Day" required style="width:100%; padding:7px 8px; border:1px solid #fed7aa; border-radius:8px; font-size:12px; font-weight:800; color:#c2410c; background:#fffbf7; text-align:center;">
+              </div>
             </div>
           </div>
+
           <div class="form-group">
             <label style="font-size:12px; font-weight:700; color:#334155;">행사 장소</label>
             <input type="text" id="editEventLocationInput" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:10px; font-size:13px;">
-          </div>
-          <div class="form-group">
-            <label style="font-size:12px; font-weight:700; color:#334155; margin-bottom: 6px; display:block;">카드 테마 컬러</label>
-            <input type="hidden" id="editEventThemeSelect" value="terracotta">
-            <div id="editEventThemePalette" class="grid grid-cols-3 gap-2">
-              <button type="button" class="theme-palette-chip active flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border-2 text-[11.5px] font-extrabold transition-all" data-theme="terracotta" style="border-color:#ea580c; background:#fff7ed; color:#9a3412;">
-                <span class="w-3 h-3 rounded-full bg-[#ea580c] ring-2 ring-white shrink-0"></span>
-                <span>테라코타</span>
-              </button>
-              <button type="button" class="theme-palette-chip flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border border-gray-200 text-[11.5px] font-bold transition-all" data-theme="butter" style="background:#fff; color:#475569;">
-                <span class="w-3 h-3 rounded-full bg-[#f59e0b] ring-2 ring-white shrink-0"></span>
-                <span>웜 버터</span>
-              </button>
-              <button type="button" class="theme-palette-chip flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border border-gray-200 text-[11.5px] font-bold transition-all" data-theme="sage" style="background:#fff; color:#475569;">
-                <span class="w-3 h-3 rounded-full bg-[#059669] ring-2 ring-white shrink-0"></span>
-                <span>세이지</span>
-              </button>
-            </div>
           </div>
 
           <div style="display:flex; gap:8px; margin-top:16px;">

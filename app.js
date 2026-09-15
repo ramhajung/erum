@@ -9409,7 +9409,68 @@ function isChecklistAssignee(item, user) {
   return false;
 }
 
-// 행사 일시 문자열로부터 D-Day 자동 계산 헬퍼 함수
+// 날짜 단일 문자열 파싱 헬퍼 함수
+function parseSingleDate(str, defaultYear) {
+  if (!str) return null;
+  const trimmed = str.trim();
+
+  // 1) YYYY-MM-DD 또는 YYYY.MM.DD 또는 YYYY/MM/DD
+  const fullMatch = trimmed.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if (fullMatch) {
+    return new Date(parseInt(fullMatch[1], 10), parseInt(fullMatch[2], 10) - 1, parseInt(fullMatch[3], 10));
+  }
+
+  // 2) M월 D일 (예: "10월 25일", "8월 14일")
+  const korMatch = trimmed.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일?/);
+  if (korMatch) {
+    return new Date(defaultYear, parseInt(korMatch[1], 10) - 1, parseInt(korMatch[2], 10));
+  }
+
+  // 3) MM.DD 또는 M.D 또는 MM-DD 또는 MM/DD
+  const dotMatch = trimmed.match(/(\d{1,2})[-./](\d{1,2})/);
+  if (dotMatch) {
+    return new Date(defaultYear, parseInt(dotMatch[1], 10) - 1, parseInt(dotMatch[2], 10));
+  }
+
+  return null;
+}
+
+// 텍스트로부터 시작일, 종료일, 시간 및 다일 여부 추출 헬퍼 함수
+function extractDatesFromText(text) {
+  if (!text || typeof text !== "string") {
+    return { startDate: "", endDate: "", time: "10:00", isMulti: false };
+  }
+  const currentYear = new Date().getFullYear();
+  const isMulti = text.includes("~") || text.includes(" - ");
+  let startDate = "";
+  let endDate = "";
+  let time = "10:00";
+
+  const timeMatch = text.match(/(\d{1,2}:\d{2})/);
+  if (timeMatch) time = timeMatch[1];
+
+  function formatYMD(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  if (isMulti) {
+    const parts = text.split(/~|\s-\s/);
+    const d1 = parseSingleDate(parts[0], currentYear);
+    const d2 = parseSingleDate(parts[1], currentYear);
+    if (d1) startDate = formatYMD(d1);
+    if (d2) endDate = formatYMD(d2);
+  } else {
+    const d = parseSingleDate(text, currentYear);
+    if (d) startDate = formatYMD(d);
+  }
+
+  return { startDate, endDate, time, isMulti };
+}
+
+// 행사 일시 문자열로부터 D-Day 자동 계산 헬퍼 함수 (당일 및 다일/수련회 등 기간 행사 완벽 지원)
 function calculateDdayFromDateString(dateStr) {
   if (!dateStr || typeof dateStr !== "string") return "";
   const trimmed = dateStr.trim();
@@ -9419,56 +9480,69 @@ function calculateDdayFromDateString(dateStr) {
   const currentYear = now.getFullYear();
   const today = new Date(currentYear, now.getMonth(), now.getDate());
 
-  let targetDate = null;
+  // 다일/기간 행사 판별 (~ 또는 -)
+  if (trimmed.includes("~") || trimmed.includes(" - ")) {
+    const parts = trimmed.split(/~|\s-\s/);
+    if (parts.length >= 2) {
+      let startDt = parseSingleDate(parts[0], currentYear);
+      let endDt = parseSingleDate(parts[1], currentYear);
 
-  // 1) YYYY-MM-DD 또는 YYYY.MM.DD 또는 YYYY/MM/DD
-  const fullMatch = trimmed.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
-  if (fullMatch) {
-    const y = parseInt(fullMatch[1], 10);
-    const m = parseInt(fullMatch[2], 10) - 1;
-    const d = parseInt(fullMatch[3], 10);
-    targetDate = new Date(y, m, d);
-  } else {
-    // 2) MM.DD 또는 M.D 또는 MM-DD 또는 MM/DD (예: 12.25, 10.25, 11/8)
-    const dotMatch = trimmed.match(/^(\d{1,2})[-./](\d{1,2})/);
-    if (dotMatch) {
-      const m = parseInt(dotMatch[1], 10) - 1;
-      const d = parseInt(dotMatch[2], 10);
-      targetDate = new Date(currentYear, m, d);
-      // 만약 이미 지난 날짜라면 다음 해로 간주 (단, 90일 이상 이전인 경우에 한함)
-      const diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
-      if (diffDays < -90) {
-        targetDate = new Date(currentYear + 1, m, d);
-      }
-    } else {
-      // 3) "10월 25일" 또는 "12월 24일" 형태
-      const korMatch = trimmed.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일?/);
-      if (korMatch) {
-        const m = parseInt(korMatch[1], 10) - 1;
-        const d = parseInt(korMatch[2], 10);
-        targetDate = new Date(currentYear, m, d);
-        const diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
-        if (diffDays < -90) {
-          targetDate = new Date(currentYear + 1, m, d);
+      if (startDt && endDt) {
+        // 이미 90일 이상 지난 시작일이면 내년 행사로 처리
+        const checkDiff = Math.round((startDt - today) / (1000 * 60 * 60 * 24));
+        if (checkDiff < -90) {
+          startDt.setFullYear(currentYear + 1);
+          endDt.setFullYear(currentYear + 1);
+        }
+
+        const startDiff = Math.round((startDt - today) / (1000 * 60 * 60 * 24));
+        const endDiff = Math.round((endDt - today) / (1000 * 60 * 60 * 24));
+
+        if (startDiff > 0) {
+          return `D-${startDiff}`;
+        } else if (startDiff <= 0 && endDiff >= 0) {
+          const dayNum = Math.abs(startDiff) + 1;
+          return `🔥 진행 중 (${dayNum}일차)`;
+        } else {
+          return "종료";
         }
       }
     }
   }
 
+  // 단일 날짜 D-Day 계산
+  let targetDate = parseSingleDate(trimmed, currentYear);
   if (!targetDate || isNaN(targetDate.getTime())) {
     return "";
   }
 
-  const diffTime = targetDate - today;
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  let diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
+  if (diffDays < -90) {
+    targetDate.setFullYear(currentYear + 1);
+    diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
+  }
 
   if (diffDays === 0) {
-    return "D-Day";
+    return "D-Day (오늘)";
   } else if (diffDays > 0) {
     return `D-${diffDays}`;
+  } else if (diffDays === -1) {
+    return "어제 종료";
   } else {
-    return `D+${Math.abs(diffDays)}`;
+    return "종료";
   }
+}
+
+// 행사명 및 태그 기반 지능형 아이콘 자동 부여 헬퍼 (수동 선택 제거)
+function getSmartEventIcon(title, tag) {
+  const text = `${title || ""} ${tag || ""}`.toLowerCase();
+  if (text.includes("수련회") || text.includes("캠프") || text.includes("mt") || text.includes("캠핑")) return "forest";
+  if (text.includes("생일") || text.includes("축하") || text.includes("파티") || text.includes("cake")) return "cake";
+  if (text.includes("스카") || text.includes("공부") || text.includes("성경") || text.includes("큐티") || text.includes("말씀") || text.includes("독서")) return "menu_book";
+  if (text.includes("예배") || text.includes("기도") || text.includes("초청") || text.includes("선교") || text.includes("찬양")) return "volunteer_activism";
+  if (text.includes("체육") || text.includes("운동") || text.includes("대회") || text.includes("게임") || text.includes("축구")) return "sports_soccer";
+  if (text.includes("세미나") || text.includes("특강") || text.includes("모임")) return "group";
+  return "celebration";
 }
 
 function getActiveChecklistEvent() {
@@ -9517,28 +9591,35 @@ function renderUpcomingEventsSection() {
 
     const article = document.createElement("article");
 
-    if (event.theme === "terracotta" || (!event.theme && index === 0)) {
-      // Hero Terracotta Gradient Card
-      article.className = "flex-shrink-0 w-[265px] snap-start bg-gradient-to-br from-[#9E4830] via-[#8B3B24] to-[#712D19] rounded-2xl p-3.5 text-white shadow-[0_8px_24px_rgba(150,67,43,0.22)] flex flex-col justify-between relative overflow-hidden group transition-all duration-200 cursor-pointer active:scale-98";
+    const smartIcon = getSmartEventIcon(event.title, event.tag);
+    const computedDday = calculateDdayFromDateString(event.date) || event.dday || "D-Day";
+    const isOngoing = computedDday.includes("진행");
+
+    if (index === 0) {
+      // 🌟 [Hero] 대표/임박 행사: 브랜드 테라코타 그라데이션 카드
+      article.className = "flex-shrink-0 w-[270px] snap-start bg-gradient-to-br from-[#9E4830] via-[#8B3B24] to-[#712D19] rounded-2xl p-3.5 text-white shadow-[0_8px_24px_rgba(150,67,43,0.22)] flex flex-col justify-between relative overflow-hidden group transition-all duration-200 cursor-pointer active:scale-98";
       article.innerHTML = `
         <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/10 blur-lg pointer-events-none"></div>
         <div class="absolute right-2.5 bottom-1 text-white/[0.07] pointer-events-none select-none">
-          <span class="material-symbols-outlined text-[80px]">${event.icon || "menu_book"}</span>
+          <span class="material-symbols-outlined text-[80px]">${smartIcon}</span>
         </div>
         <div class="space-y-2.5 z-10">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1 bg-white/20 backdrop-blur-md px-2.5 py-0.8 rounded-full border border-white/25 shadow-inner">
-              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-              <span class="text-white text-[11px] font-extrabold tracking-tight">${event.dday || "D-Day"}</span>
+              <span class="w-1.5 h-1.5 rounded-full ${isOngoing ? 'bg-amber-300 animate-ping' : 'bg-white animate-pulse'}"></span>
+              <span class="text-white text-[11px] font-extrabold tracking-tight">${computedDday}</span>
               ${!isStudent ? `<span class="text-[9.5px] text-white/80 font-bold ml-0.5">· 준비 ${pct}%</span>` : ''}
             </div>
             <span class="w-7 h-7 rounded-lg bg-white/15 backdrop-blur-md text-white flex items-center justify-center border border-white/20">
-              <span class="material-symbols-outlined text-[17px]">${event.icon || "menu_book"}</span>
+              <span class="material-symbols-outlined text-[17px]">${smartIcon}</span>
             </span>
           </div>
           <div>
-            <span class="text-[10px] font-semibold text-white/75 tracking-wider uppercase">${event.tag || "Special Event"}</span>
-            <h3 class="text-[15.5px] font-extrabold text-white tracking-tight mt-0.5">${event.title}</h3>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[9px] font-extrabold text-amber-200 tracking-wider uppercase bg-black/25 px-1.5 py-0.5 rounded">MAIN EVENT</span>
+              <span class="text-[10px] font-medium text-white/70">${event.tag || "Special Event"}</span>
+            </div>
+            <h3 class="text-[15.5px] font-extrabold text-white tracking-tight mt-1">${event.title}</h3>
             <p class="text-[11.5px] text-white/85 mt-0.5 line-clamp-1">${event.subTitle || ""}</p>
           </div>
         </div>
@@ -9557,66 +9638,32 @@ function renderUpcomingEventsSection() {
           </div>
         </div>
       `;
-    } else if (event.theme === "butter") {
-      // Warm Butter Card
-      article.className = "flex-shrink-0 w-[265px] snap-start bg-surface-card rounded-2xl p-3.5 border border-outline-variant/30 shadow-[0_6px_20px_rgba(60,50,40,0.05)] flex flex-col justify-between relative overflow-hidden group hover:border-accent-butter-text/50 transition-all cursor-pointer active:scale-98";
-      article.innerHTML = `
-        <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-accent-butter/80 -z-0 pointer-events-none"></div>
-        <div class="space-y-2.5 z-10">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1">
-              <span class="px-2.5 py-0.8 rounded-full bg-accent-butter text-accent-butter-text text-[11px] font-extrabold tracking-tight border border-accent-butter-text/20">
-                ${event.dday || "D-Day"}
-              </span>
-              ${!isStudent ? `<span class="text-[9.5px] font-bold text-accent-butter-text bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200/50">준비 ${pct}%</span>` : ''}
-            </div>
-            <span class="w-7 h-7 rounded-lg bg-amber-50 text-accent-butter-text flex items-center justify-center border border-amber-200/50">
-              <span class="material-symbols-outlined text-[17px]">${event.icon || "cake"}</span>
-            </span>
-          </div>
-          <div>
-            <span class="text-[10px] font-semibold text-accent-butter-text tracking-wider uppercase">${event.tag || "Blessing"}</span>
-            <h3 class="text-[15.5px] font-extrabold text-text-primary group-hover:text-accent-butter-text transition-colors">${event.title}</h3>
-            <p class="text-[11.5px] text-text-muted mt-0.5 line-clamp-1">${event.subTitle || ""}</p>
-          </div>
-        </div>
-        <div class="mt-3 pt-2.5 border-t border-surface-container z-10 space-y-1 text-[11.5px]">
-          <div class="flex items-center gap-1.5 font-semibold text-text-secondary whitespace-nowrap">
-            <span class="material-symbols-outlined text-[14px] text-accent-butter-text shrink-0">event</span>
-            <span class="truncate">${event.date || ""}</span>
-          </div>
-          <div class="flex items-center gap-1.5 text-text-muted font-medium whitespace-nowrap">
-            <span class="material-symbols-outlined text-[14px] shrink-0">location_on</span>
-            <span class="truncate">${event.location || "이룸교회"}</span>
-          </div>
-        </div>
-      `;
     } else {
-      // Sage Green or Default Card
-      article.className = "flex-shrink-0 w-[265px] snap-start bg-surface-card rounded-2xl p-3.5 border border-outline-variant/30 shadow-[0_6px_20px_rgba(60,50,40,0.05)] flex flex-col justify-between relative overflow-hidden group hover:border-secondary/50 transition-all cursor-pointer active:scale-98";
+      // 🌿 [Upcoming] 예정된 행사: 정돈되고 부드러운 클린 웜 카드
+      article.className = "flex-shrink-0 w-[270px] snap-start bg-surface-card rounded-2xl p-3.5 border border-outline-variant/30 shadow-[0_6px_20px_rgba(60,50,40,0.05)] flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-all cursor-pointer active:scale-98";
       article.innerHTML = `
-        <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-secondary/8 -z-0 pointer-events-none"></div>
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-accent-butter/60 -z-0 pointer-events-none"></div>
         <div class="space-y-2.5 z-10">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1">
-              <span class="px-2.5 py-0.8 rounded-full bg-badge-sage-bg text-badge-sage-text text-[11px] font-extrabold tracking-tight border border-secondary/20">
-                ${event.dday || "D-Day"}
+              <span class="px-2.5 py-0.8 rounded-full ${isOngoing ? 'bg-amber-100 text-amber-900 border-amber-300 font-extrabold' : 'bg-surface-container text-text-secondary border-outline-variant/40 font-bold'} text-[11px] tracking-tight border">
+                ${computedDday}
               </span>
-              ${!isStudent ? `<span class="text-[9.5px] font-bold text-secondary bg-emerald-50 px-1.5 py-0.5 rounded-full border border-secondary/20">준비 ${pct}%</span>` : ''}
+              ${!isStudent ? `<span class="text-[9.5px] font-bold text-text-secondary bg-surface-container/60 px-1.5 py-0.5 rounded-full border border-outline-variant/30">준비 ${pct}%</span>` : ''}
             </div>
-            <span class="w-7 h-7 rounded-lg bg-badge-sage-bg text-secondary flex items-center justify-center border border-secondary/20">
-              <span class="material-symbols-outlined text-[17px]">${event.icon || "volunteer_activism"}</span>
+            <span class="w-7 h-7 rounded-lg bg-surface-container text-text-secondary flex items-center justify-center border border-outline-variant/40">
+              <span class="material-symbols-outlined text-[17px]">${smartIcon}</span>
             </span>
           </div>
           <div>
-            <span class="text-[10px] font-semibold text-secondary tracking-wider uppercase">${event.tag || "Open Sunday"}</span>
-            <h3 class="text-[15.5px] font-extrabold text-text-primary group-hover:text-secondary transition-colors">${event.title}</h3>
+            <span class="text-[10px] font-semibold text-text-muted tracking-wider uppercase">${event.tag || "Upcoming Event"}</span>
+            <h3 class="text-[15.5px] font-extrabold text-text-primary group-hover:text-primary transition-colors mt-0.5">${event.title}</h3>
             <p class="text-[11.5px] text-text-muted mt-0.5 line-clamp-1">${event.subTitle || ""}</p>
           </div>
         </div>
         <div class="mt-3 pt-2.5 border-t border-surface-container z-10 space-y-1 text-[11.5px]">
           <div class="flex items-center gap-1.5 font-semibold text-text-secondary whitespace-nowrap">
-            <span class="material-symbols-outlined text-[14px] text-secondary shrink-0">event</span>
+            <span class="material-symbols-outlined text-[14px] text-primary shrink-0">event</span>
             <span class="truncate">${event.date || ""}</span>
           </div>
           <div class="flex items-center gap-1.5 text-text-muted font-medium whitespace-nowrap">
@@ -10152,17 +10199,127 @@ function initChecklistEvents() {
     });
   }
 
-  // 행사 일시 입력 시 D-Day 실시간 자동 계산 리스너 (추가 모달)
-  const newEventDateInput = document.getElementById("newEventDateInput");
-  const newEventDdayInput = document.getElementById("newEventDdayInput");
-  if (newEventDateInput && newEventDdayInput) {
-    newEventDateInput.addEventListener("input", () => {
-      const calculated = calculateDdayFromDateString(newEventDateInput.value);
-      if (calculated) {
-        newEventDdayInput.value = calculated;
+  // --- 행사 일정 컨트롤러 (당일 / 다일·수련회 기간 행사 지원) ---
+  function setupDateRangeSelector(prefix) {
+    const singleTab = document.getElementById(`${prefix}SingleDayTab`);
+    const multiTab = document.getElementById(`${prefix}MultiDayTab`);
+    const startDatePicker = document.getElementById(`${prefix}StartDatePicker`);
+    const endDatePicker = document.getElementById(`${prefix}EndDatePicker`);
+    const endDateWrapper = document.getElementById(`${prefix}EndDateWrapper`);
+    const timePicker = document.getElementById(`${prefix}TimePicker`);
+    const timeWrapper = document.getElementById(`${prefix}TimeWrapper`);
+    const dateInput = document.getElementById(`${prefix}DateInput`);
+    const ddayInput = document.getElementById(`${prefix}DdayInput`);
+
+    if (!singleTab || !multiTab || !dateInput || !ddayInput) return null;
+
+    let isMultiDay = false;
+
+    function setMode(multi) {
+      isMultiDay = multi;
+      if (isMultiDay) {
+        singleTab.style.background = "transparent";
+        singleTab.style.color = "#64748b";
+        singleTab.style.boxShadow = "none";
+        multiTab.style.background = "#fff";
+        multiTab.style.color = "#0f172a";
+        multiTab.style.boxShadow = "0 1px 2px rgba(0,0,0,0.06)";
+        if (endDateWrapper) endDateWrapper.style.display = "block";
+        if (timeWrapper) timeWrapper.style.display = "none";
+      } else {
+        singleTab.style.background = "#fff";
+        singleTab.style.color = "#0f172a";
+        singleTab.style.boxShadow = "0 1px 2px rgba(0,0,0,0.06)";
+        multiTab.style.background = "transparent";
+        multiTab.style.color = "#64748b";
+        multiTab.style.boxShadow = "none";
+        if (endDateWrapper) endDateWrapper.style.display = "none";
+        if (timeWrapper) timeWrapper.style.display = "block";
       }
-    });
+    }
+
+    singleTab.onclick = () => {
+      setMode(false);
+      updateDisplayString();
+    };
+    multiTab.onclick = () => {
+      setMode(true);
+      updateDisplayString();
+    };
+
+    function updateDisplayString() {
+      const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+
+      if (!startDatePicker.value) {
+        if (dateInput.value) {
+          const dday = calculateDdayFromDateString(dateInput.value);
+          if (dday) ddayInput.value = dday;
+        }
+        return;
+      }
+
+      const [sy, sm, sd] = startDatePicker.value.split("-").map(Number);
+      const sDate = new Date(sy, sm - 1, sd);
+      const sDay = dayNames[sDate.getDay()];
+
+      if (isMultiDay && endDatePicker && endDatePicker.value) {
+        const [ey, em, ed] = endDatePicker.value.split("-").map(Number);
+        const eDate = new Date(ey, em - 1, ed);
+        const eDay = dayNames[eDate.getDay()];
+
+        const diffDays = Math.round((eDate - sDate) / (1000 * 60 * 60 * 24));
+        let periodLabel = "";
+        if (diffDays > 0) {
+          periodLabel = ` · ${diffDays}박 ${diffDays + 1}일`;
+        } else if (diffDays === 0) {
+          periodLabel = " · 당일";
+        }
+
+        if (sy === ey) {
+          dateInput.value = `${sm}월 ${sd}일(${sDay}) ~ ${em}월 ${ed}일(${eDay})${periodLabel}`;
+        } else {
+          dateInput.value = `${sy}.${sm}.${sd}(${sDay}) ~ ${ey}.${em}.${ed}(${eDay})${periodLabel}`;
+        }
+      } else {
+        const timeVal = (timePicker && timePicker.value) ? ` ${timePicker.value}` : "";
+        dateInput.value = `${sm}월 ${sd}일 (${sDay})${timeVal}`;
+      }
+
+      const calculatedDday = calculateDdayFromDateString(dateInput.value);
+      if (calculatedDday) {
+        ddayInput.value = calculatedDday;
+      }
+    }
+
+    if (startDatePicker) startDatePicker.onchange = updateDisplayString;
+    if (endDatePicker) endDatePicker.onchange = updateDisplayString;
+    if (timePicker) timePicker.onchange = updateDisplayString;
+
+    if (dateInput) {
+      dateInput.oninput = () => {
+        const calculated = calculateDdayFromDateString(dateInput.value);
+        if (calculated) {
+          ddayInput.value = calculated;
+        }
+      };
+    }
+
+    function populateFromText(text) {
+      const extracted = extractDatesFromText(text);
+      setMode(extracted.isMulti);
+      if (startDatePicker && extracted.startDate) startDatePicker.value = extracted.startDate;
+      if (endDatePicker && extracted.endDate) endDatePicker.value = extracted.endDate;
+      if (timePicker && extracted.time) timePicker.value = extracted.time;
+      if (dateInput) dateInput.value = text || "";
+      const calc = calculateDdayFromDateString(text);
+      if (ddayInput) ddayInput.value = calc || "D-Day";
+    }
+
+    return { setMode, updateDisplayString, populateFromText };
   }
+
+  const newDateHelper = setupDateRangeSelector("newEvent");
+  const editDateHelper = setupDateRangeSelector("editEvent");
 
   // 새 행사 추가 폼 제출 리스너
   const addEventForm = document.getElementById("addEventForm");
@@ -10174,7 +10331,6 @@ function initChecklistEvents() {
       const date = document.getElementById("newEventDateInput").value.trim() || "일정 미정";
       let dday = document.getElementById("newEventDdayInput").value.trim();
       
-      // 만약 D-Day가 비어있거나 직접 입력되지 않은 경우 자동 계산값 적용
       if (!dday) {
         dday = calculateDdayFromDateString(date) || "D-Day";
       }
@@ -10182,8 +10338,6 @@ function initChecklistEvents() {
       const managerVal = document.getElementById("newEventManagerValue")?.value || "정하람 전도사";
       const manager = managerVal.trim() || "정하람 전도사";
       const location = document.getElementById("newEventLocationInput").value.trim() || "이룸교회";
-      const theme = document.getElementById("newEventThemeInput").value;
-      const icon = document.getElementById("newEventIconInput").value;
       const firstChecklist = document.getElementById("newEventFirstChecklistInput").value.trim();
 
       const newEventId = "event_" + Date.now();
@@ -10207,8 +10361,6 @@ function initChecklistEvents() {
         location: location,
         manager: manager,
         tag: "Special Event",
-        theme: theme,
-        icon: icon,
         items: items
       };
 
@@ -10226,41 +10378,6 @@ function initChecklistEvents() {
   }
 
   // --- 행사 정보 & 총괄 담당자 수정 모달 (Edit Event & General Manager) ---
-  function updateThemePaletteChips(selectedTheme) {
-    const palette = document.getElementById("editEventThemePalette");
-    const themeInput = document.getElementById("editEventThemeSelect");
-    if (themeInput) themeInput.value = selectedTheme;
-    if (!palette) return;
-
-    palette.querySelectorAll(".theme-palette-chip").forEach(chip => {
-      const theme = chip.dataset.theme;
-      const isSelected = (theme === selectedTheme);
-      chip.classList.toggle("active", isSelected);
-      if (isSelected) {
-        chip.style.border = "2px solid #ea580c";
-        chip.style.background = "#fff7ed";
-        chip.style.color = "#9a3412";
-        chip.style.fontWeight = "800";
-      } else {
-        chip.style.border = "1px solid #e2e8f0";
-        chip.style.background = "#ffffff";
-        chip.style.color = "#475569";
-        chip.style.fontWeight = "700";
-      }
-    });
-  }
-
-  // Bind palette click events
-  const editPalette = document.getElementById("editEventThemePalette");
-  if (editPalette) {
-    editPalette.querySelectorAll(".theme-palette-chip").forEach(chip => {
-      chip.addEventListener("click", () => {
-        const theme = chip.dataset.theme;
-        updateThemePaletteChips(theme);
-      });
-    });
-  }
-
   function openEditEventModal(event) {
     if (!event) event = getActiveChecklistEvent();
     if (!event) return;
@@ -10268,46 +10385,16 @@ function initChecklistEvents() {
     const idInput = document.getElementById("editEventIdInput");
     const titleInput = document.getElementById("editEventTitleInput");
     const subTitleInput = document.getElementById("editEventSubTitleInput");
-    const ddayInput = document.getElementById("editEventDdayInput");
-    const dateInput = document.getElementById("editEventDateInput");
     const locationInput = document.getElementById("editEventLocationInput");
 
     if (idInput) idInput.value = event.id;
     if (titleInput) titleInput.value = event.title || "";
     if (subTitleInput) subTitleInput.value = event.subTitle || "";
-    if (dateInput) dateInput.value = event.date || "";
     if (locationInput) locationInput.value = event.location || "";
 
-    // 실시간 정확한 D-Day 자동 계산 및 동기화 (기존 하드코딩된 값 무시하고 현재 날짜 기준 즉시 계산)
-    const autoDday = calculateDdayFromDateString(event.date);
-    if (ddayInput) {
-      ddayInput.value = autoDday || event.dday || "D-Day";
-    }
-
-    // 카드 테마 컬러 팔레트 칩 동기화
-    const currentTheme = event.theme || "terracotta";
-    updateThemePaletteChips(currentTheme);
-
-    // 달력 날짜 선택기(Native DatePicker) 연동
-    const datePicker = document.getElementById("editEventDatePicker");
-    if (datePicker) {
-      datePicker.onchange = () => {
-        if (!datePicker.value) return;
-        const [y, m, d] = datePicker.value.split("-").map(Number);
-        const dt = new Date(y, m - 1, d);
-        const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
-        const dayOfWeek = dayNames[dt.getDay()];
-        let timePart = "10:00";
-        const currentText = dateInput.value;
-        const timeMatch = currentText.match(/(\d{1,2}:\d{2})/);
-        if (timeMatch) timePart = timeMatch[1];
-
-        dateInput.value = `${m}월 ${d}일 (${dayOfWeek}) ${timePart}`;
-        const newDday = calculateDdayFromDateString(dateInput.value);
-        if (newDday && ddayInput) {
-          ddayInput.value = newDday;
-        }
-      };
+    // 날짜 및 스마트 D-Day 연동 (당일/수련회 등 자동 감지)
+    if (editDateHelper) {
+      editDateHelper.populateFromText(event.date || "");
     }
 
     // 총괄 담당자 복수 선택 칩 시스템 구성
@@ -10324,16 +10411,6 @@ function initChecklistEvents() {
       addCustomBtnId: "editEventAddCustomManagerBtn",
       initialManagers: existingManagers.length > 0 ? existingManagers : ["정하람 전도사"]
     });
-
-    // 수정 모달: 행사 일시 텍스트 직접 입력 시 D-Day 실시간 자동 계산 리스너
-    if (dateInput && ddayInput) {
-      dateInput.oninput = () => {
-        const calculated = calculateDdayFromDateString(dateInput.value);
-        if (calculated) {
-          ddayInput.value = calculated;
-        }
-      };
-    }
 
     openModal("editEventModal");
   }
@@ -10371,14 +10448,12 @@ function initChecklistEvents() {
 
       const managerVal = document.getElementById("editEventManagerValue")?.value || "";
       const newManager = managerVal.trim() || targetEvent.manager || "정하람 전도사";
-      const newTheme = document.getElementById("editEventThemeSelect").value;
       const newLocation = document.getElementById("editEventLocationInput").value.trim();
 
       targetEvent.title = newTitle;
       targetEvent.subTitle = newSubTitle;
       targetEvent.dday = newDday;
       targetEvent.manager = newManager;
-      targetEvent.theme = newTheme;
       if (newDate) targetEvent.date = newDate;
       if (newLocation) targetEvent.location = newLocation;
 
