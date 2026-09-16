@@ -2549,6 +2549,10 @@ button:active, .btn:active, .interactive-card:active {
   color: #3e322b;
 }
 
+.cal-cell:active {
+  background: #faebe0 !important;
+}
+
 .cal-event-pill {
   display: block;
   font-size: 8.5px;
@@ -2560,11 +2564,7 @@ button:active, .btn:active, .interactive-card:active {
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;
-  transition: transform 120ms ease;
-}
-
-.cal-event-pill:hover {
-  transform: scale(1.02);
+  pointer-events: none; /* 터치가 부모 .cal-cell로 전달되어 날짜 선택으로 동작 일원화 */
 }
 
 .pill-pink { background: #ffe4ec; color: #cb3d67; }

@@ -11324,38 +11324,7 @@ function bindCalendarDynamicEvents() {
     });
   });
 
-  // B. Event / Birthday Pill Click inside Calendar Grid
-  document.querySelectorAll(".cal-event-pill").forEach(pill => {
-    pill.addEventListener("click", (e) => {
-      e.stopPropagation(); // prevent triggering parent cell click
-      const itemType = pill.dataset.itemType;
-      const itemId = pill.dataset.itemId;
-      if (itemType === "birthday") {
-        const bday = allBirthdays.find(b => String(b.id) === String(itemId));
-        if (bday) openManageCalendarItemModal("birthday", bday);
-      } else if (itemType === "event") {
-        const allSchedules = getAllCalendarSchedules();
-        const target = allSchedules.find(ev => String(ev.id) === String(itemId) || String(ev.rawEventId) === String(itemId));
-        if (target && target.isMainEvent && target.eventRef) {
-          if (isPastor) {
-            openEditEventModal(target.eventRef);
-          } else {
-            appState.currentChecklistEventId = target.eventRef.id;
-            saveState();
-            switchToTab("view-scheduler");
-            switchSchedulerSubTab("subTabChecklist");
-            renderChecklistSection();
-            showToast(`'${target.eventRef.title}' 행사 체크리스트로 이동했습니다. 📋`);
-          }
-        } else {
-          const evt = (appState.calendarEvents || []).find(ev => String(ev.id) === String(itemId));
-          if (evt) openManageCalendarItemModal("event", evt);
-        }
-      }
-    });
-  });
-
-  // C. Calendar Cell Click (Select Day and display Day Schedule Feed)
+  // B. Calendar Cell Click (달력 칸 어디를 눌러도 무조건 날짜 선택으로 동작 일원화)
   document.querySelectorAll(".cal-cell:not(.other-month)").forEach(cell => {
     cell.addEventListener("click", () => {
       const day = parseInt(cell.dataset.day, 10);
