@@ -2691,26 +2691,14 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header">
           <div>
-            <h3 class="sheet-title">📅 일정 & 생일 등록</h3>
-            <p style="font-size:11px; color:var(--primary); font-weight:700;">사역 캘린더 및 생일자 추가 (전도사용)</p>
+            <h3 class="sheet-title">🎂 생일자 등록</h3>
+            <p style="font-size:11px; color:var(--primary); font-weight:700;">예랑 공동체 생일자 추가 (전도사용)</p>
           </div>
           <button class="sheet-close-btn" data-close="addCalendarItemModal">✕</button>
         </div>
 
         <form id="addCalendarItemForm" style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
-          <div class="form-group">
-            <label style="font-size:12px; font-weight:800; color:#2d261e;">항목 구분</label>
-            <div style="display:flex; gap:10px; margin-top:4px;">
-              <label style="flex:1; display:flex; align-items:center; gap:6px; background:#fff5f7; border:1.5px solid #fed2dc; padding:10px; border-radius:10px; cursor:pointer; font-weight:700; font-size:13px; color:#9f3150;">
-                <input type="radio" name="calItemType" value="birthday" checked>
-                <span>🎂 생일자 등록</span>
-              </label>
-              <label style="flex:1; display:flex; align-items:center; gap:6px; background:#fff7ed; border:1.5px solid #fed7aa; padding:10px; border-radius:10px; cursor:pointer; font-weight:700; font-size:13px; color:#c2410c;">
-                <input type="radio" name="calItemType" value="event">
-                <span>🎉 행사/사역 등록</span>
-              </label>
-            </div>
-          </div>
+          <input type="hidden" name="calItemType" value="birthday">
 
           <!-- 생일 등록 전용 필드 -->
           <div id="calBirthdayFieldsGroup">
@@ -2768,7 +2756,7 @@
           </div>
 
           <button type="submit" class="btn-orange" style="margin-top:10px; width:100%; padding:14px; font-size:14px; font-weight:800;">
-            <span>✨ 캘린더에 등록하기</span>
+            <span>🎂 생일 등록하기</span>
           </button>
         </form>
       </div>

@@ -10998,18 +10998,14 @@ function renderCalendarSection() {
   const isPastor = isCurrentRolePastor();
   const yearTitleEl = document.getElementById("calYearDisplay");
   const currentTitleEl = document.getElementById("calCurrentMonthTitle");
-  const addBtn = document.getElementById("openAddCalendarEventBtn");
   const grid = document.getElementById("calendarGrid");
   const showcase = document.getElementById("birthdayShowcaseCard");
 
   if (!grid || !showcase) return;
 
-  // 1. Update Navigation Titles & Add Button Visibility (Pastor Only)
+  // 1. Update Navigation Titles
   if (yearTitleEl) yearTitleEl.textContent = `${currentCalendarYear}년 ${currentCalendarMonth}월`;
   if (currentTitleEl) currentTitleEl.textContent = `📅 ${currentCalendarMonth}월 사역 & 생일`;
-  if (addBtn) {
-    addBtn.style.display = isPastor ? "inline-flex" : "none";
-  }
 
   // 2. Build Calendar Day Names Header
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
@@ -11161,20 +11157,13 @@ function renderDayScheduleCard(day) {
           <h3 class="font-extrabold text-[13.5px] text-gray-900">${currentCalendarMonth}월 ${day}일 (${dayOfWeekName}) 사역 일정</h3>
           <span class="text-[10px] font-black px-2 py-0.2 rounded-full ${totalItems > 0 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'}">${totalItems}건</span>
         </div>
-        ${isPastor ? `
-          <button type="button" id="dayCardAddEventBtn" class="text-[11px] font-bold text-primary bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-lg flex items-center gap-0.5 active:scale-95 transition-all">
-            <span class="material-symbols-outlined text-[13px]">add</span>
-            <span>일정 추가</span>
-          </button>
-        ` : ''}
       </div>
   `;
 
   if (totalItems === 0) {
     html += `
-      <div class="py-3 text-center">
+      <div class="py-3.5 text-center">
         <p class="text-[12px] font-medium text-gray-400">등록된 사역 일정이 없습니다.</p>
-        ${isPastor ? `<button type="button" id="dayCardEmptyAddBtn" class="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"><span>＋</span> <span>이 날짜에 새 사역 등록</span></button>` : ''}
       </div>
     `;
   } else {
@@ -11229,15 +11218,6 @@ function renderDayScheduleCard(day) {
 
   html += `</div>`;
   container.innerHTML = html;
-
-  const addBtn = document.getElementById("dayCardAddEventBtn");
-  if (addBtn) {
-    addBtn.onclick = () => openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, day);
-  }
-  const emptyAddBtn = document.getElementById("dayCardEmptyAddBtn");
-  if (emptyAddBtn) {
-    emptyAddBtn.onclick = () => openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, day);
-  }
 
   container.querySelectorAll(".day-event-info-click").forEach(infoEl => {
     infoEl.onclick = () => {
@@ -11537,25 +11517,8 @@ function initCalendarEvents() {
     });
   }
 
-  // 2. Open Add Modal Button in Header (Pastor)
-  const openAddBtn = document.getElementById("openAddCalendarEventBtn");
-  if (openAddBtn) {
-    openAddBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1);
-    });
-  }
-
-  // Global delegated click handler for calendar action buttons
+  // Global delegated click handler for calendar action buttons (생일자 추가 전용)
   document.addEventListener("click", (e) => {
-    const addEvtBtn = e.target.closest("#openAddCalendarEventBtn");
-    if (addEvtBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      openAddCalendarItemModal(currentCalendarYear, currentCalendarMonth, 1);
-      return;
-    }
     const bdayQuickBtn = e.target.closest("#openAddBdayQuickBtn");
     if (bdayQuickBtn) {
       e.preventDefault();
@@ -11577,7 +11540,7 @@ function initCalendarEvents() {
   if (addForm) {
     addForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const type = addForm.querySelector('input[name="calItemType"]:checked')?.value || "birthday";
+      const type = addForm.querySelector('input[name="calItemType"]:checked')?.value || addForm.querySelector('input[name="calItemType"]')?.value || "birthday";
       const dateVal = document.getElementById("calItemDateInput").value;
       if (!dateVal) {
         showToast("⚠️ 날짜를 선택해주세요.", "warn");
