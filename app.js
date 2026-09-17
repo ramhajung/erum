@@ -891,43 +891,24 @@ const INITIAL_DATA = {
   },
   events: [
     {
-      id: "event_1",
-      title: "예랑 스카",
-      subTitle: "중간고사 집중 스터디 카페",
-      dday: "D-12",
-      date: "10월 25일 (토) 10:00",
-      location: "예랑실 및 비전홀",
-      manager: "김대한 선생님",
-      tag: "Focus Study Cafe",
-      theme: "terracotta",
+      id: "event_open",
+      title: "2학기 개강예배",
+      subTitle: "새 학기를 말씀과 기도로 시작하는 예배",
+      dday: "D-Day",
+      date: "9월 20일 (일) 11:00",
+      location: "이룸교회 대예배실",
+      manager: "정하람 전도사",
+      tag: "Worship",
+      theme: "butter",
       icon: "menu_book",
       items: [
-        { id: 1, title: "멀티탭 및 고속 충전기 10구 구매 (김대한T)", manager: "김대한T", checked: true, color: "green" },
-        { id: 2, title: "야간 집중 간식(토스트/음료) 주문 (양선아T)", manager: "양선아T", checked: false, color: "default" },
-        { id: 3, title: "스카 홍보 포스터 인쇄 및 게시 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "yellow" },
-        { id: 4, title: "10분 말씀 큐티지 인쇄 (소예진T)", manager: "소예진T", checked: false, color: "default" },
-        { id: 5, title: "자습실 좌석 배치 및 청소 당번표 확정 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" }
+        { id: 101, title: "개강예배 주보 및 순서지 인쇄 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" },
+        { id: 102, title: "새 학기 분반 교재 배부 준비 (김대한 선생님)", manager: "김대한 선생님", checked: true, color: "green" },
+        { id: 103, title: "찬양팀 특별 찬양 순서 연습 (소예진 선생님)", manager: "소예진 선생님", checked: true, color: "yellow" }
       ]
     },
     {
       id: "event_2",
-      title: "10월 생일파티",
-      subTitle: "10월 생일자 축복의 시간",
-      dday: "D-26",
-      date: "11월 08일 (토) 14:00",
-      location: "중고등부실 본당",
-      manager: "김희순 집사",
-      tag: "Blessing Day",
-      theme: "butter",
-      icon: "cake",
-      items: [
-        { id: 201, title: "생일 선물 포장 및 롤링페이퍼 준비 (소예진T)", manager: "소예진T", checked: false, color: "default" },
-        { id: 202, title: "생일 케이크 및 다과 주문 (김희순 집사)", manager: "김희순 집사", checked: true, color: "green" },
-        { id: 203, title: "축복 찬양 및 특별 축하 영상 제작 (양선아T)", manager: "양선아T", checked: false, color: "default" }
-      ]
-    },
-    {
-      id: "event_3",
       title: "친구초청예배",
       subTitle: "친구와 함께하는 열린 예배",
       dday: "D-12",
@@ -942,25 +923,40 @@ const INITIAL_DATA = {
         { id: 302, title: "환영 찬양 및 특별 순서 연습 (소예진T)", manager: "소예진T", checked: false, color: "default" },
         { id: 303, title: "새친구 환영 만찬 테이블 세팅 (김대한T)", manager: "김대한T", checked: false, color: "default" }
       ]
+    },
+    {
+      id: "event_3",
+      title: "10월 생일파티",
+      subTitle: "10월 생일자 축복의 시간",
+      dday: "D-26",
+      date: "11월 08일 (토) 14:00",
+      location: "중고등부실 본당",
+      manager: "김희순 집사",
+      tag: "Blessing Day",
+      theme: "butter",
+      icon: "cake",
+      items: [
+        { id: 201, title: "생일 선물 포장 및 롤링페이퍼 준비 (소예진T)", manager: "소예진T", checked: false, color: "default" },
+        { id: 202, title: "생일 케이크 및 다과 주문 (김희순 집사)", manager: "김희순 집사", checked: true, color: "green" },
+        { id: 203, title: "축복 찬양 및 특별 축하 영상 제작 (양선아T)", manager: "양선아T", checked: false, color: "default" }
+      ]
     }
   ],
-  currentChecklistEventId: "event_1",
+  currentChecklistEventId: "event_open",
   checklist: {
-    eventName: "예랑 스카",
-    dday: "D-12",
-    manager: "김대한 선생님",
+    eventName: "2학기 개강예배",
+    dday: "D-Day",
+    manager: "정하람 전도사",
     items: [
-      { id: 1, title: "멀티탭 및 고속 충전기 10구 구매 (김대한T)", manager: "김대한T", checked: true, color: "green" },
-      { id: 2, title: "야간 집중 간식(토스트/음료) 주문 (양선아T)", manager: "양선아T", checked: false, color: "default" },
-      { id: 3, title: "스카 홍보 포스터 인쇄 및 게시 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "yellow" },
-      { id: 4, title: "10분 말씀 큐티지 인쇄 (소예진T)", manager: "소예진T", checked: false, color: "default" },
-      { id: 5, title: "자습실 좌석 배치 및 청소 당번표 확정 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" }
+      { id: 101, title: "개강예배 주보 및 순서지 인쇄 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" },
+      { id: 102, title: "새 학기 분반 교재 배부 준비 (김대한 선생님)", manager: "김대한 선생님", checked: true, color: "green" },
+      { id: 103, title: "찬양팀 특별 찬양 순서 연습 (소예진 선생님)", manager: "소예진 선생님", checked: true, color: "yellow" }
     ]
   },
   staffBox: {
     items: [
       { id: 1, type: "구매요청", title: "방송실 고속 HDMI 케이블 & 멀티탭 10구", author: "김대한T", budget: "45,000원", status: "승인완료", badgeType: "approved" },
-      { id: 2, type: "사역건의", title: "예랑 스카 야식 쉼터 공간 분리 제안", author: "소예진T", budget: null, status: "검토중", badgeType: "review" },
+      { id: 2, type: "사역건의", title: "청소년부 쉼터 힐링 공간 분리 제안", author: "소예진T", budget: null, status: "검토중", badgeType: "review" },
       { id: 3, type: "회의안건", title: "찬양팀 토요 연습시간 변경의 건", author: "소예진 선생님", budget: null, status: "검토중", badgeType: "review", agendaId: 101 }
     ]
   },
@@ -973,11 +969,8 @@ const INITIAL_DATA = {
     announcement: { name: "정하람 전도사", role: "청소년부 담당", badge: "부서소식" }
   },
   calendarEvents: [
-    // 10월
-    { id: "evt_1", date: "2026-10-24", title: "🎉 친구초청", type: "event", color: "orange" },
-    // 과거 일정 (8월, 9월)
+    // 과거 일정 (8월)
     { id: "evt_2", date: "2026-08-15", title: "🏕️ 여름수련회", type: "event", color: "mint" },
-    { id: "evt_3", date: "2026-09-05", title: "💻 스카준비", type: "event", color: "yellow" },
     { id: "evt_4", date: "2026-09-19", title: "🍂 2학기 개강예배", type: "event", color: "orange" },
     // 향후 일정 (11월, 12월)
     { id: "evt_5", date: "2026-11-14", title: "🌾 추수감사 토요예배", type: "event", color: "yellow" },
@@ -1204,16 +1197,19 @@ function loadState() {
       }
       if (!parsed.events || parsed.events.length === 0) {
         parsed.events = JSON.parse(JSON.stringify(INITIAL_DATA.events));
-        // If there was legacy checklist, migrate it to events[0]
-        if (parsed.checklist && parsed.checklist.items) {
-          parsed.events[0].items = parsed.checklist.items;
-          if (parsed.checklist.eventName) parsed.events[0].title = parsed.checklist.eventName;
-          if (parsed.checklist.dday) parsed.events[0].dday = parsed.checklist.dday;
-          if (parsed.checklist.manager) parsed.events[0].manager = parsed.checklist.manager;
+      }
+      // '예랑 스카' 및 구버전 스카 더미 데이터 완전 제거 & 단일화 마이그레이션
+      if (parsed.events && Array.isArray(parsed.events)) {
+        parsed.events = parsed.events.filter(ev => ev.id !== "event_1" && !ev.title.includes("스카"));
+        if (!parsed.events.some(ev => ev.id === "event_open")) {
+          parsed.events.unshift(JSON.parse(JSON.stringify(INITIAL_DATA.events[0])));
         }
       }
-      if (!parsed.currentChecklistEventId) {
-        parsed.currentChecklistEventId = parsed.events[0] ? parsed.events[0].id : "event_1";
+      if (parsed.calendarEvents && Array.isArray(parsed.calendarEvents)) {
+        parsed.calendarEvents = parsed.calendarEvents.filter(ev => ev.id !== "evt_3" && !ev.title.includes("스카"));
+      }
+      if (!parsed.currentChecklistEventId || parsed.currentChecklistEventId === "event_1" || !parsed.events.some(ev => ev.id === parsed.currentChecklistEventId)) {
+        parsed.currentChecklistEventId = (parsed.events && parsed.events.length > 0) ? parsed.events[0].id : "event_open";
       }
       if (parsed.agendas && parsed.agendas.pending && parsed.staffBox && parsed.staffBox.items) {
         parsed.agendas.pending.forEach(pa => {
@@ -10957,38 +10953,6 @@ function getAllCalendarSchedules() {
       }
     });
   }
-
-  // 2. appState.calendarEvents (캘린더 전용 등록 사역들)
-  const rawCalendarEvents = (appState.calendarEvents && appState.calendarEvents.length > 0)
-    ? appState.calendarEvents
-    : (INITIAL_DATA.calendarEvents || []);
-
-  rawCalendarEvents.forEach(evt => {
-    // 만약 주요 행사(appState.events)에 동일하거나 유사한 제목(예: '스카', '스카준비', '친구초청')이 이미 반영되어 있다면 중복 방지
-    const cleanTitle = (evt.title || "").replace(/^[^\w가-힣]+/, "").trim();
-    const isDuplicate = Array.from(registeredEventTitles).some(mainTitle => {
-      const cleanMain = mainTitle.replace(/^[^\w가-힣]+/, "").trim();
-      return cleanMain.includes(cleanTitle) || cleanTitle.includes(cleanMain);
-    });
-
-    if (!isDuplicate) {
-      schedules.push({
-        id: evt.id,
-        rawEventId: evt.id,
-        title: evt.title,
-        date: evt.date,
-        time: evt.time || "",
-        location: evt.location || "이룸교회",
-        manager: evt.manager || "",
-        tag: evt.tag || "사역",
-        color: evt.color || "yellow",
-        type: "event",
-        isMainEvent: false,
-        calendarEventRef: evt
-      });
-    }
-  });
-
   return schedules;
 }
 
