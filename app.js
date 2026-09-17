@@ -8482,6 +8482,7 @@ function renderUserManagerSection(filterCategory = "ALL") {
     card.className = "user-mgmt-card";
     const pendingBadge = user.isPending ? '<span style="font-size:10.5px; background:#fef3c7; color:#b45309; padding:2px 7px; border-radius:6px; font-weight:800; border:1px solid #fde68a;">승인 대기중 ⏳</span>' : '';
 
+    const isStudent = isStudentRole(user.role);
     const roleBadgeHtml = isStudent
       ? '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">학생</span>'
       : (ROLE_BADGES[user.role] || "");
