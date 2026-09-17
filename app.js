@@ -300,9 +300,10 @@ const INITIAL_DATA = {
   gradeClasses: [
     {
       id: "class_high3",
-      grade: "고3반",
+      grade: "김대한반",
+      className: "김대한 선생님반",
       teacherName: "김대한 선생님",
-      teacherDuty: "고3 담임 / 방송실 자막 & 미디어",
+      teacherDuty: "공과반 담임 / 방송실 자막 & 미디어",
       teacherPhone: "010-3456-7890",
       teacherAvatar: "🧑🏻‍🏫",
       color: "#9a3412",
@@ -315,30 +316,32 @@ const INITIAL_DATA = {
     },
     {
       id: "class_high2",
-      grade: "고2반",
+      grade: "이은혜반",
+      className: "이은혜 선생님반",
       teacherName: "이은혜 선생님",
-      teacherDuty: "고2 담임 / 예배 안내팀 지도",
+      teacherDuty: "공과반 담임 / 예배 안내팀 지도",
       teacherPhone: "010-7788-9900",
       teacherAvatar: "👩🏻‍🏫",
       color: "#0369a1",
       badgeColor: "#f0f9ff",
       students: [
-        { id: "s_high2_1", name: "최민서", roleInfo: "고2 / 방송실 음향", grade: "고2", avatar: "👧🏻", attendance: "출석", recentVisit: "중간고사 내신 준비 심방 격려 완료", phone: "010-4444-2222" },
-        { id: "s_high2_2", name: "정도윤", roleInfo: "고2 / 찬양팀 베이스", grade: "고2", avatar: "👦🏻", attendance: "출석", recentVisit: "예배 반주 연습 및 1:1 진로 상담", phone: "010-3333-1111" }
+        { id: "s_high2_1", name: "최민서", roleInfo: "방송실 음향", grade: "고2", avatar: "👧🏻", attendance: "출석", recentVisit: "중간고사 내신 준비 심방 격려 완료", phone: "010-4444-2222" },
+        { id: "s_high2_2", name: "정도윤", roleInfo: "찬양팀 베이스", grade: "고2", avatar: "👦🏻", attendance: "출석", recentVisit: "예배 반주 연습 및 1:1 진로 상담", phone: "010-3333-1111" }
       ]
     },
     {
       id: "class_mid",
-      grade: "중등부반",
+      grade: "박진우반",
+      className: "박진우 선생님반",
       teacherName: "박진우 선생님",
-      teacherDuty: "중등부 담임 / 새친구 사역 멘토",
+      teacherDuty: "공과반 담임 / 새친구 사역 멘토",
       teacherPhone: "010-8899-0011",
       teacherAvatar: "🧑🏻‍🏫",
       color: "#0f766e",
       badgeColor: "#f0fdfa",
       students: [
-        { id: "s_mid_1", name: "김하람", roleInfo: "중2 / 새친구반 정착 학생", grade: "중2", avatar: "👧🏻", attendance: "출석", recentVisit: "새친구 4주 수료 후 중등부 적응 완료", phone: "010-5678-9012" },
-        { id: "s_mid_2", name: "강태우", roleInfo: "중3 / 중등부 회장", grade: "중3", avatar: "👦🏻", attendance: "출석", recentVisit: "친구초청 토요예배 레크리에이션 준비 나눔", phone: "010-6666-7777" }
+        { id: "s_mid_1", name: "김하람", roleInfo: "새친구반 정착 학생", grade: "중2", avatar: "👧🏻", attendance: "출석", recentVisit: "새친구 4주 수료 후 분반 적응 완료", phone: "010-5678-9012" },
+        { id: "s_mid_2", name: "강태우", roleInfo: "중등부 회장", grade: "중3", avatar: "👦🏻", attendance: "출석", recentVisit: "친구초청 토요예배 레크리에이션 준비 나눔", phone: "010-6666-7777" }
       ]
     }
   ],
@@ -1272,6 +1275,13 @@ function loadState() {
       // Ensure gradeClasses and newcomerMinistry exist
       if (!parsed.gradeClasses || parsed.gradeClasses.length === 0) {
         parsed.gradeClasses = JSON.parse(JSON.stringify(INITIAL_DATA.gradeClasses));
+      } else {
+        // 학년제 -> 교사 담임제 마이그레이션 (고3반 -> 김대한반 등)
+        parsed.gradeClasses.forEach(c => {
+          if (c.grade === "고3반") { c.grade = "김대한반"; c.className = "김대한 선생님반"; c.teacherDuty = "공과반 담임 / 방송실 자막 & 미디어"; }
+          if (c.grade === "고2반") { c.grade = "이은혜반"; c.className = "이은혜 선생님반"; c.teacherDuty = "공과반 담임 / 예배 안내팀 지도"; }
+          if (c.grade === "중등부반") { c.grade = "박진우반"; c.className = "박진우 선생님반"; c.teacherDuty = "공과반 담임 / 새친구 사역 멘토"; }
+        });
       }
       if (!parsed.newcomerMinistry) {
         parsed.newcomerMinistry = JSON.parse(JSON.stringify(INITIAL_DATA.newcomerMinistry));
@@ -2135,7 +2145,7 @@ function renderClassMinistrySection() {
             return `
               <button type="button" class="class-chip-btn" onclick="selectGradeClass('${c.id}')" style="padding:7px 12px; font-size:12px; font-weight:${isSel ? '800' : '600'}; border-radius:12px; border:1.5px solid ${isSel ? c.color : '#e2d9cf'}; background:${isSel ? c.color : '#fff'}; color:${isSel ? '#fff' : '#57534e'}; white-space:nowrap; cursor:pointer; display:flex; align-items:center; gap:4px; box-shadow:${isSel ? '0 3px 8px rgba(0,0,0,0.12)' : 'none'}; transition:all 0.15s ease;">
                 <span>${c.teacherAvatar}</span>
-                <span>${c.grade} (${c.teacherName.split(' ')[0]})</span>
+                <span>${c.grade}</span>
               </button>
             `;
           }).join('')}
@@ -2313,7 +2323,8 @@ function renderClassMinistrySection() {
                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px; flex-wrap:wrap;">
                   <span style="font-size:13.5px; font-weight:800; color:#2d261e;">${s.name}</span>
                   ${isMe ? '<span style="font-size:9.5px; background:#ea580c; color:#fff; font-weight:800; padding:1px 5px; border-radius:6px;">나</span>' : ''}
-                  <span style="font-size:11px; color:#78716c;">(${s.roleInfo || s.grade})</span>
+                  ${s.grade ? `<span style="font-size:10px; font-weight:800; color:#0284c7; background:#e0f2fe; border:1px solid #bae6fd; padding:1px 6px; border-radius:6px;">${s.grade}</span>` : ''}
+                  <span style="font-size:11px; color:#78716c;">(${s.roleInfo || '학생'})</span>
                   ${!isStudent ? `<span style="font-size:10px; color:#c2410c; background:#fff7ed; border:1px solid #ffedd5; padding:1px 5px; border-radius:5px; font-weight:800; display:inline-flex; align-items:center; gap:2px;"><span>📋</span> 학생부</span>` : ''}
                 </div>
                 <div style="font-size:11.5px; color:#8c827a; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
