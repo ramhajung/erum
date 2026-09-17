@@ -2005,16 +2005,12 @@ function openEditClassModal(classId) {
   const teacherNameInput = document.getElementById("editClassTeacherNameInput");
   const teacherDutyInput = document.getElementById("editClassTeacherDutyInput");
   const teacherPhoneInput = document.getElementById("editClassTeacherPhoneInput");
-  const avatarSelect = document.getElementById("editClassAvatarSelect");
-  const colorSelect = document.getElementById("editClassColorSelect");
 
   if (idInput) idInput.value = targetClass.id;
   if (gradeInput) gradeInput.value = targetClass.grade || "";
   if (teacherNameInput) teacherNameInput.value = targetClass.teacherName || "";
   if (teacherDutyInput) teacherDutyInput.value = targetClass.teacherDuty || "";
   if (teacherPhoneInput) teacherPhoneInput.value = targetClass.teacherPhone || "";
-  if (avatarSelect) avatarSelect.value = targetClass.teacherAvatar || "🧑🏻‍🏫";
-  if (colorSelect) colorSelect.value = targetClass.color || "#9a3412";
 
   openModal("editClassModal");
 }
@@ -2081,10 +2077,13 @@ function initManageClassesEvents() {
       const teacherName = document.getElementById("addClassTeacherNameInput").value.trim();
       const teacherDuty = document.getElementById("addClassTeacherDutyInput").value.trim() || "공과반 담임";
       const teacherPhone = document.getElementById("addClassTeacherPhoneInput").value.trim() || "010-0000-0000";
-      const teacherAvatar = document.getElementById("addClassAvatarSelect").value || "🧑🏻‍🏫";
-      const color = document.getElementById("addClassColorSelect").value || "#9a3412";
 
+      const palette = ["#9a3412", "#0369a1", "#0f766e", "#be123c", "#7e22ce"];
       const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+      const color = palette[classes.length % palette.length];
+      const isFemale = /은혜|선아|예진|하은|희순|유리|민서|하람|미경|수진|지은|혜진/.test(teacherName);
+      const teacherAvatar = isFemale ? "👩🏻‍🏫" : "🧑🏻‍🏫";
+
       const newId = `class_${Date.now()}`;
       const newClass = {
         id: newId,
@@ -2121,8 +2120,6 @@ function initManageClassesEvents() {
       const teacherName = document.getElementById("editClassTeacherNameInput").value.trim();
       const teacherDuty = document.getElementById("editClassTeacherDutyInput").value.trim();
       const teacherPhone = document.getElementById("editClassTeacherPhoneInput").value.trim();
-      const teacherAvatar = document.getElementById("editClassAvatarSelect").value;
-      const color = document.getElementById("editClassColorSelect").value;
 
       const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
       const targetClass = classes.find(c => c.id === classId);
@@ -2134,8 +2131,6 @@ function initManageClassesEvents() {
       targetClass.teacherName = teacherName;
       if (teacherDuty) targetClass.teacherDuty = teacherDuty;
       if (teacherPhone) targetClass.teacherPhone = teacherPhone;
-      if (teacherAvatar) targetClass.teacherAvatar = teacherAvatar;
-      if (color) targetClass.color = color;
 
       // 소속 학생들의 분반명 동기화
       if (oldGrade !== grade && targetClass.students) {
