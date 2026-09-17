@@ -7269,8 +7269,8 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
-      { target: "view-students", icon: "menu_book", label: "공과/목양", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
+      { target: "view-students", icon: "menu_book", label: "공과/목양", title: "공과·새친구반 & 학생부 목양", subtitle: "공과반 지도 · 새친구반 정착 · 학생 심방" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -7287,8 +7287,8 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
-      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "고3 분반 학생 출결 및 심방 지도" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "고3 분반 학생 출결 및 심방 지도" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -7305,8 +7305,8 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
-      { target: "view-teacher-new", icon: "spa", label: "새친구반", title: "새친구반 적응 & 정착", subtitle: "새친구반 적응 체크리스트 & 등반 관리" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
+      { target: "view-teacher-new", icon: "spa", label: "새친구반", title: "새친구반 적응 & 정착", subtitle: "새친구반 적응 체크리스트 & 등반 관리" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -7323,8 +7323,8 @@ const ROLES = {
     activeClass: "active-teacher",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "교사 목양 대시보드", subtitle: "2026년 10월 17일 (토)" },
-      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "분반 학생 출결 및 심방 지도" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 캘린더 & 예배 출결", subtitle: "사역 캘린더 · 생일 · 토요예배 출결" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "공과공부 & 분반 목양", subtitle: "분반 학생 출결 및 심방 지도" },
       { target: "view-agenda", icon: "diversity_3", label: "회의/건의", title: "회의 안건 & 사역 소통함", subtitle: "안건 제안 및 사역 건의 등록" },
       { target: "view-accounting", icon: "receipt_long", label: "내영수증", title: "내가 제출한 영수증 목록", subtitle: "정산 상태 확인 (부서 잔액 보안 적용 🔒)" }
     ],
@@ -7341,8 +7341,8 @@ const ROLES = {
     activeClass: "active-student",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
-      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
     ],
     defaultTab: "view-home",
@@ -7358,8 +7358,8 @@ const ROLES = {
     activeClass: "active-student",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 새친구 환영 피드", subtitle: "새친구 환영 · 토요예배 섬김이 · 공지" },
-      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "새친구 & 배정 분반 공과 · 담임 선생님 · 분반 친구들" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "새친구 & 배정 분반 공과 · 담임 선생님 · 분반 친구들" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "새친구 1:1 멘토링 & 심방 신청" }
     ],
     defaultTab: "view-home",
@@ -7375,8 +7375,8 @@ const ROLES = {
     activeClass: "active-student",
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
-      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
       { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
     ],
     defaultTab: "view-home",
