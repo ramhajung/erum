@@ -3112,6 +3112,37 @@ function canEditStudentPrayer(student) {
   return false;
 }
 
+// 심방 기록 열람 및 등록 권한: 전도사님(총괄 관리자)과 해당 학생의 담당 공과 선생님만 허용 (학생 및 타교사 비공개)
+function canViewStudentVisitations(student) {
+  if (!student) return false;
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  if (!currentUser) return false;
+
+  // 1. 학생 역할은 본인이든 타인이든 심방 기록 열람 불가
+  if (isStudentRole(currentUser.role) || (typeof currentRole !== "undefined" && isStudentRole(currentRole))) {
+    return false;
+  }
+
+  // 2. 전도사님 (지도교역자, 총괄 관리자)
+  const isPastor = (currentUser.role === "pastor") || (typeof currentRole !== "undefined" && currentRole === "pastor") || currentUser.isAdmin;
+  if (isPastor) return true;
+
+  // 3. 담당 공과공부/분반 선생님
+  const currentCleanName = (currentUser.name || "").replace(/\s*(선생님|전도사|교사|집사님|집사|T)$/, "").trim();
+  const teacherCleanName = (student.teacherName || "").replace(/\s*(선생님|전도사|교사|집사님|집사|T)$/, "").trim();
+  if (teacherCleanName && currentCleanName && (currentCleanName === teacherCleanName || currentCleanName.includes(teacherCleanName) || teacherCleanName.includes(currentCleanName))) {
+    return true;
+  }
+
+  // 선생님의 duty 또는 반 정보 일치 여부 확인 (예: '고3 담임'과 '고3반' 매칭)
+  const studentClassClean = (student.className || student.grade || "").replace(/반$/, "").trim();
+  if (currentUser.duty && studentClassClean && currentUser.duty.includes(studentClassClean)) {
+    return true;
+  }
+
+  return false;
+}
+
 let editingStudentPrayerData = {
   studentId: null,
   prayers: []
@@ -3426,9 +3457,10 @@ function openStudentDetailModal(studentId) {
   const teacherBadge = document.getElementById("detailModalTeacherBadge");
   const avatar = document.getElementById("detailModalAvatar");
   const name = document.getElementById("detailModalName");
-  const duty = document.getElementById("detailModalDuty");
+  const visitSection = document.getElementById("detailModalVisitationSection");
   const visitListEl = document.getElementById("detailModalVisitationList");
   const prayerListEl = document.getElementById("detailModalPrayerList");
+  const prayerSectionTitle = document.getElementById("detailModalPrayerSectionTitle");
   const addVisitBtn = document.getElementById("detailModalOpenAddVisitBtn");
 
   if (gradeBadge) gradeBadge.textContent = s.className || s.grade;
@@ -3437,31 +3469,46 @@ function openStudentDetailModal(studentId) {
   if (name) name.textContent = s.name;
   if (duty) duty.textContent = s.roleInfo || s.duty || `${s.grade} 학생`;
 
-  // Render Visits
-  if (visitListEl) {
-    visitListEl.innerHTML = "";
-    const visits = s.visits || [];
-    if (visits.length === 0) {
-      visitListEl.innerHTML = `
-        <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:12.5px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
-          등록된 심방 기록이 없습니다.
-        </div>
-      `;
-    } else {
-      visits.forEach(item => {
-        const el = document.createElement("div");
-        el.className = "timeline-item";
-        el.innerHTML = `
-          <div class="date-badge">${item.date}</div>
-          <div class="timeline-content">
-            <div class="timeline-title">${item.title}</div>
-            <div class="timeline-desc">${item.desc}</div>
+  // --- [목양 보안] 심방 기록 권한 검사: 전도사님 및 해당 학생 담당 선생님만 허용 ---
+  const canViewVisits = canViewStudentVisitations(s);
+
+  if (canViewVisits) {
+    if (visitSection) visitSection.style.display = "block";
+    if (addVisitBtn) addVisitBtn.style.display = "flex";
+    if (prayerSectionTitle) prayerSectionTitle.textContent = "2) 학생 기도제목 🙏";
+
+    // Render Visits
+    if (visitListEl) {
+      visitListEl.innerHTML = "";
+      const visits = s.visits || [];
+      if (visits.length === 0) {
+        visitListEl.innerHTML = `
+          <div style="text-align:center; padding:18px; color:var(--text-muted); font-size:12.5px; background:white; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            등록된 심방 기록이 없습니다.
           </div>
-          <div class="timeline-icon-btn">${item.icon || '💬'}</div>
         `;
-        visitListEl.appendChild(el);
-      });
+      } else {
+        visits.forEach(item => {
+          const el = document.createElement("div");
+          el.className = "timeline-item";
+          el.innerHTML = `
+            <div class="date-badge">${item.date}</div>
+            <div class="timeline-content">
+              <div class="timeline-title">${item.title}</div>
+              <div class="timeline-desc">${item.desc}</div>
+            </div>
+            <div class="timeline-icon-btn">${item.icon || '💬'}</div>
+          `;
+          visitListEl.appendChild(el);
+        });
+      }
     }
+  } else {
+    // 권한 없는 경우 (학생 본인/친구, 타 반 교사 등): 심방 기록과 등록 버튼을 원천 비공개 처리
+    if (visitSection) visitSection.style.display = "none";
+    if (visitListEl) visitListEl.innerHTML = "";
+    if (addVisitBtn) addVisitBtn.style.display = "none";
+    if (prayerSectionTitle) prayerSectionTitle.textContent = "학생 기도제목 🙏";
   }
 
   // Prayer Edit Permission & Action Area
@@ -3576,13 +3623,18 @@ function renderStudentRosterList(filterGrade = currentStudentRosterFilter) {
     return;
   }
 
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isStudent = (typeof isStudentRole === "function" && isStudentRole(currentRole)) || (currentUser && isStudentRole(currentUser.role));
+
   listContainer.innerHTML = filtered.map(s => {
     const latestVisit = (s.visits && s.visits[0]) ? s.visits[0] : null;
     const prayersCount = (s.prayers || []).length;
     const dutyText = s.roleInfo || s.duty || `${s.grade} 학생`;
+    const canViewVisits = canViewStudentVisitations(s);
+    const clickFn = isStudent ? `openFriendPrayerSheetModal('${s.id}')` : `openStudentDetailModal('${s.id}')`;
 
     return `
-      <div class="student-roster-card bg-white border border-stone-200/70 hover:border-primary/40 rounded-2xl p-3.5 shadow-xs transition-all active:scale-[0.99] cursor-pointer" onclick="openStudentDetailModal('${s.id}')">
+      <div class="student-roster-card bg-white border border-stone-200/70 hover:border-primary/40 rounded-2xl p-3.5 shadow-xs transition-all active:scale-[0.99] cursor-pointer" onclick="${clickFn}">
         <div class="flex items-start justify-between gap-2.5">
           <!-- Left: Avatar & Info -->
           <div class="flex items-center gap-3 min-w-0">
@@ -3609,17 +3661,22 @@ function renderStudentRosterList(filterGrade = currentStudentRosterFilter) {
           </div>
         </div>
 
-        <!-- Card Footer: Recent Visit & Prayers preview -->
+        <!-- Card Footer: Recent Visit (if authorized) or Class info & Prayers preview -->
         <div class="mt-2.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500 gap-2">
           <div class="flex items-center gap-1.5 min-w-0 truncate">
-            <span class="text-stone-400">최근 심방:</span>
-            <span class="font-bold text-stone-700 truncate">
-              ${latestVisit ? `${latestVisit.icon || '💬'} ${latestVisit.date} ${latestVisit.title}` : (s.recentVisit || '등록된 심방 없음')}
-            </span>
+            ${canViewVisits ? `
+              <span class="text-stone-400">최근 심방:</span>
+              <span class="font-bold text-stone-700 truncate">
+                ${latestVisit ? `${latestVisit.icon || '💬'} ${latestVisit.date} ${latestVisit.title}` : (s.recentVisit || '등록된 심방 없음')}
+              </span>
+            ` : `
+              <span class="text-stone-400">소속:</span>
+              <span class="font-bold text-stone-700 truncate">${s.className || s.grade} · 담당: ${s.teacherName || '선생님'}</span>
+            `}
           </div>
           <div class="flex items-center gap-2 flex-shrink-0 text-stone-400">
             <span class="font-bold text-stone-600">🙏 기도 ${prayersCount}건</span>
-            <span class="text-primary font-bold text-[11.5px]">상세보기 →</span>
+            <span class="text-primary font-bold text-[11.5px]">${isStudent ? '함께 기도 ♥' : '상세보기 →'}</span>
           </div>
         </div>
       </div>
@@ -3656,13 +3713,17 @@ function renderHomePrayersSection() {
     return;
   }
 
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isStudent = (typeof isStudentRole === "function" && isStudentRole(currentRole)) || (currentUser && isStudentRole(currentUser.role));
+
   container.innerHTML = studentsWithPrayers.map(s => {
     const prayers = s.prayers || [];
     const topPrayers = prayers.slice(0, 2);
     const hasMore = prayers.length > 2;
+    const clickFn = isStudent ? `openFriendPrayerSheetModal('${s.id}')` : `openStudentDetailModal('${s.id}')`;
 
     return `
-      <div class="snap-start flex-shrink-0 w-[275px] bg-gradient-to-br from-orange-50/50 via-white to-rose-50/30 rounded-2xl p-3.5 border border-orange-200/60 shadow-xs hover:border-orange-300 transition-all flex flex-col justify-between cursor-pointer active:scale-[0.99]" onclick="openStudentDetailModal('${s.id}')" title="${s.name} 학생부 보기">
+      <div class="snap-start flex-shrink-0 w-[275px] bg-gradient-to-br from-orange-50/50 via-white to-rose-50/30 rounded-2xl p-3.5 border border-orange-200/60 shadow-xs hover:border-orange-300 transition-all flex flex-col justify-between cursor-pointer active:scale-[0.99]" onclick="${clickFn}" title="${s.name} ${isStudent ? '함께 기도하기' : '학생부 보기'}">
         <div>
           <!-- Header: Avatar, Name, Grade, Teacher, Badge -->
           <div class="flex items-center justify-between gap-1 mb-2.5">
@@ -3703,10 +3764,9 @@ function renderHomePrayersSection() {
 
         <!-- Footer link -->
         <div class="mt-3 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
-          <span class="text-stone-400 font-medium">학생부 & 나눔 기록</span>
+          <span class="text-stone-400 font-medium">${isStudent ? '친구 기도 나눔' : '학생부 & 나눔 기록'}</span>
           <span class="font-extrabold text-primary flex items-center gap-0.5">
-            <span>자세히 보기</span>
-            <span class="text-[10px]">›</span>
+            <span>${isStudent ? '함께 기도하기 ♥' : '자세히 보기 ›'}</span>
           </span>
         </div>
       </div>
@@ -3912,13 +3972,18 @@ function renderStudentPrayersCards(students) {
     `;
   }
 
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isStudent = (typeof isStudentRole === "function" && isStudentRole(currentRole)) || (currentUser && isStudentRole(currentUser.role));
+
   return students.map(s => {
     const canEdit = canEditStudentPrayer(s);
+    const clickFn = isStudent ? `openFriendPrayerSheetModal('${s.id}')` : `openStudentDetailModal('${s.id}')`;
+
     return `
       <div class="bg-white rounded-2xl p-3.5 border border-stone-200/80 shadow-2xs hover:border-orange-300 transition-all">
         <!-- Top Row: Student Avatar, Name, Grade, Teacher, Edit btn -->
         <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-stone-100">
-          <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="openStudentDetailModal('${s.id}')">
+          <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="${clickFn}">
             <div class="w-9 h-9 rounded-xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-xl flex-shrink-0">
               ${s.avatar || '👦🏻'}
             </div>
@@ -3938,16 +4003,22 @@ function renderStudentPrayersCards(students) {
                 <span>✏️</span> <span>수정</span>
               </button>
             ` : ''}
-            <button type="button" onclick="openStudentDetailModal('${s.id}')" class="px-2 py-1 bg-stone-50 hover:bg-stone-100 text-stone-600 border border-stone-200 rounded-lg text-[11px] font-bold cursor-pointer transition-colors" title="학생부 열람">
-              학생부 ›
-            </button>
+            ${isStudent ? `
+              <button type="button" onclick="openFriendPrayerSheetModal('${s.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 rounded-lg text-[11px] font-extrabold cursor-pointer transition-colors flex items-center gap-1" title="함께 기도하기">
+                <span>❤️</span> <span>함께 기도</span>
+              </button>
+            ` : `
+              <button type="button" onclick="openStudentDetailModal('${s.id}')" class="px-2 py-1 bg-stone-50 hover:bg-stone-100 text-stone-600 border border-stone-200 rounded-lg text-[11px] font-bold cursor-pointer transition-colors" title="학생부 열람">
+                학생부 ›
+              </button>
+            `}
           </div>
         </div>
 
         <!-- Prayers List -->
         <div class="space-y-1.5 pt-2.5">
           ${(s.prayers || []).map(p => `
-            <div class="flex items-start gap-2 bg-stone-50/80 rounded-xl p-2 border border-stone-100/90 text-xs text-stone-800 font-medium leading-relaxed">
+            <div class="flex items-start gap-2 bg-stone-50/80 rounded-xl p-2 border border-stone-100/90 text-xs text-stone-800 font-medium leading-relaxed ${isStudent ? 'cursor-pointer hover:bg-orange-50/60 transition-colors' : ''}" ${isStudent ? `onclick="openFriendPrayerSheetModal('${s.id}')"` : ''}>
               <span class="text-rose-500 text-xs flex-shrink-0 mt-0.5">♥</span>
               <span class="flex-1">${p.text}</span>
             </div>

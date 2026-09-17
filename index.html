@@ -1401,26 +1401,31 @@
           </div>
         </div>
 
-        <!-- Section 1: 최근 심방 기록 -->
-        <div class="section-label mt-2">
-          <span>1) 최근 심방 기록</span>
-          <span style="font-size:11px; font-weight:600; color:var(--accent-mint);">실시간 업데이트</span>
-        </div>
-        <div class="timeline-list" id="detailModalVisitationList">
-          <!-- Populated by JS -->
+        <!-- Section 1: 최근 심방 기록 (담당 교사 & 전도사 전용 보안) -->
+        <div id="detailModalVisitationSection" style="display:none;">
+          <div class="section-label mt-2" style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="flex items-center gap-1.5">
+              <span>1) 최근 심방 기록</span>
+              <span style="font-size:10px; font-weight:800; background:#fef3c7; color:#92400e; border:1px solid #fde68a; padding:1px 6px; border-radius:6px;">담당 교사 전용 🔒</span>
+            </span>
+            <span style="font-size:11px; font-weight:600; color:var(--accent-mint);">실시간 업데이트</span>
+          </div>
+          <div class="timeline-list" id="detailModalVisitationList">
+            <!-- Populated by JS -->
+          </div>
         </div>
 
         <!-- Section 2: 학생 기도제목 -->
-        <div class="section-label" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
-          <span>2) 학생 기도제목 🙏</span>
+        <div class="section-label" style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+          <span id="detailModalPrayerSectionTitle">학생 기도제목 🙏</span>
           <div id="detailModalPrayerActionArea"></div>
         </div>
         <div id="detailModalPrayerList" class="space-y-2">
           <!-- Populated by JS -->
         </div>
 
-        <!-- Action Button -->
-        <button type="button" class="btn-primary w-full mt-4 py-3 text-sm font-black flex items-center justify-center gap-1.5 cursor-pointer" id="detailModalOpenAddVisitBtn">
+        <!-- Action Button (담당 교사 및 전도사 전용) -->
+        <button type="button" class="btn-primary w-full mt-4 py-3 text-sm font-black flex items-center justify-center gap-1.5 cursor-pointer" id="detailModalOpenAddVisitBtn" style="display:none;">
           <span>＋</span> <span>새 심방 기록 등록</span>
         </button>
       </div>
