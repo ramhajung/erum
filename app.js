@@ -5199,6 +5199,13 @@ function renderAttendanceSection() {
   const currentUser = getCurrentUser();
   const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
 
+  const headerTitleEl = document.getElementById("subViewAttendanceHeaderTitle");
+  if (headerTitleEl) {
+    headerTitleEl.textContent = isPastor
+      ? "이룸교회 중고등부 예랑 · 교사 출결 & 공백 종합 관리"
+      : "이룸교회 중고등부 예랑 · 나의 예배 출결 관리";
+  }
+
   // 1. 이번 주 출석/사전결석/지각 통계 바: 전도사에게만 노출 (선생님들에게는 비노출)
   const statsBar = document.getElementById("attendanceStatsBar");
   if (statsBar) {
@@ -5233,7 +5240,11 @@ function renderAttendanceSection() {
     if (isPastor) {
       openAbsentBtn.innerHTML = `<span>＋</span> <span>교사 불참/지각 사유 등록 (대리 접수)</span>`;
     } else {
-      openAbsentBtn.innerHTML = `<span>＋</span> <span>나의 예배 불참/지각 사전 등록</span>`;
+      if (filteredAttendance.length > 0) {
+        openAbsentBtn.innerHTML = `<span>✏️</span> <span>나의 예배 출결 사유 수정 / 추가 등록</span>`;
+      } else {
+        openAbsentBtn.innerHTML = `<span>＋</span> <span>나의 예배 불참/지각 사전 등록</span>`;
+      }
     }
   }
 
@@ -5245,20 +5256,30 @@ function renderAttendanceSection() {
 
   if (filteredAttendance.length === 0) {
     const emptyEl = document.createElement("div");
-    emptyEl.style.cssText = "padding: 36px 16px; text-align: center; background: #ffffff; border-radius: 16px; border: 1.5px dashed #f1ddd2; color: #94a3b8; margin: 12px 0;";
+    emptyEl.style.cssText = isPastor
+      ? "padding: 36px 16px; text-align: center; background: #ffffff; border-radius: 16px; border: 1.5px dashed #f1ddd2; color: #94a3b8; margin: 12px 0;"
+      : "padding: 32px 16px; text-align: center; background: #f0fdf4; border-radius: 16px; border: 1.5px dashed #bbf7d0; color: #166534; margin: 12px 0;";
     emptyEl.innerHTML = isPastor ? `
       <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
       <div style="font-size: 14px; font-weight: 800; color: #475569; margin-bottom: 4px;">등록된 교사 출결 특이사항이 없습니다</div>
       <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">이번 주 모든 선생님이 정상 출석 예정입니다. 🌤️</div>
     ` : `
-      <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
-      <div style="font-size: 14px; font-weight: 800; color: #475569; margin-bottom: 4px;">등록된 나의 예배 출결 내역이 없습니다</div>
-      <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">이번 주 토요예배에 사전 결석 또는 지각 예정이실 경우<br>아래 버튼을 눌러 등록해주세요.</div>
+      <div style="font-size: 32px; margin-bottom: 8px;">✅</div>
+      <div style="font-size: 14.5px; font-weight: 800; color: #166534; margin-bottom: 4px;">이번 주 정상 출석 예정입니다</div>
+      <div style="font-size: 12px; color: #475569; line-height: 1.5;">토요예배에 사전 결석 또는 지각 예정이실 경우<br>아래 버튼을 눌러 미리 알려주세요. 🌤️</div>
     `;
     listEl.appendChild(emptyEl);
     renderAttendingTeachersSection();
     return;
   }
+
+  // 상단 안내 라벨 (전도사 vs 교사 본인)
+  const sectionTitleEl = document.createElement("div");
+  sectionTitleEl.className = "text-[12px] font-extrabold text-gray-700 mb-2.5 flex items-center gap-1.5";
+  sectionTitleEl.innerHTML = isPastor
+    ? `<span>⚠️</span> <span>사전 결석 및 지각 접수 명단 (${filteredAttendance.length}명)</span>`
+    : `<span>📌</span> <span>나의 이번 주 출결 등록 현황</span>`;
+  listEl.appendChild(sectionTitleEl);
 
   filteredAttendance.forEach(att => {
     const isLate = att.status === "지각";
@@ -5350,6 +5371,17 @@ function renderAttendingTeachersSection() {
   // Update stat present count
   const statPresentEl = document.getElementById("statPresentCount");
   if (statPresentEl) statPresentEl.textContent = attendingList.length;
+
+  const currentUser = getCurrentUser();
+  const isPastor = (currentRole === "pastor" && (!currentUser || currentUser.role === "pastor"));
+
+  // 다른 사람들의 출결 현황(정상 출석 예정 선생님 명단 등)은 전도사(총괄 관리자)에게만 노출하고 일반 선생님에게는 숨김
+  if (!isPastor) {
+    container.style.display = "none";
+    container.innerHTML = "";
+    return;
+  }
+  container.style.display = "block";
 
   container.innerHTML = `
     <div class="bg-white rounded-2xl p-3.5 border border-emerald-200/80 shadow-2xs">
