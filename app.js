@@ -8372,6 +8372,106 @@ function renderUserSwitchGrid() {
   });
 }
 
+function generateClassOptionsForStudent(user) {
+  if (!user) return "";
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses || [];
+  
+  let currentClassVal = "none";
+  if (user.role === "student_new") {
+    currentClassVal = "newcomer";
+  } else {
+    const matchedClass = classes.find(c => 
+      (c.students && c.students.some(s => s.id === user.id || s.name === user.name)) ||
+      (user.duty && user.duty.includes(c.grade))
+    );
+    if (matchedClass) {
+      currentClassVal = `class:${matchedClass.id}`;
+    }
+  }
+
+  let html = "";
+  classes.forEach(c => {
+    const val = `class:${c.id}`;
+    const sel = (val === currentClassVal) ? "selected" : "";
+    html += `<option value="${val}" ${sel}>🏫 ${escapeHtml(c.grade)} (${escapeHtml(c.teacherName || '담임')})</option>`;
+  });
+  html += `<option value="newcomer" ${currentClassVal === "newcomer" ? "selected" : ""}>🌱 새친구반 (정착/새가족)</option>`;
+  html += `<option value="none" ${currentClassVal === "none" ? "selected" : ""}>⚪ 분반 미배정</option>`;
+  return html;
+}
+
+function handleStudentClassChange(userId, classVal) {
+  const user = (appState.users || []).find(u => u.id === userId);
+  if (!user) return;
+
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses || [];
+  
+  // 1. Remove student from all gradeClasses
+  classes.forEach(c => {
+    if (c.students && Array.isArray(c.students)) {
+      c.students = c.students.filter(s => s.id !== user.id && s.name !== user.name);
+    }
+  });
+
+  // 2. Remove student from newcomerMinistry if present
+  if (appState.newcomerMinistry && Array.isArray(appState.newcomerMinistry.students)) {
+    appState.newcomerMinistry.students = appState.newcomerMinistry.students.filter(s => s.id !== user.id && s.name !== user.name);
+  }
+
+  // 3. Assign according to classVal
+  if (classVal && classVal.startsWith("class:")) {
+    const classId = classVal.replace("class:", "");
+    const targetClass = classes.find(c => c.id === classId);
+    if (targetClass) {
+      user.role = "student_grade";
+      const roleDuty = (user.duty && user.duty.includes("/")) ? user.duty.split("/")[1].trim() : "분반 학생";
+      user.duty = `${targetClass.grade} / ${roleDuty}`;
+      
+      const newStudentObj = {
+        id: user.id || ("std_" + Date.now()),
+        name: user.name,
+        grade: targetClass.grade,
+        gender: (user.avatar && (user.avatar.includes("👧") || user.avatar.includes("👩"))) ? "여" : "남",
+        avatar: user.avatar || "👦🏻",
+        phone: user.phone || "",
+        birthday: user.birthday || "",
+        roleInfo: roleDuty,
+        recentVisit: `${targetClass.grade} 분반 배정 완료`,
+        visitCount: 0,
+        prayerTopics: []
+      };
+      if (!targetClass.students) targetClass.students = [];
+      targetClass.students.push(newStudentObj);
+      showToast(`'${user.name}' 학생이 '${targetClass.grade}'(으)로 배정되었습니다! ✓`, "success");
+    }
+  } else if (classVal === "newcomer") {
+    user.role = "student_new";
+    user.duty = "새친구반 / 새친구";
+    if (!appState.newcomerMinistry) appState.newcomerMinistry = { students: [] };
+    if (!Array.isArray(appState.newcomerMinistry.students)) appState.newcomerMinistry.students = [];
+    
+    appState.newcomerMinistry.students.push({
+      id: user.id || ("new_" + Date.now()),
+      name: user.name,
+      phone: user.phone || "",
+      step: "1단계 (환영)",
+      progress: 25,
+      mentor: "소예진 선생님",
+      notes: "새친구 등록"
+    });
+    showToast(`'${user.name}' 학생이 '새친구반'으로 배정되었습니다! 🌱`, "success");
+  } else {
+    user.role = "student_grade";
+    user.duty = "미배정 / 학생";
+    showToast(`'${user.name}' 학생이 '미배정' 상태로 변경되었습니다.`, "info");
+  }
+
+  saveState();
+  if (typeof renderClassMinistrySection === "function") renderClassMinistrySection();
+  if (typeof renderNewcomerMinistrySection === "function") renderNewcomerMinistrySection();
+  if (typeof renderUserManagerSection === "function") renderUserManagerSection(window._currentUserMgmtFilter || "ALL");
+}
+
 function renderUserManagerSection(filterCategory = "ALL") {
   window._currentUserMgmtFilter = filterCategory;
   const container = document.getElementById("userMgmtListContainer");
@@ -9253,11 +9353,16 @@ function initUserManagementEvents() {
   if (adminBanner) {
     adminBanner.addEventListener("click", () => {
       const user = getCurrentUser();
-      if (currentRole !== "pastor") {
+      const isPastor = (user && user.role === "pastor") || (user && user.isAdmin) || currentRole === "pastor";
+      if (!isPastor) {
         showToast("⚠️ 관리자(전도사)만 계정 권한 관리에 접근할 수 있습니다.", "warn");
         return;
       }
-      renderUserManagerSection();
+      try {
+        renderUserManagerSection();
+      } catch (err) {
+        console.error("Error in renderUserManagerSection:", err);
+      }
       openModal("userManagementModal");
     });
   }
