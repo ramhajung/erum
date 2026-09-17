@@ -6809,6 +6809,11 @@ function updateAccountingNotificationBadges() {
       homeBanner.classList.add("hidden");
     }
   }
+
+  // 3. 회계선생님 홈 위젯 실시간 연동
+  if (typeof renderAccountantHomeWidget === "function") {
+    renderAccountantHomeWidget();
+  }
 }
 
 function confirmAndDismissReceipt(receiptId) {
@@ -9696,20 +9701,29 @@ function initWorshipDutyEvents() {
   }
 }
 
-// --- Home Quick Actions (Role-Adaptive: Pastor vs Teacher) ---
+// --- Home Quick Actions (Role-Adaptive: Pastor vs Teacher vs Accountant) ---
 function renderHomeQuickActions() {
   const isPastor = (currentRole === "pastor" || (getCurrentUser() && getCurrentUser().role === "pastor"));
+  const isAccountant = (currentRole === "accountant" || (getCurrentUser() && getCurrentUser().role === "accountant"));
   const isStudent = isStudentRole(currentRole) || (getCurrentUser() && isStudentRole(getCurrentUser().role));
 
   const pastorActions = document.getElementById("pastorQuickActions");
   const teacherBox = document.getElementById("teacherSuggestionBox");
+  const accountantBox = document.getElementById("accountantQuickActions");
 
   if (pastorActions) {
     pastorActions.style.display = isPastor ? "grid" : "none";
   }
 
+  if (accountantBox) {
+    accountantBox.style.display = isAccountant ? "block" : "none";
+    if (isAccountant) {
+      renderAccountantHomeWidget();
+    }
+  }
+
   if (teacherBox) {
-    teacherBox.style.display = (!isPastor && !isStudent) ? "block" : "none";
+    teacherBox.style.display = (!isPastor && !isAccountant && !isStudent) ? "block" : "none";
 
     const currentUser = getCurrentUser();
     if (currentUser && appState.staffBox && appState.staffBox.items) {
@@ -9722,12 +9736,94 @@ function renderHomeQuickActions() {
   }
 }
 
+function renderAccountantHomeWidget() {
+  if (!appState.accounting) return;
+
+  const receipts = appState.accounting.receipts || [];
+  let totalExpense = 0;
+  receipts.forEach(r => totalExpense += Number(r.amount) || 0);
+  const liveBalance = (appState.accounting.initialBalance || 0) + (appState.accounting.income || 0) - totalExpense;
+
+  const balanceText = document.getElementById("accHomeBalanceText");
+  if (balanceText) {
+    balanceText.innerHTML = `${liveBalance.toLocaleString()} <span class="text-[12px] font-bold">원</span>`;
+  }
+
+  const subText = document.getElementById("accHomeIncomeExpenseSubText");
+  if (subText) {
+    subText.innerHTML = `<span>수입: +${(appState.accounting.income || 0).toLocaleString()}원</span> · <span>지출: -${totalExpense.toLocaleString()}원</span>`;
+  }
+
+  // Pending receipts calculation
+  const pendingReceipts = receipts.filter(r => r.status === "승인대기" || (!r.status || (r.status !== "정산완료" && r.status !== "반려")));
+  const pendingCount = pendingReceipts.length;
+
+  const badgeContainer = document.getElementById("accHomePendingBadgeContainer");
+  if (badgeContainer) {
+    if (pendingCount > 0) {
+      badgeContainer.innerHTML = `
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-black bg-amber-100 text-amber-900 border border-amber-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
+          <span>${pendingCount}건 결재 대기 중</span>
+        </span>
+      `;
+    } else {
+      badgeContainer.innerHTML = `
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          <span>✓ 모두 정산완료</span>
+        </span>
+      `;
+    }
+  }
+
+  const totalCountText = document.getElementById("accHomeTotalReceiptCountText");
+  if (totalCountText) {
+    totalCountText.textContent = `전체 영수증 ${receipts.length}건`;
+  }
+}
+
 // --- Home Dashboard Interactivity ---
 function initHomeDashboardEvents() {
   const staffBoxBtn = document.getElementById("openStaffBoxBtn");
   if (staffBoxBtn) {
     staffBoxBtn.addEventListener("click", () => {
       openModal("staffBoxModal");
+    });
+  }
+
+  // Accountant Home Dashboard buttons
+  const accGotoLedgerBtn = document.getElementById("accHomeGotoLedgerBtn");
+  if (accGotoLedgerBtn) {
+    accGotoLedgerBtn.addEventListener("click", () => {
+      switchToTab("view-accounting");
+    });
+  }
+
+  const accReviewReceiptsBtn = document.getElementById("accHomeReviewReceiptsBtn");
+  if (accReviewReceiptsBtn) {
+    accReviewReceiptsBtn.addEventListener("click", () => {
+      switchToTab("view-accounting");
+      const pendingChip = document.getElementById("filterRcptPending");
+      if (pendingChip) pendingChip.click();
+    });
+  }
+
+  const accExportBtn = document.getElementById("accHomeExportBtn");
+  if (accExportBtn) {
+    accExportBtn.addEventListener("click", () => {
+      const originalExportBtn = document.getElementById("exportCsvBtn");
+      if (originalExportBtn) {
+        originalExportBtn.click();
+      } else {
+        showToast("장부 CSV 다운로드 중...", "info");
+      }
+    });
+  }
+
+  const accSuggestBtn = document.getElementById("accHomeSuggestBtn");
+  if (accSuggestBtn) {
+    accSuggestBtn.addEventListener("click", () => {
+      openTeacherSuggestModal();
     });
   }
 
