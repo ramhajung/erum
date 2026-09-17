@@ -1315,12 +1315,12 @@
               <div class="grid grid-cols-2 gap-2" id="qnaTargetSelector">
                 <label class="qna-target-label flex items-center justify-center gap-1.5 p-2 rounded-xl border border-rose-300 bg-rose-50/60 text-rose-950 font-bold text-[12px] cursor-pointer transition-all">
                   <input type="radio" name="qnaTarget" value="정하람 전도사님" checked class="hidden">
-                  <span>🧑🏻‍💼</span>
+                  <span>✝️</span>
                   <span>정하람 전도사님</span>
                 </label>
                 <label class="qna-target-label flex items-center justify-center gap-1.5 p-2 rounded-xl border border-stone-200 bg-white text-stone-600 font-bold text-[12px] cursor-pointer transition-all">
                   <input type="radio" name="qnaTarget" value="우리반 담임선생님" class="hidden">
-                  <span>🧑🏻‍🏫</span>
+                  <span>📖</span>
                   <span>우리반 담임선생님</span>
                 </label>
               </div>
@@ -1450,7 +1450,7 @@
               <span id="detailModalTeacherBadge" class="text-[11px] font-semibold text-stone-500">담임: 김대한 선생님</span>
             </div>
             <h3 class="sheet-title flex items-center gap-2 text-[18px]">
-              <span id="detailModalAvatar">👦🏻</span>
+              <span id="detailModalAvatar" style="display:none;"></span>
               <span id="detailModalName">양형모</span>
             </h3>
             <p id="detailModalDuty" class="text-[11.5px] font-medium text-stone-500 mt-0.5">예랑 찬양팀 (드럼)</p>
@@ -1558,7 +1558,6 @@
                 <span class="text-[11px] font-semibold text-stone-500" id="editTeacherModalDuty">고3 담임</span>
               </div>
               <h3 class="sheet-title flex items-center gap-2 text-[17px]">
-                <span>🧑🏻‍🏫</span>
                 <span id="editTeacherModalName">김대한 선생님</span>
                 <span class="text-[14px] font-normal text-stone-600">기도제목 관리</span>
               </h3>
@@ -1611,7 +1610,7 @@
                 <span class="text-[11px] font-semibold text-stone-500" id="friendPrayerSheetTeacherBadge">우리 분반</span>
               </div>
               <h3 class="sheet-title flex items-center gap-2 text-[17.5px]">
-                <span id="friendPrayerSheetAvatar" class="text-xl">👧🏻</span>
+                <span id="friendPrayerSheetAvatar" class="text-xl" style="display:none;"></span>
                 <span id="friendPrayerSheetStudentName">친구 이름</span>
                 <span class="text-[14px] font-normal text-stone-600">기도제목</span>
               </h3>
@@ -1662,10 +1661,10 @@
               전체
             </button>
             <button type="button" class="all-prayers-filter-chip py-1.5 rounded-xl text-[12.5px] font-extrabold bg-transparent text-stone-600 border border-transparent hover:bg-white/60 transition-all cursor-pointer text-center" data-category="student" onclick="filterAllPrayersModal('student')">
-              🧑🏻‍🎓 학생
+              학생
             </button>
             <button type="button" class="all-prayers-filter-chip py-1.5 rounded-xl text-[12.5px] font-extrabold bg-transparent text-stone-600 border border-transparent hover:bg-white/60 transition-all cursor-pointer text-center" data-category="teacher" onclick="filterAllPrayersModal('teacher')">
-              🧑🏻‍🏫 선생님
+              선생님
             </button>
           </div>
 
@@ -2474,19 +2473,10 @@
             <label>이름</label>
             <input type="text" id="editUserNameInput" placeholder="이름" required>
           </div>
-          <div class="form-group">
-            <label>프로필 캐릭터 (아바타) 🎨</label>
+          <div class="form-group" style="display:none;">
+            <label>프로필 캐릭터</label>
             <select id="editUserAvatarSelect" style="width:100%; border:1.5px solid #d1d5db; border-radius:10px; padding:9px 12px; font-size:14px; font-weight:700; color:#1f2937; background:#fff;">
-              <option value="👩🏻‍🏫">👩🏻‍🏫 여선생님 (공과반 / 회계쌤)</option>
-              <option value="🧑🏻‍🏫">🧑🏻‍🏫 남선생님 (공과반 / 미디어)</option>
-              <option value="🧑🏻‍💼">🧑🏻‍💼 지도교역자 / 전도사</option>
-              <option value="👩🏻‍💼">👩🏻‍💼 직장인 / 여성 사역자</option>
-              <option value="👩🏻‍💻">👩🏻‍💻 노트북 / 스마트 행정</option>
-              <option value="👔">👔 부장집사님 / 총무</option>
-              <option value="👦🏻">👦🏻 남학생</option>
-              <option value="👧🏻">👧🏻 여학생</option>
-              <option value="🌱">🌱 새친구 (학생 / 교사)</option>
-              <option value="🎸">🎸 찬양팀 세션</option>
+              <option value="" selected>기본</option>
             </select>
           </div>
           <div class="form-group" id="editUserDutyTeacherGroup">
@@ -2830,7 +2820,7 @@
         <div class="sheet-header">
           <div>
             <div class="flex items-center gap-1.5 mb-1">
-              <span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10.5px] font-extrabold">학생 가입 승인 👦🏻</span>
+              <span class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10.5px] font-extrabold">학생 가입 승인</span>
             </div>
             <h3 class="sheet-title text-[17px] font-black text-stone-900" id="approveStudentModalTitle">학생 승인 & 분반 배정</h3>
             <p class="text-xs text-stone-500 font-medium mt-0.5" id="approveStudentModalSubtitle">소속될 분반과 학년을 선택해주세요.</p>
@@ -2922,16 +2912,10 @@
                   <option value="전도사">전도사</option>
                 </select>
               </div>
-              <div class="form-group">
+              <div class="form-group" style="display:none;">
                 <label style="font-size:12px; font-weight:800; color:#2d261e;">프로필 아이콘</label>
                 <select id="calBdayAvatarSelect" class="field-input" style="width:100%; margin-top:4px;">
-                  <option value="👧🏻">👧🏻 여학생</option>
-                  <option value="👦🏻">👦🏻 남학생</option>
-                  <option value="👩🏻‍🏫">👩🏻‍🏫 여선생님 / 회계쌤</option>
-                  <option value="🧑🏻‍🏫">🧑🏻‍🏫 남선생님</option>
-                  <option value="👩🏻‍💼">👩🏻‍💼 직장인 / 여성 사역자</option>
-                  <option value="👔">👔 부장집사님</option>
-                  <option value="🧑🏻‍💼">🧑🏻‍💼 지도교역자 / 전도사</option>
+                  <option value="🎂" selected>🎂 생일</option>
                 </select>
               </div>
             </div>
@@ -3041,16 +3025,10 @@
                   <option value="전도사">전도사</option>
                 </select>
               </div>
-              <div class="form-group">
+              <div class="form-group" style="display:none;">
                 <label style="font-size:12px; font-weight:800; color:#2d261e;">아이콘</label>
                 <select id="editCalAvatarSelect" class="field-input" style="width:100%; margin-top:4px;">
-                  <option value="👧🏻">👧🏻 여학생</option>
-                  <option value="👦🏻">👦🏻 남학생</option>
-                  <option value="👩🏻‍🏫">👩🏻‍🏫 여선생님 / 회계쌤</option>
-                  <option value="🧑🏻‍🏫">🧑🏻‍🏫 남선생님</option>
-                  <option value="👩🏻‍💼">👩🏻‍💼 직장인 / 여성 사역자</option>
-                  <option value="👔">👔 부장집사님</option>
-                  <option value="🧑🏻‍💼">🧑🏻‍💼 지도교역자 / 전도사</option>
+                  <option value="🎂" selected>🎂 생일</option>
                 </select>
               </div>
             </div>
@@ -3264,9 +3242,7 @@
 
         <!-- 학생 기본 정보 카드 -->
         <div class="p-3 bg-surface-container/60 border border-outline-variant/30 rounded-2xl mb-3 flex items-center gap-3">
-          <div id="transferStudentAvatar" class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-xl flex-shrink-0">
-            👦🏻
-          </div>
+          <div id="transferStudentAvatar" style="display:none;"></div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span id="transferStudentName" class="text-sm font-black text-text-primary">김하람</span>
@@ -3396,7 +3372,7 @@
 
           <div class="form-group mb-0">
             <label for="addClassTeacherNameInput" class="block text-[11.5px] font-bold text-text-secondary mb-1">
-              🧑🏻‍🏫 담임 선생님 성함 <span class="text-rose-500">*</span>
+              담임 선생님 성함 <span class="text-rose-500">*</span>
             </label>
             <input type="text" id="addClassTeacherNameInput" required class="w-full" placeholder="예: 양선아 선생님">
           </div>
@@ -3468,7 +3444,7 @@
 
           <div class="form-group mb-0">
             <label for="editClassTeacherNameInput" class="block text-[11.5px] font-bold text-text-secondary mb-1">
-              🧑🏻‍🏫 담임 선생님 성함 <span class="text-rose-500">*</span>
+              담임 선생님 성함 <span class="text-rose-500">*</span>
             </label>
             <input type="text" id="editClassTeacherNameInput" required class="w-full" placeholder="예: 양선아 선생님">
           </div>

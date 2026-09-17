@@ -2080,7 +2080,7 @@ function renderManageClassesList() {
       <div class="p-3 bg-white border border-stone-200/80 rounded-2xl flex items-center justify-between gap-2 shadow-2xs">
         <div class="flex items-center gap-3 min-w-0">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:${c.color || '#ea580c'}15; border:1px solid ${c.color || '#ea580c'}35;">
-            ${c.teacherAvatar || '🧑🏻‍🏫'}
+            📖
           </div>
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -2125,9 +2125,7 @@ function populateTeacherSelect(selectId, currentTeacherName = "", currentUserId 
     const isSelected = (currentUserId && u.id === currentUserId) ||
                        (!currentUserId && cleanCurrentName && cleanUName && (cleanUName === cleanCurrentName || cleanCurrentName.includes(cleanUName) || cleanUName.includes(cleanCurrentName)));
     const roleBadge = u.role === "pastor" ? "전도사" : (u.duty ? u.duty.split("/")[0].trim() : "선생님");
-    const phoneStr = u.phone ? ` (${u.phone})` : "";
-    const avatarStr = u.avatar || "🧑🏻‍🏫";
-    optionsHtml += `<option value="${u.id}" ${isSelected ? "selected" : ""}>${avatarStr} ${u.name} [${roleBadge}]${phoneStr}</option>`;
+    optionsHtml += `<option value="${u.id}" ${isSelected ? "selected" : ""}>${u.name} [${roleBadge}]${phoneStr}</option>`;
   });
   select.innerHTML = optionsHtml;
 }
@@ -2672,7 +2670,7 @@ function renderClassMinistrySection() {
           <div style="display:flex; gap:6px;">
             ${isTeacherSelf ? `
               <span style="font-size:11px; font-weight:800; color:#15803d; background:#dcfce7; padding:5px 10px; border-radius:10px; border:1px solid #86efac; display:inline-flex; align-items:center; gap:3px;">
-                <span>🧑🏻‍🏫</span> <span>담임 교사</span>
+                <span>담임 교사</span>
               </span>
             ` : isStudent ? `` : `
               <a href="tel:${activeClass.teacherPhone}" class="btn-icon" style="width:36px; height:36px; border-radius:12px; background:#fff; border:1px solid #fed7aa; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:16px;" title="전화걸기">📞</a>
@@ -2746,13 +2744,10 @@ function renderClassMinistrySection() {
           const titleText = isStudent ? `${s.name} 기도제목 보기` : `${s.name} 학생부 보기`;
 
           return `
-            <div class="timeline-item" ${onClickAction} style="background:${isMe ? '#fffbf5' : '#fff'}; border:${isMe ? '1.5px solid #fed7aa' : '1px solid #f1e9e0'}; border-radius:16px; padding:12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02); cursor:pointer; transition:all 0.15s ease;" title="${titleText}">
-              <div style="width:38px; height:38px; border-radius:12px; background:${avatarBg}; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
-                ${s.avatar || '👦🏻'}
-              </div>
+            <div class="timeline-item" ${onClickAction} style="background:${isMe ? '#fffbf5' : '#fff'}; border:${isMe ? '1.5px solid #fed7aa' : '1px solid #f1e9e0'}; border-radius:16px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02); cursor:pointer; transition:all 0.15s ease;" title="${titleText}">
               <div class="timeline-content" style="flex:1; min-width:0;">
                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px; flex-wrap:wrap;">
-                  <span style="font-size:13.5px; font-weight:800; color:#2d261e;">${s.name}</span>
+                  <span style="font-size:14px; font-weight:800; color:#2d261e;">${s.name}</span>
                   ${isMe ? '<span style="font-size:9.5px; background:#ea580c; color:#fff; font-weight:800; padding:1px 5px; border-radius:6px;">나</span>' : ''}
                   ${s.grade ? `<span style="font-size:10px; font-weight:800; color:#0284c7; background:#e0f2fe; border:1px solid #bae6fd; padding:1px 6px; border-radius:6px;">${s.grade}</span>` : ''}
                   <span style="font-size:11px; color:#78716c;">(${s.roleInfo || '학생'})</span>
@@ -2839,8 +2834,8 @@ function renderNewcomerMinistrySection() {
             const isMe = (currentUser && currentUser.name === m.name);
             return `
               <div style="background:#fff; border:1px solid ${isMe ? '#86efac' : '#dcfce7'}; border-radius:14px; padding:11px 12px; display:flex; align-items:center; gap:10px; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
-                <div style="width:42px; height:42px; border-radius:14px; background:#dcfce7; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid #86efac; flex-shrink:0;">
-                  ${m.avatar || '👩🏻‍🏫'}
+                <div style="width:40px; height:40px; border-radius:12px; background:#dcfce7; display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid #86efac; flex-shrink:0;">
+                  🌱
                 </div>
                 <div style="flex:1; min-width:0;">
                   <div style="font-size:14px; font-weight:800; color:#14532d; display:flex; align-items:center; gap:5px;">
@@ -2854,11 +2849,7 @@ function renderNewcomerMinistrySection() {
                     <div style="font-size:11px; color:#16a34a; font-weight:700; margin-top:2px;">
                       담당 학생: <strong style="color:#15803d;">${assignedCount}명</strong>
                     </div>
-                  ` : `
-                    <div style="font-size:11px; color:#16a34a; font-weight:700; margin-top:2px;">
-                      새친구 사역 전담 멘토
-                    </div>
-                  `}
+                  ` : ''}
                 </div>
                 <div style="display:flex; flex-direction:column; gap:4px;">
                   <a href="tel:${m.phone}" class="btn-icon" style="width:30px; height:30px; border-radius:9px; background:#f0fdf4; border:1px solid #bbf7d0; display:flex; align-items:center; justify-content:center; text-decoration:none; font-size:14px;" title="${m.name} 전화">📞</a>
@@ -2893,14 +2884,11 @@ function renderNewcomerMinistrySection() {
           const isDone = percent === 100;
           return `
             <div class="newcomer-student-card" style="background:#fff; border:1.5px solid ${isDone ? '#bbf7d0' : '#fed7aa'}; border-radius:18px; padding:16px; box-shadow:0 3px 10px rgba(0,0,0,0.03);">
-              <!-- Top Row: Avatar, Name, Grade, Mentor Badge, Target Class -->
+              <!-- Top Row: Name, Grade, Mentor Badge, Target Class -->
               <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="openStudentDetailModal('${s.id}')" title="${s.name} 학생부 보기">
-                  <div style="width:36px; height:36px; border-radius:12px; background:${isDone ? '#dcfce7' : '#ffedd5'}; display:flex; align-items:center; justify-content:center; font-size:18px;">
-                    ${s.avatar || '👦🏻'}
-                  </div>
+                <div style="cursor:pointer;" onclick="openStudentDetailModal('${s.id}')" title="${s.name} 학생부 보기">
                   <div>
-                    <div style="font-size:14px; font-weight:800; color:#1f2937; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <div style="font-size:14.5px; font-weight:800; color:#1f2937; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                       <span>${s.name} (${s.grade})</span>
                       <span style="font-size:10px; font-weight:800; padding:1px 6px; border-radius:6px; background:${isDone ? '#dcfce7' : '#fef3c7'}; color:${isDone ? '#166534' : '#92400e'};">
                         ${isDone ? '등반 수료 🎓' : `${completedCount}/${totalStudentSteps}주 진행중 ⏳`}
@@ -3442,7 +3430,7 @@ function openFriendPrayerSheetModal(studentId) {
 
   if (gradeBadge) gradeBadge.textContent = s.className || s.grade || "분반 친구";
   if (teacherBadge) teacherBadge.textContent = s.teacherName ? `담당: ${s.teacherName}` : (s.roleInfo || "우리 분반");
-  if (avatar) avatar.textContent = s.avatar || (isMe ? "👦🏻" : "👧🏻");
+  if (avatar) avatar.style.display = "none";
   if (studentName) {
     studentName.innerHTML = `<span>${s.name}</span>${isMe ? '<span class="text-[11px] bg-orange-600 text-white font-bold px-1.5 py-0.5 rounded-md ml-1.5 align-middle">나</span>' : ''}`;
   }
@@ -3562,7 +3550,7 @@ function openStudentDetailModal(studentId) {
 
   if (gradeBadge) gradeBadge.textContent = s.className || s.grade;
   if (teacherBadge) teacherBadge.textContent = `담당: ${s.teacherName || '교역자'}`;
-  if (avatar) avatar.textContent = s.avatar || '👦🏻';
+  if (avatar) avatar.style.display = "none";
   if (name) name.textContent = s.name;
   if (duty) duty.textContent = s.roleInfo || s.duty || `${s.grade} 학생`;
 
@@ -3733,11 +3721,8 @@ function renderStudentRosterList(filterGrade = currentStudentRosterFilter) {
     return `
       <div class="student-roster-card bg-white border border-stone-200/70 hover:border-primary/40 rounded-2xl p-3.5 shadow-xs transition-all active:scale-[0.99] cursor-pointer" onclick="${clickFn}">
         <div class="flex items-start justify-between gap-2.5">
-          <!-- Left: Avatar & Info -->
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-11 h-11 rounded-2xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-2xl flex-shrink-0 shadow-xs">
-              ${s.avatar || '👦🏻'}
-            </div>
+          <!-- Left: Info -->
+          <div class="flex items-center gap-2 min-w-0">
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-[14.5px] font-black text-stone-900 tracking-tight">${s.name}</span>
@@ -3942,7 +3927,7 @@ function filterAllPrayersModal(category = "all", studentGrade = null) {
     html = `
       <div class="space-y-2.5 pt-1">
         <div class="flex items-center justify-between pb-1 px-1">
-          <span class="text-xs font-black text-stone-800">🧑🏻‍🏫 선생님 & 교역자 기도제목 (${teacherPrayers.length}명)</span>
+          <span class="text-xs font-black text-stone-800">🙏 선생님 & 교역자 기도제목 (${teacherPrayers.length}명)</span>
           <span class="text-[11px] font-semibold text-stone-400">우리 선생님들을 축복하며 기도해요 🙏</span>
         </div>
         ${renderTeacherPrayersCards(teacherPrayers)}
@@ -3958,7 +3943,7 @@ function filterAllPrayersModal(category = "all", studentGrade = null) {
     html = `
       <div class="space-y-2.5 pt-1">
         <div class="flex items-center justify-between pb-1 px-1">
-          <span class="text-xs font-black text-stone-800">🧑🏻‍🎓 예랑 학생부 기도제목 (${filtered.length}명)</span>
+          <span class="text-xs font-black text-stone-800">📖 예랑 학생부 기도제목 (${filtered.length}명)</span>
           <span class="text-[11px] font-semibold text-stone-400">한마음으로 함께하는 기도</span>
         </div>
         ${renderStudentPrayersCards(filtered)}
@@ -3971,7 +3956,7 @@ function filterAllPrayersModal(category = "all", studentGrade = null) {
         <!-- Teachers Section -->
         <div class="flex items-center justify-between pt-0.5 pb-0.5 px-1">
           <div class="flex items-center gap-1.5">
-            <span class="text-[12.5px] font-black text-stone-800">🧑🏻‍🏫 선생님 & 교역자 기도제목</span>
+            <span class="text-[12.5px] font-black text-stone-800">🙏 선생님 & 교역자 기도제목</span>
             <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200/80">${teacherPrayers.length}명</span>
           </div>
           <span class="text-[11px] font-semibold text-amber-800/80">선생님을 축복해요 🙏</span>
@@ -3983,7 +3968,7 @@ function filterAllPrayersModal(category = "all", studentGrade = null) {
         <!-- Students Section -->
         <div class="flex items-center justify-between pt-4 pb-0.5 px-1 border-t border-stone-100 mt-5">
           <div class="flex items-center gap-1.5">
-            <span class="text-[12.5px] font-black text-stone-800">🧑🏻‍🎓 학생부 기도제목</span>
+            <span class="text-[12.5px] font-black text-stone-800">📖 학생부 기도제목</span>
             <span class="text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-orange-100 text-orange-900 border border-orange-200/80">${studentsWithPrayers.length}명</span>
           </div>
           <span class="text-[11px] font-semibold text-stone-400">선생님과 함께하는 기도</span>
@@ -4016,12 +4001,9 @@ function renderTeacherPrayersCards(teachers) {
     const canEdit = canEditTeacherPrayer(t);
     return `
       <div class="bg-white rounded-2xl p-3.5 border border-amber-200/80 shadow-2xs hover:border-amber-300 transition-all">
-        <!-- Top Row: Avatar, Name, Badge, Duty, Edit btn -->
+        <!-- Top Row: Name, Badge, Duty, Edit btn -->
         <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-stone-100">
           <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/70 flex items-center justify-center text-xl flex-shrink-0 shadow-2xs">
-              ${t.avatar || '🧑🏻‍🏫'}
-            </div>
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-[14px] font-black text-stone-900">${t.name}</span>
@@ -4078,12 +4060,9 @@ function renderStudentPrayersCards(students) {
 
     return `
       <div class="bg-white rounded-2xl p-3.5 border border-stone-200/80 shadow-2xs hover:border-orange-300 transition-all">
-        <!-- Top Row: Student Avatar, Name, Grade, Teacher, Edit btn -->
+        <!-- Top Row: Name, Grade, Teacher, Edit btn -->
         <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-stone-100">
           <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="${clickFn}">
-            <div class="w-9 h-9 rounded-xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-xl flex-shrink-0">
-              ${s.avatar || '👦🏻'}
-            </div>
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-[14px] font-black text-stone-900">${s.name}</span>
@@ -5806,7 +5785,6 @@ function renderAttendanceSection() {
     card.innerHTML = `
       <div class="teacher-card-top">
         <div class="teacher-profile">
-          <div class="teacher-avatar-sm">${att.avatar || "👤"}</div>
           <div>
             <div class="teacher-name-txt">${att.name}</div>
             <div class="teacher-reason-pill">${att.role}</div>
@@ -5912,12 +5890,9 @@ function renderAttendingTeachersSection() {
       <div id="presentTeachersListGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-gray-100">
         ${attendingList.map(t => `
           <div class="p-2.5 rounded-xl bg-emerald-50/40 border border-emerald-100/80 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="w-7 h-7 rounded-full bg-white border border-emerald-200/60 flex items-center justify-center text-[13px] shrink-0 shadow-2xs">${t.avatar}</span>
-              <div class="min-w-0">
-                <div class="font-extrabold text-[12px] text-gray-800 leading-tight truncate">${t.name}</div>
-                <div class="text-[9.5px] text-gray-500 truncate mt-0.5">${t.duty}</div>
-              </div>
+            <div class="min-w-0">
+              <div class="font-extrabold text-[12.5px] text-gray-800 leading-tight truncate">${t.name}</div>
+              <div class="text-[10px] text-gray-500 truncate mt-0.5">${t.duty}</div>
             </div>
             <span class="text-[10px] font-black text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">출석 ✓</span>
           </div>
@@ -6071,8 +6046,7 @@ function renderAttendanceHistoryList(filterMonth = "ALL") {
             return `
               <div class="p-2.5 rounded-xl ${isLate ? 'bg-amber-50/70 border border-amber-200/70' : 'bg-rose-50/70 border border-rose-200/70'} flex flex-col gap-1.5">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[17px]">${rec.avatar || '🧑🏻‍🏫'}</span>
+                  <div class="flex items-center gap-1.5">
                     <span class="text-[13px] font-bold text-text-primary">${rec.name}</span>
                     <span class="text-[10.5px] px-2 py-0.5 rounded-md bg-white/80 font-bold ${isLate ? 'text-amber-800' : 'text-rose-800'} border ${isLate ? 'border-amber-200' : 'border-rose-200'}">${rec.role}</span>
                   </div>
@@ -7833,7 +7807,7 @@ const ROLES = {
     name: "김대한 선생님",
     title: "공과반 목양 지도",
     subtitle: "선생님(공과반) · 분반 지도 권한",
-    badge: "🧑🏻‍🏫 선생님(공과반)",
+    badge: "선생님(공과반)",
     tagClass: "tag-teacher",
     activeClass: "active-teacher",
     tabs: [
@@ -7869,7 +7843,7 @@ const ROLES = {
     name: "선생님",
     title: "교사 목양 대시보드",
     subtitle: "선생님 · 분반 지도 권한",
-    badge: "🧑🏻‍🏫 선생님(공과반)",
+    badge: "선생님(공과반)",
     tagClass: "tag-teacher",
     activeClass: "active-teacher",
     tabs: [
@@ -7887,7 +7861,7 @@ const ROLES = {
     name: "양형모 (고3)",
     title: "예랑 청소년부 피드 (공과반)",
     subtitle: "학생(공과반) · 고3 분반",
-    badge: "👦🏻 학생(공과반)",
+    badge: "학생(공과반)",
     tagClass: "tag-student",
     activeClass: "active-student",
     tabs: [
@@ -7921,7 +7895,7 @@ const ROLES = {
     name: "양형모 (고3)",
     title: "예랑 청소년부 피드",
     subtitle: "학생(공과반) · 고3 분반",
-    badge: "👦🏻 학생(공과반)",
+    badge: "학생(공과반)",
     tagClass: "tag-student",
     activeClass: "active-student",
     tabs: [
@@ -7951,25 +7925,25 @@ const ROLE_NAMES = {
 const ROLE_BADGES = {
   pastor: '<span class="role-identity-tag tag-pastor" style="font-size:10px; padding:2px 6px;">✝️ 전도사</span>',
   accountant: '<span class="role-identity-tag tag-accountant" style="font-size:10px; padding:2px 6px;">💼 선생님(회계)</span>',
-  deacon: '<span class="role-identity-tag tag-deacon" style="font-size:10px; padding:2px 6px;">👔 부장집사님</span>',
-  teacher_grade: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님(공과반)</span>',
+  deacon: '<span class="role-identity-tag tag-deacon" style="font-size:10px; padding:2px 6px;">부장집사님</span>',
+  teacher_grade: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">선생님(공과반)</span>',
   teacher_new: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🌱 선생님(새친구반)</span>',
-  teacher: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님(공과반)</span>',
-  student_grade: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>',
+  teacher: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">선생님(공과반)</span>',
+  student_grade: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">학생</span>',
   student_new: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px; background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">🌱 학생</span>',
-  student: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>'
+  student: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">학생</span>'
 };
 
 const DEFAULT_AVATARS = {
-  pastor: "🧑🏻‍💼",
-  accountant: "👩🏻‍🏫",
-  deacon: "👔",
-  teacher_grade: "🧑🏻‍🏫",
-  teacher_new: "🌱",
-  teacher: "🧑🏻‍🏫",
-  student_grade: "👦🏻",
-  student_new: "👧🏻",
-  student: "👦🏻"
+  pastor: "",
+  accountant: "",
+  deacon: "",
+  teacher_grade: "",
+  teacher_new: "",
+  teacher: "",
+  student_grade: "",
+  student_new: "",
+  student: ""
 };
 
 let currentRole = "pastor";
@@ -8116,7 +8090,7 @@ function renderViewAsRoleModal() {
     {
       roleKey: "student_grade",
       title: "공과반 학생 시점",
-      icon: "👦🏻",
+      icon: "📖",
       badge: "공과반 학생",
       badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
       fallbackUserId: "u5",
@@ -8138,7 +8112,7 @@ function renderViewAsRoleModal() {
     {
       roleKey: "teacher_grade",
       title: "공과반 담임 교사 시점",
-      icon: "🧑🏻‍🏫",
+      icon: "🏫",
       badge: "공과반 담임",
       badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200",
       fallbackUserId: "u3",
@@ -8149,7 +8123,7 @@ function renderViewAsRoleModal() {
     {
       roleKey: "teacher_new",
       title: "새친구반 전담 교사 시점",
-      icon: "👩🏻‍🏫",
+      icon: "🌱",
       badge: "새친구반 담임",
       badgeClass: "bg-rose-50 text-rose-700 border-rose-200",
       fallbackUserId: "u4",
@@ -8160,7 +8134,7 @@ function renderViewAsRoleModal() {
     {
       roleKey: "deacon",
       title: "부장집사님 시점",
-      icon: "👔",
+      icon: "🏛️",
       badge: "부장집사",
       badgeClass: "bg-amber-50 text-amber-700 border-amber-200",
       fallbackUserId: null,
@@ -8508,12 +8482,8 @@ function renderUserManagerSection(filterCategory = "ALL") {
     card.className = "user-mgmt-card";
     const pendingBadge = user.isPending ? '<span style="font-size:10.5px; background:#fef3c7; color:#b45309; padding:2px 7px; border-radius:6px; font-weight:800; border:1px solid #fde68a;">승인 대기중 ⏳</span>' : '';
 
-    const isStudent = isStudentRole(user.role);
-    const isFemaleStudent = isStudent && ((user.avatar && (user.avatar.includes("👧") || user.avatar.includes("👩"))) || /은혜|선아|예진|하은|희순|유리|민서|하람|미경|수진|지은|혜진/.test(user.name));
     const roleBadgeHtml = isStudent
-      ? (isFemaleStudent 
-          ? '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👧🏻 학생</span>'
-          : '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>')
+      ? '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">학생</span>'
       : (ROLE_BADGES[user.role] || "");
 
     const controlHtml = isStudent ? `
@@ -8526,9 +8496,9 @@ function renderUserManagerSection(filterCategory = "ALL") {
     ` : `
       <select class="role-select-dropdown" data-user-id="${escapeHtml(user.id)}" style="flex:1; min-width:130px;">
         <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사</option>
-        <option value="deacon" ${user.role === "deacon" ? "selected" : ""}>👔 부장집사님</option>
+        <option value="deacon" ${user.role === "deacon" ? "selected" : ""}>부장집사님</option>
         <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 선생님(회계)</option>
-        <option value="teacher_grade" ${(user.role === "teacher_grade" || user.role === "teacher") ? "selected" : ""}>🧑🏻‍🏫 선생님(공과반)</option>
+        <option value="teacher_grade" ${(user.role === "teacher_grade" || user.role === "teacher") ? "selected" : ""}>선생님(공과반)</option>
         <option value="teacher_new" ${user.role === "teacher_new" ? "selected" : ""}>🌱 선생님(새친구반)</option>
       </select>
     `;
@@ -8959,10 +8929,10 @@ function renderMemberApprovalModal() {
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; padding-top:6px; border-top:1px dashed #e2e8f0;">
         <button type="button" data-approve-teacher-id="${escapeHtml(user.id)}" style="padding:9px 8px; font-size:12px; font-weight:800; background:#f0fdf4; color:#15803d; border:1.5px solid #86efac; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.15s;" class="hover:bg-emerald-100 active:scale-95">
-          <span>🧑🏻‍🏫</span> <span>선생님으로 승인</span>
+          <span>선생님으로 승인</span>
         </button>
         <button type="button" data-approve-student-id="${escapeHtml(user.id)}" style="padding:9px 8px; font-size:12px; font-weight:800; background:#eff6ff; color:#1d4ed8; border:1.5px solid #93c5fd; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.15s;" class="hover:bg-blue-100 active:scale-95">
-          <span>👦🏻</span> <span>학생으로 승인 (반 배정)</span>
+          <span>학생으로 승인 (반 배정)</span>
         </button>
       </div>
     `;
@@ -9191,13 +9161,13 @@ function switchMasterRole(roleKey, notify = true) {
     const toastMsgMap = {
       pastor: "✝️ 전도사 모드로 전환되었습니다. (사역 총괄 권한)",
       accountant: "💼 선생님(회계) 모드로 전환되었습니다. (재정 마스터 권한)",
-      deacon: "👔 부장집사님 모드로 전환되었습니다. (청소년부 부장 지도)",
-      teacher_grade: "🧑🏻‍🏫 선생님(공과반) 모드로 전환되었습니다. (분반 지도 권한)",
+      deacon: "부장집사님 모드로 전환되었습니다. (청소년부 부장 지도)",
+      teacher_grade: "선생님(공과반) 모드로 전환되었습니다. (분반 지도 권한)",
       teacher_new: "🌱 선생님(새친구반) 모드로 전환되었습니다. (새친구 전담 지도)",
-      teacher: "🧑🏻‍🏫 선생님 모드로 전환되었습니다. (교사 지도 권한)",
-      student_grade: "👦🏻 학생(공과반) 모드로 전환되었습니다. (고3 분반 포털)",
+      teacher: "선생님 모드로 전환되었습니다. (교사 지도 권한)",
+      student_grade: "학생(공과반) 모드로 전환되었습니다. (고3 분반 포털)",
       student_new: "🌱 학생(새친구반) 모드로 전환되었습니다. (새친구 환영 포털)",
-      student: "👦🏻 학생(공과반) 모드로 전환되었습니다. (예랑 청소년부 포털)"
+      student: "학생(공과반) 모드로 전환되었습니다. (예랑 청소년부 포털)"
     };
     showToast(toastMsgMap[roleKey] || "역할이 변경되었습니다.");
   }
@@ -9565,7 +9535,7 @@ function renderStudentQnaSection(filter = null) {
         <div class="mt-3 bg-gradient-to-br from-rose-50/70 via-pink-50/40 to-white rounded-2xl p-3.5 border border-rose-100/90 space-y-2 relative">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
-              <span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-[11px] font-black shadow-xs">🧑🏻‍💼</span>
+              <span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-[11px] font-black shadow-xs">✝️</span>
               <span class="text-[11.5px] font-black text-rose-950">${escapeHtml(q.answer.answeredBy || "정하람 전도사")}</span>
               <span class="text-[9.5px] font-extrabold text-rose-600 bg-rose-100/80 px-1.5 py-0.5 rounded-md">답변</span>
             </div>
@@ -10226,7 +10196,7 @@ window.openEditWorshipDutyModalDirect = function() {
 
     if (teachers.length > 0) {
       const optGroupT = document.createElement("optgroup");
-      optGroupT.label = "🧑🏻‍🏫 교사 및 교역자";
+      optGroupT.label = "교사 및 교역자";
       teachers.forEach(u => {
         const opt = document.createElement("option");
         opt.value = u.name;
@@ -10239,7 +10209,7 @@ window.openEditWorshipDutyModalDirect = function() {
 
     if (gradeStudents.length > 0) {
       const optGroupS = document.createElement("optgroup");
-      optGroupS.label = "👦🏻 공과반 학생";
+      optGroupS.label = "공과반 학생";
       gradeStudents.forEach(u => {
         const opt = document.createElement("option");
         opt.value = u.name;
@@ -12616,8 +12586,8 @@ function renderCalendarSection() {
     curBirthdays.forEach(b => {
       bdayCardHtml += `
         <div class="birthday-person-item" data-item-type="birthday" data-item-id="${b.id}" data-bday-name="${b.name}">
-          <div class="birthday-avatar-wrap">
-            ${b.avatar || "🎂"} <span class="birthday-badge-mini">🎂</span>
+          <div class="birthday-avatar-wrap" style="font-size:20px; display:flex; align-items:center; justify-content:center;">
+            🎂
           </div>
           <div style="flex:1; min-width:0;">
             <div class="birthday-date">${currentCalendarYear}.${currentCalendarMonth}.${b.day}</div>
@@ -12884,8 +12854,8 @@ function openManageCalendarItemModal(kind, item) {
     if (contentEl) {
       contentEl.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px;">
-          <div style="font-size:36px; width:52px; height:52px; border-radius:50%; background:#fff0f4; border:2px solid #fecdd3; display:flex; align-items:center; justify-content:center;">
-            ${item.avatar || "🎂"}
+          <div style="font-size:28px; width:50px; height:50px; border-radius:50%; background:#fff0f4; border:2px solid #fecdd3; display:flex; align-items:center; justify-content:center;">
+            🎂
           </div>
           <div>
             <div style="font-size:16px; font-weight:800; color:#1e293b;">${item.name} (${item.roleDesc || "지체"})</div>
@@ -13331,7 +13301,7 @@ function populateLoginUserSelect() {
   appState.users.forEach(user => {
     const opt = document.createElement("option");
     opt.value = user.id;
-    opt.textContent = `${user.avatar || "👤"} ${user.name} (${ROLE_NAMES[user.role] || user.duty || ""})`;
+    opt.textContent = `${user.name} (${ROLE_NAMES[user.role] || user.duty || ""})`;
     if (user.id === appState.currentUserId) {
       opt.selected = true;
     }
@@ -13602,7 +13572,7 @@ function initAuthScreen() {
         duty: `${ROLE_NAMES[defaultRole]} (승인 대기)`,
         birthday: birthday || "",
         phone: phone || "010-0000-0000",
-        avatar: DEFAULT_AVATARS[defaultRole] || "🧑🏻‍🏫",
+        avatar: DEFAULT_AVATARS[defaultRole] || "",
         isAdmin: false,
         isPending: true // New user requires pastor approval
       };
