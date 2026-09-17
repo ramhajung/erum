@@ -8316,24 +8316,20 @@ function renderUserSwitchGrid() {
 
     // Render only the current user's profile card
     const card = document.createElement("div");
-    card.className = "col-span-2 user-switch-card active-user";
-    const curInitial = escapeHtml((currentUser.name || "유").trim().charAt(0));
+    card.className = "user-switch-card active-user";
     card.innerHTML = `
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div class="user-mgmt-avatar">${curInitial}</div>
-        <div>
-          <div style="font-size:13.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
-            <span>${escapeHtml(currentUser.name)}</span>
-            ${ROLE_BADGES[currentUser.role] || ""}
-          </div>
-          <div class="user-mgmt-duty">${escapeHtml(currentUser.duty || "")}</div>
-          <div style="font-size:11px; color:#888; display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
-            <span>📞 ${escapeHtml(currentUser.phone || "-")}</span>
-          </div>
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-size: 14.5px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+          <span style="white-space: nowrap;">${escapeHtml(currentUser.name)}</span>
+          ${ROLE_BADGES[currentUser.role] || ""}
+        </div>
+        <div class="user-mgmt-duty" style="font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.35;">${escapeHtml(currentUser.duty || "")}</div>
+        <div style="font-size: 11px; color: #888; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 3px;">
+          <span>📞 ${escapeHtml(currentUser.phone || "-")}</span>
         </div>
       </div>
-      <div>
-        <span style="font-size:12px; font-weight:700; color:var(--primary); padding:6px 10px; background:#f0e8fc; border-radius:8px;">접속중 ✓</span>
+      <div style="margin-left: 12px; flex-shrink: 0;">
+        <span style="font-size: 12px; font-weight: 800; color: var(--primary); padding: 7px 12px; background: #fff0eb; border: 1px solid #fedbc5; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px;">접속중 ✓</span>
       </div>
     `;
     container.appendChild(card);
@@ -8347,26 +8343,22 @@ function renderUserSwitchGrid() {
     const isCurrent = user.id === appState.currentUserId;
     const card = document.createElement("div");
     card.className = `user-switch-card ${isCurrent ? "active-user" : ""}`;
-    const initialChar = escapeHtml((user.name || "유").trim().charAt(0));
     card.innerHTML = `
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div class="user-mgmt-avatar">${initialChar}</div>
-        <div>
-          <div style="font-size:13.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
-            <span>${escapeHtml(user.name)}</span>
-            ${ROLE_BADGES[user.role] || ""}
-          </div>
-          <div class="user-mgmt-duty">${escapeHtml(user.duty || "")}</div>
-          <div style="font-size:11px; color:#888; display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
-            <span>📞 ${escapeHtml(user.phone || "-")}</span>
-            ${user.birthday ? `<span style="color:#d97706; font-weight:700;">🎂 ${escapeHtml(user.birthday)}</span>` : ''}
-          </div>
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-size: 14.5px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+          <span style="white-space: nowrap;">${escapeHtml(user.name)}</span>
+          ${ROLE_BADGES[user.role] || ""}
+        </div>
+        <div class="user-mgmt-duty" style="font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.35;">${escapeHtml(user.duty || "")}</div>
+        <div style="font-size: 11px; color: #888; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 3px;">
+          <span>📞 ${escapeHtml(user.phone || "-")}</span>
+          ${user.birthday ? `<span style="color: #d97706; font-weight: 700;">🎂 ${escapeHtml(user.birthday)}</span>` : ''}
         </div>
       </div>
-      <div>
+      <div style="margin-left: 12px; flex-shrink: 0;">
         ${isCurrent 
-          ? '<span style="font-size:12px; font-weight:700; color:var(--primary); padding:6px 10px; background:#f0e8fc; border-radius:8px;">접속중 ✓</span>' 
-          : `<button class="btn-secondary switch-to-user-btn" style="padding:6px 12px; font-size:12px;" data-user-id="${escapeHtml(user.id)}">${user.role === "pastor" ? "복귀하기" : "시점 전환"}</button>`
+          ? '<span style="font-size: 12px; font-weight: 800; color: var(--primary); padding: 7px 12px; background: #fff0eb; border: 1px solid #fedbc5; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px;">접속중 ✓</span>' 
+          : `<button class="btn-secondary switch-to-user-btn" style="padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 10px; cursor: pointer; transition: all 0.15s ease;" data-user-id="${escapeHtml(user.id)}">${user.role === "pastor" ? "복귀하기" : "시점 전환"}</button>`
         }
       </div>
     `;
@@ -8541,10 +8533,8 @@ function renderUserManagerSection(filterCategory = "ALL") {
       </select>
     `;
 
-    const userInitial = escapeHtml((user.name || "유").trim().charAt(0));
     card.innerHTML = `
       <div class="user-mgmt-info">
-        <div class="user-mgmt-avatar">${userInitial}</div>
         <div class="user-mgmt-details" style="flex:1;">
           <div class="user-mgmt-name" style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
             <span>${escapeHtml(user.name)}</span>

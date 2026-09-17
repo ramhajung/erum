@@ -3158,34 +3158,39 @@ button:active, .btn:active, .interactive-card:active {
   border-color: #ea7030;
 }
 
-/* User Switcher Modal Grid */
+/* User Switcher Modal List (Option 1: 1-column wide list cards) */
 .user-switch-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-top: 10px;
 }
 
-.user-switch-item {
-  background: #fffdfb;
-  border: 1.5px solid #eee1d5;
-  border-radius: var(--radius-md);
-  padding: 12px 10px;
+.user-switch-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  cursor: pointer;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1.5px solid #eee5dd;
+  border-radius: 14px;
   transition: all 160ms var(--ease-out);
 }
 
-.user-switch-item.current-user {
-  background: #fff2e8;
-  border-color: #f7a877;
-  box-shadow: 0 0 0 2px #f7a877;
+.user-switch-card:hover {
+  border-color: var(--primary, #96432b);
+  background: #fffdfc;
+  box-shadow: 0 3px 12px rgba(150, 67, 43, 0.05);
 }
 
-.user-switch-item:active {
-  transform: scale(0.96);
+.user-switch-card.active-user {
+  background: #fffbf9;
+  border-color: #f7a877;
+  box-shadow: 0 0 0 1.5px #f7a877;
+}
+
+.user-switch-card:active {
+  transform: scale(0.99);
 }
 
 /* ==========================================================================
