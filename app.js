@@ -2765,7 +2765,7 @@ function renderClassMinistrySection() {
 
       ${isStudent ? `
         <div style="display:flex; gap:8px; margin-top:16px;">
-          <button class="btn-primary" style="flex:1; background:#ea580c; border:none; padding:12px; font-size:13.5px; font-weight:800; border-radius:14px; cursor:pointer;" onclick="switchToTab('view-student-counsel')">
+          <button class="btn-primary" style="flex:1; background:#ea580c; border:none; padding:12px; font-size:13.5px; font-weight:800; border-radius:14px; cursor:pointer;" onclick="showToast('${activeClass.teacherName} 선생님과의 1:1 상담 카톡방으로 연결합니다 💬', 'info')">
             <span>💬</span> <span>선생님께 1:1 고민 상담하기</span>
           </button>
         </div>
@@ -7916,8 +7916,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
-      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
-      { target: "view-student-counsel", icon: "mark_chat_unread", label: "무물Q&A", title: "예랑 무물 Q&A (무엇이든 물어보살 💌)", subtitle: "신앙 질문 · 학교/진로 고민 · 전도사님께 한마디" }
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: false
@@ -7933,8 +7932,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 새친구 환영 피드", subtitle: "새친구 환영 · 토요예배 섬김이 · 공지" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
-      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "새친구 & 배정 분반 공과 · 담임 선생님 · 분반 친구들" },
-      { target: "view-student-counsel", icon: "mark_chat_unread", label: "무물Q&A", title: "예랑 무물 Q&A (무엇이든 물어보살 💌)", subtitle: "새친구 신앙 질문 · 학교 고민 · 전도사님께 한마디" }
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "새친구 & 배정 분반 공과 · 담임 선생님 · 분반 친구들" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: false
@@ -7950,8 +7948,7 @@ const ROLES = {
     tabs: [
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
-      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
-      { target: "view-student-counsel", icon: "mark_chat_unread", label: "무물Q&A", title: "예랑 무물 Q&A (무엇이든 물어보살 💌)", subtitle: "신앙 질문 · 학교/진로 고민 · 전도사님께 한마디" }
+      { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: false
