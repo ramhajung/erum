@@ -1148,7 +1148,87 @@ const INITIAL_DATA = {
     viewRole: null,
     targetUserId: null,
     adminUserId: "u1"
-  }
+  },
+  studentQna: [
+    {
+      id: "qna_1",
+      authorId: "u7",
+      authorName: "양형모",
+      authorGrade: "고3",
+      isAnonymous: false,
+      target: "정하람 전도사님",
+      tag: "신앙/성경",
+      content: "전도사님! 대입 수시 원서 넣고 나서 결과 기다리는 동안 너무 불안하고 기도가 잘 안 될 때가 많아요. 이럴 땐 어떤 마음으로 기도해야 할까요?",
+      method: "토요예배 Q&A 공유",
+      createdAt: "2026-10-15 19:30",
+      answer: {
+        answeredBy: "정하람 전도사",
+        answeredRole: "pastor",
+        answeredAt: "2026-10-16 11:20",
+        content: "형모야, 결과에 대한 불안감은 그동안 최선을 다해 치열하게 달려온 사람만이 느끼는 자연스럽고 귀한 감정이야. 빌립보서 4장 6-7절 말씀처럼 '아무것도 염려하지 말고 다만 모든 일에 기도와 간구로 너희 구할 것을 감사함으로 하나님께 아뢰라'는 약속을 꼭 붙잡아줘! 이번 주 토요예배 때 우리 수험생들을 위해 축복하며 더 깊이 나눌게! 언제든 편하게 연락해줘 🙏❤️",
+        verse: "빌립보서 4:6-7"
+      },
+      likes: 8,
+      likedBy: ["u1", "u7"]
+    },
+    {
+      id: "qna_2",
+      authorId: "u8",
+      authorName: "박성준",
+      authorGrade: "고3",
+      isAnonymous: true,
+      target: "정하람 전도사님",
+      tag: "진로/학업",
+      content: "시험 기간이나 주말에 학원 보충 특강이랑 토요예배 시간이 겹칠 때 믿음의 선배들은 어떻게 결단했는지 궁금해요. 부모님은 학원 먼저 가라고 하셔서 마음이 무거워요...",
+      method: "토요예배 Q&A 공유",
+      createdAt: "2026-10-14 21:15",
+      answer: {
+        answeredBy: "정하람 전도사",
+        answeredRole: "pastor",
+        answeredAt: "2026-10-15 14:00",
+        content: "정말 많은 크리스천 청소년들이 치열하게 부딪히는 현실적인 고민이지. 부모님의 걱정스러운 마음도 충분히 이해하고 존중하면서, 하나님께 최우선순위를 드리는 지혜로운 대화법과 시간 관리 팁을 이번 주 토요예배 말씀 후 Q&A 시간에 시원하게 나눠줄게요! 힘내자 성준아 💪",
+        verse: "잠언 3:5-6"
+      },
+      likes: 12,
+      likedBy: ["u1"]
+    },
+    {
+      id: "qna_3",
+      authorId: "u12",
+      authorName: "김하람",
+      authorGrade: "중2",
+      isAnonymous: false,
+      target: "우리반 담임선생님",
+      tag: "친구/마음",
+      content: "새친구반에서 처음 교회 왔을 때 어색했는데, 토요예배 찬양팀 드럼 치는 형들 보니까 너무 멋있었어요! 저도 찬양팀 악기 배울 수 있나요?",
+      method: "토요예배 후 교회 카페 심방",
+      createdAt: "2026-10-16 17:40",
+      answer: {
+        answeredBy: "정하람 전도사",
+        answeredRole: "pastor",
+        answeredAt: "2026-10-16 18:30",
+        content: "하람아 반가워! 찬양팀 소예진 선생님이랑 형모 형이 드럼 기초부터 친절하게 알려줄 수 있어! 이번 주 토요예배 끝나고 1층 카페에서 시원한 음료 마시며 같이 찬양팀 구경가자 🥁✨",
+        verse: "시편 150:3-5"
+      },
+      likes: 5,
+      likedBy: ["u1"]
+    },
+    {
+      id: "qna_4",
+      authorId: "u10",
+      authorName: "이서연",
+      authorGrade: "중3",
+      isAnonymous: true,
+      target: "정하람 전도사님",
+      tag: "전도사님께",
+      content: "전도사님 설교 때 나오는 축구 예화가 너무 재밌어서 귀에 쏙쏙 들어왔어요 ⚽ 토요일 예배 시간이 매주 기다려져요 ㅎㅎ 다음 주 말씀도 기대할게요!",
+      method: "토요예배 Q&A 공유",
+      createdAt: "2026-10-17 09:10",
+      answer: null,
+      likes: 4,
+      likedBy: ["u1"]
+    }
+  ]
 };
 
 // State storage
@@ -1386,6 +1466,9 @@ function loadState() {
           }
         });
       }
+      if (!parsed.studentQna || !Array.isArray(parsed.studentQna)) {
+        parsed.studentQna = JSON.parse(JSON.stringify(INITIAL_DATA.studentQna));
+      }
       return parsed;
     } catch (e) {
       console.error("Failed to parse saved state", e);
@@ -1499,6 +1582,11 @@ function initNavigation() {
         if (typeof renderClassMinistrySection === "function") renderClassMinistrySection();
       }
 
+      // 무물 Q&A 화면 갱신
+      if (targetId === "view-student-counsel") {
+        if (typeof renderStudentQnaSection === "function") renderStudentQnaSection();
+      }
+
       // Scroll top
       const container = document.getElementById("screensContainer");
       if (container) container.scrollTo({ top: 0, behavior: "smooth" });
@@ -1546,6 +1634,10 @@ function switchToTab(viewId) {
         v.classList.remove("active");
       }
     });
+
+    if (viewId === "view-student-counsel" && typeof renderStudentQnaSection === "function") {
+      renderStudentQnaSection();
+    }
 
     // Update class switcher active buttons if present
     document.querySelectorAll(".admin-class-switcher").forEach(switcher => {
@@ -7797,7 +7889,7 @@ const ROLES = {
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
       { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
-      { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
+      { target: "view-student-counsel", icon: "mark_chat_unread", label: "무물Q&A", title: "예랑 무물 Q&A (무엇이든 물어보살 💌)", subtitle: "신앙 질문 · 학교/진로 고민 · 전도사님께 한마디" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: false
@@ -7814,7 +7906,7 @@ const ROLES = {
       { target: "view-home", icon: "home", label: "홈", title: "예랑 새친구 환영 피드", subtitle: "새친구 환영 · 토요예배 섬김이 · 공지" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
       { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "새친구 & 배정 분반 공과 · 담임 선생님 · 분반 친구들" },
-      { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "새친구 1:1 멘토링 & 심방 신청" }
+      { target: "view-student-counsel", icon: "mark_chat_unread", label: "무물Q&A", title: "예랑 무물 Q&A (무엇이든 물어보살 💌)", subtitle: "새친구 신앙 질문 · 학교 고민 · 전도사님께 한마디" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: false
@@ -7831,7 +7923,7 @@ const ROLES = {
       { target: "view-home", icon: "home", label: "홈", title: "예랑 청소년부 피드", subtitle: "토요예배 섬김이 · D-Day · 공지사항" },
       { target: "view-scheduler", icon: "calendar_today", label: "캘린더", title: "예랑 스케줄 & 예배 출결", subtitle: "행사 D-Day · 생일 · 토요예배 출결 등록" },
       { target: "view-teacher-grade", icon: "menu_book", label: "공과반", title: "우리 분반 공과 & 나눔", subtitle: "분반 공과 · 담임 선생님 · 분반 친구들" },
-      { target: "view-student-counsel", icon: "forum", label: "1:1상담", title: "전도사님 & 선생님 1:1 상담", subtitle: "비밀 보장 고민 상담 & 심방 신청" }
+      { target: "view-student-counsel", icon: "mark_chat_unread", label: "무물Q&A", title: "예랑 무물 Q&A (무엇이든 물어보살 💌)", subtitle: "신앙 질문 · 학교/진로 고민 · 전도사님께 한마디" }
     ],
     defaultTab: "view-home",
     showAccountingAdmin: false
@@ -9083,6 +9175,11 @@ function renderRoleTabBar(roleConfig) {
         if (typeof renderClassMinistrySection === "function") renderClassMinistrySection();
       }
 
+      // 무물 Q&A 화면 갱신
+      if (tab.target === "view-student-counsel") {
+        if (typeof renderStudentQnaSection === "function") renderStudentQnaSection();
+      }
+
       const container = document.getElementById("screensContainer");
       if (container) container.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -9221,19 +9318,8 @@ function initRoleEvents() {
     });
   });
 
-  // Student 1:1 Counseling Form Handler
-  const counselForm = document.getElementById("studentCounselForm");
-  if (counselForm) {
-    counselForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const target = document.getElementById("counselTargetInput").value;
-      const category = document.getElementById("counselCategoryInput").value;
-      const method = document.getElementById("counselMethodInput").value;
-
-      showToast(`🕊️ ${target}께 비밀 고민 상담 신청서(${category}, ${method})가 전송되었습니다!`, "success", 4000);
-      counselForm.reset();
-    });
-  }
+  // Student Instagram AMA '무물' Q&A Hub Initialization
+  initStudentQnaEvents();
 
   // Jump to Receipt submission
   const gotoAddBtn = document.getElementById("gotoAddReceiptBtn");
@@ -9264,6 +9350,438 @@ function initRoleEvents() {
       openModal("gsheetModal");
     });
   }
+}
+
+// =============================================================================
+// Instagram '무물' (Ask Me Anything) Q&A & 마음나눔 Engine
+// =============================================================================
+
+let currentQnaFilter = "ALL";
+
+function renderStudentQnaSection(filter = null) {
+  if (filter) currentQnaFilter = filter;
+  const container = document.getElementById("studentQnaFeedContainer");
+  if (!container) return;
+
+  if (!appState.studentQna || !Array.isArray(appState.studentQna)) {
+    appState.studentQna = JSON.parse(JSON.stringify(INITIAL_DATA.studentQna || []));
+  }
+
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const currentUserId = currentUser ? currentUser.id : "u1";
+  const currentUserRole = currentUser ? currentUser.role : (typeof currentRole !== "undefined" ? currentRole : "pastor");
+  const isLeader = (currentUserRole === "pastor" || currentUserRole === "deacon" || currentUserRole === "teacher" || currentUserRole === "teacher_grade" || currentUserRole === "teacher_new" || currentUserRole === "accountant");
+
+  // Update filter buttons active style
+  const filterBtns = document.querySelectorAll("#qnaFilterChips .qna-filter-btn");
+  filterBtns.forEach(btn => {
+    const isAct = (btn.dataset.filter === currentQnaFilter);
+    btn.classList.toggle("active", isAct);
+    if (isAct) {
+      btn.className = "qna-filter-btn active text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all cursor-pointer bg-rose-500 text-white border-rose-500 shadow-xs";
+    } else {
+      btn.className = "qna-filter-btn text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all cursor-pointer bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200";
+    }
+  });
+
+  // Filter items
+  let list = appState.studentQna.slice();
+
+  if (currentQnaFilter === "ANSWERED") {
+    list = list.filter(q => q.answer && q.answer.content);
+  } else if (currentQnaFilter === "MINE") {
+    list = list.filter(q => q.authorId === currentUserId || (currentUser && q.authorName === currentUser.name));
+  }
+
+  if (list.length === 0) {
+    let emptyMsg = "아직 등록된 질문이나 나눔이 없습니다.";
+    if (currentQnaFilter === "ANSWERED") emptyMsg = "아직 답변 완료된 질문이 없습니다. 곧 따뜻한 답변이 달릴 거예요! ✨";
+    else if (currentQnaFilter === "MINE") emptyMsg = "내가 남긴 무물 질문이 없습니다. 위에 첫 질문을 남겨보세요! 💌";
+
+    container.innerHTML = `
+      <div class="text-center py-10 px-4 bg-white rounded-3xl border border-dashed border-stone-200 space-y-2">
+        <span class="text-3xl block">💌</span>
+        <p class="text-[13px] font-bold text-stone-700">${emptyMsg}</p>
+        <p class="text-[11px] text-stone-400">신앙 고민이나 전도사님께 하고픈 말도 언제든 환영해요!</p>
+      </div>
+    `;
+    return;
+  }
+
+  const tagStyles = {
+    "신앙/성경": "bg-rose-50 text-rose-700 border-rose-200",
+    "진로/학업": "bg-blue-50 text-blue-700 border-blue-200",
+    "친구/마음": "bg-amber-50 text-amber-700 border-amber-200",
+    "전도사님께": "bg-purple-50 text-purple-700 border-purple-200",
+    "비밀상담": "bg-emerald-50 text-emerald-700 border-emerald-200"
+  };
+
+  const tagIcons = {
+    "신앙/성경": "📖",
+    "진로/학업": "🏫",
+    "친구/마음": "💭",
+    "전도사님께": "💌",
+    "비밀상담": "🔒"
+  };
+
+  container.innerHTML = list.map(q => {
+    const isSecret = (q.tag === "비밀상담");
+    const isAuthor = (q.authorId === currentUserId || (currentUser && q.authorName === currentUser.name));
+    const canViewContent = !isSecret || isAuthor || isLeader;
+
+    let authorDisplay = "";
+    if (q.isAnonymous && !isLeader && !isAuthor) {
+      authorDisplay = `익명의 친구 🕶️ <span class="text-[10px] text-stone-400 font-normal">(${escapeHtml(q.authorGrade || "학생")})</span>`;
+    } else if (q.isAnonymous) {
+      authorDisplay = `익명 🕶️ <span class="text-[10px] text-rose-600 font-bold">(${escapeHtml(q.authorName)} · ${escapeHtml(q.authorGrade || "학생")})</span> <span class="text-[9px] bg-stone-100 text-stone-500 px-1 py-0.5 rounded font-normal">비공개</span>`;
+    } else {
+      authorDisplay = `${escapeHtml(q.authorName)} <span class="text-[10px] text-stone-400 font-normal">(${escapeHtml(q.authorGrade || "학생")})</span>`;
+    }
+
+    const tagClass = tagStyles[q.tag] || "bg-stone-100 text-stone-700 border-stone-200";
+    const tagIcon = tagIcons[q.tag] || "✨";
+    const canDelete = isAuthor || (currentUserRole === "pastor");
+    const hasLiked = Array.isArray(q.likedBy) && q.likedBy.includes(currentUserId);
+    const likeCount = q.likes || 0;
+
+    let answerHtml = "";
+    if (q.answer && q.answer.content) {
+      answerHtml = `
+        <div class="mt-3 bg-gradient-to-br from-rose-50/70 via-pink-50/40 to-white rounded-2xl p-3.5 border border-rose-100/90 space-y-2 relative">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-[11px] font-black shadow-xs">🧑🏻‍💼</span>
+              <span class="text-[11.5px] font-black text-rose-950">${escapeHtml(q.answer.answeredBy || "정하람 전도사")}</span>
+              <span class="text-[9.5px] font-extrabold text-rose-600 bg-rose-100/80 px-1.5 py-0.5 rounded-md">답변</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] text-stone-400 font-medium">${q.answer.answeredAt ? q.answer.answeredAt.slice(5) : ""}</span>
+              ${isLeader ? `<button type="button" class="btn-edit-qna-answer text-[11px] font-extrabold text-rose-600 hover:text-rose-800 underline cursor-pointer" data-id="${q.id}">수정</button>` : ""}
+            </div>
+          </div>
+          <p class="text-[12.5px] font-medium text-stone-800 leading-relaxed whitespace-pre-wrap">${escapeHtml(q.answer.content)}</p>
+          ${q.answer.verse ? `
+            <div class="inline-flex items-center gap-1 text-[10.5px] font-bold text-rose-700 bg-white/80 border border-rose-200/80 px-2 py-0.5 rounded-lg shadow-2xs">
+              <span>📖</span>
+              <span>${escapeHtml(q.answer.verse)}</span>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    } else {
+      if (isLeader) {
+        answerHtml = `
+          <div class="mt-3 flex items-center justify-between p-2.5 bg-rose-50/50 border border-dashed border-rose-200 rounded-2xl">
+            <span class="text-[11px] font-bold text-rose-700 flex items-center gap-1">
+              <span>⏳</span>
+              <span>아직 등록된 답변이 없습니다</span>
+            </span>
+            <button type="button" class="btn-open-answer-modal px-3 py-1.5 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl text-[11.5px] font-extrabold shadow-xs hover:opacity-95 active:scale-95 transition-all cursor-pointer" data-id="${q.id}">
+              답변 남기기 ✍️
+            </button>
+          </div>
+        `;
+      } else {
+        answerHtml = `
+          <div class="mt-2.5 flex items-center gap-1.5 text-[11px] font-bold text-amber-700 bg-amber-50/70 border border-amber-200/70 px-3 py-1.5 rounded-xl">
+            <span>⏳</span>
+            <span>전도사님이 따뜻한 답변을 준비하고 있어요! (토요예배 Q&A 또는 알림)</span>
+          </div>
+        `;
+      }
+    }
+
+    return `
+      <div class="qna-card bg-white rounded-3xl p-4 border border-stone-200/85 shadow-xs hover:shadow-sm transition-all duration-150 space-y-2.5" data-id="${q.id}">
+        <!-- Top row: Tag + Target + Date + Delete -->
+        <div class="flex items-center justify-between gap-1">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-black border ${tagClass} flex items-center gap-1">
+              <span>${tagIcon}</span>
+              <span>${escapeHtml(q.tag)}</span>
+            </span>
+            <span class="text-[10.5px] font-extrabold text-stone-500 bg-stone-50 border border-stone-200 px-2 py-0.5 rounded-full">
+              to. ${escapeHtml(q.target || "정하람 전도사님")}
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="text-[10.5px] text-stone-400 font-medium">${q.createdAt ? q.createdAt.slice(5) : ""}</span>
+            ${canDelete ? `
+              <button type="button" class="btn-delete-qna text-stone-400 hover:text-red-500 p-0.5 text-[12px] transition-colors cursor-pointer" title="질문 삭제" data-id="${q.id}">✕</button>
+            ` : ""}
+          </div>
+        </div>
+
+        <!-- Author & Method Info -->
+        <div class="flex items-center justify-between text-[11px] pt-0.5">
+          <div class="font-bold text-stone-700 flex items-center gap-1">
+            <span>${authorDisplay}</span>
+          </div>
+          <span class="text-[10.5px] font-semibold text-stone-500 bg-stone-100/70 px-2 py-0.5 rounded-md">
+            ${escapeHtml(q.method || "토요예배 Q&A 공유")}
+          </span>
+        </div>
+
+        <!-- Question Content -->
+        ${canViewContent ? `
+          <div class="p-3 bg-stone-50/90 rounded-2xl text-[13px] font-semibold text-stone-800 leading-relaxed whitespace-pre-wrap border border-stone-100">
+            ${escapeHtml(q.content)}
+          </div>
+        ` : `
+          <div class="p-3 bg-stone-100/80 rounded-2xl text-[12px] font-bold text-stone-500 flex items-center gap-2 border border-stone-200">
+            <span>🔒</span>
+            <span>비밀 상담 질문입니다. (작성자와 전도사님만 열람 가능)</span>
+          </div>
+        `}
+
+        <!-- Answer Area -->
+        ${canViewContent ? answerHtml : ""}
+
+        <!-- Bottom Action Bar (Heart like toggle) -->
+        <div class="flex items-center justify-between pt-1 border-t border-stone-100">
+          <button type="button" class="btn-like-qna flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-1 rounded-xl transition-all cursor-pointer ${hasLiked ? "bg-rose-50 text-rose-600 border border-rose-200" : "bg-stone-50 text-stone-500 border border-stone-200 hover:bg-stone-100"}" data-id="${q.id}">
+            <span>${hasLiked ? "❤️" : "🤍"}</span>
+            <span>공감</span>
+            <span class="font-black">${likeCount}</span>
+          </button>
+          <span class="text-[10px] text-stone-400 font-medium">예랑 무물 💌</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  attachQnaCardActions();
+}
+
+function attachQnaCardActions() {
+  // Likes toggle
+  document.querySelectorAll(".btn-like-qna").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const qnaId = btn.dataset.id;
+      const qna = (appState.studentQna || []).find(q => q.id === qnaId);
+      if (!qna) return;
+
+      const cu = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      const cuId = cu ? cu.id : "u1";
+
+      if (!Array.isArray(qna.likedBy)) qna.likedBy = [];
+      const idx = qna.likedBy.indexOf(cuId);
+      if (idx >= 0) {
+        qna.likedBy.splice(idx, 1);
+        qna.likes = Math.max(0, (qna.likes || 1) - 1);
+      } else {
+        qna.likedBy.push(cuId);
+        qna.likes = (qna.likes || 0) + 1;
+      }
+      saveState();
+      renderStudentQnaSection();
+    });
+  });
+
+  // Delete question
+  document.querySelectorAll(".btn-delete-qna").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const qnaId = btn.dataset.id;
+      if (!confirm("이 무물 질문을 삭제하시겠습니까?")) return;
+      appState.studentQna = (appState.studentQna || []).filter(q => q.id !== qnaId);
+      saveState();
+      showToast("질문이 삭제되었습니다.", "info");
+      renderStudentQnaSection();
+    });
+  });
+
+  // Open answer modal
+  document.querySelectorAll(".btn-open-answer-modal, .btn-edit-qna-answer").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const qnaId = btn.dataset.id;
+      openAnswerQnaModal(qnaId);
+    });
+  });
+}
+
+function openAnswerQnaModal(qnaId) {
+  const qna = (appState.studentQna || []).find(q => q.id === qnaId);
+  if (!qna) return;
+
+  const idInput = document.getElementById("answerQnaIdInput");
+  const tagBadge = document.getElementById("answerQnaTagBadge");
+  const studentNameEl = document.getElementById("answerQnaStudentName");
+  const dateEl = document.getElementById("answerQnaDate");
+  const questionTextEl = document.getElementById("answerQnaQuestionText");
+  const contentInput = document.getElementById("answerQnaContentInput");
+
+  if (idInput) idInput.value = qna.id;
+  if (tagBadge) tagBadge.textContent = qna.tag || "신앙/성경";
+  if (studentNameEl) {
+    const isAnon = qna.isAnonymous;
+    studentNameEl.textContent = isAnon ? `익명 질문 (${qna.authorName})` : `${qna.authorName} (${qna.authorGrade || "학생"})`;
+  }
+  if (dateEl) dateEl.textContent = qna.createdAt ? qna.createdAt.slice(0, 10) : "";
+  if (questionTextEl) questionTextEl.textContent = qna.content;
+  if (contentInput) {
+    contentInput.value = (qna.answer && qna.answer.content) ? qna.answer.content : "";
+    setTimeout(() => contentInput.focus(), 300);
+  }
+
+  openModal("answerQnaModal");
+}
+
+function initStudentQnaEvents() {
+  // 1. Tag chip selection in student form
+  const tagContainer = document.getElementById("qnaTagChips");
+  if (tagContainer) {
+    tagContainer.querySelectorAll(".qna-tag-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        tagContainer.querySelectorAll(".qna-tag-chip").forEach(c => {
+          c.classList.remove("active", "bg-rose-500", "text-white", "border-rose-500");
+          c.classList.add("bg-stone-50", "text-stone-600", "border-stone-200");
+        });
+        chip.classList.add("active", "bg-rose-500", "text-white", "border-rose-500");
+        chip.classList.remove("bg-stone-50", "text-stone-600", "border-stone-200");
+      });
+    });
+  }
+
+  // 2. Target radio styling toggle
+  const targetLabels = document.querySelectorAll(".qna-target-label");
+  targetLabels.forEach(label => {
+    label.addEventListener("click", () => {
+      targetLabels.forEach(l => {
+        l.className = "qna-target-label flex items-center justify-center gap-1.5 p-2 rounded-xl border border-stone-200 bg-white text-stone-600 font-bold text-[12px] cursor-pointer transition-all";
+      });
+      label.className = "qna-target-label flex items-center justify-center gap-1.5 p-2 rounded-xl border border-rose-300 bg-rose-50/60 text-rose-950 font-bold text-[12px] cursor-pointer transition-all";
+    });
+  });
+
+  // 3. Filter chips toggle
+  const filterChips = document.getElementById("qnaFilterChips");
+  if (filterChips) {
+    filterChips.querySelectorAll(".qna-filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const f = btn.dataset.filter || "ALL";
+        renderStudentQnaSection(f);
+      });
+    });
+  }
+
+  // 4. Submit student Q&A form
+  const qnaForm = document.getElementById("studentQnaForm");
+  if (qnaForm && !qnaForm.dataset.initialized) {
+    qnaForm.dataset.initialized = "true";
+    qnaForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const contentEl = document.getElementById("qnaContentInput");
+      const content = contentEl ? contentEl.value.trim() : "";
+      if (!content) {
+        showToast("질문 또는 고민 내용을 입력해 주세요 ✨", "warning");
+        return;
+      }
+
+      const activeTagChip = document.querySelector("#qnaTagChips .qna-tag-chip.active");
+      const selectedTag = activeTagChip ? activeTagChip.dataset.tag : "신앙/성경";
+
+      const targetRadio = document.querySelector('input[name="qnaTarget"]:checked');
+      const targetVal = targetRadio ? targetRadio.value : "정하람 전도사님";
+
+      const isAnonEl = document.getElementById("qnaAnonymousCheckbox");
+      const isAnon = isAnonEl ? isAnonEl.checked : false;
+
+      const methodEl = document.getElementById("qnaMethodSelect");
+      const methodVal = methodEl ? methodEl.value : "토요예배 Q&A 공유";
+
+      const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      const currentUserId = currentUser ? currentUser.id : ("u_" + Date.now());
+      const authorName = currentUser ? currentUser.name : "학생";
+      const authorGrade = (currentUser && currentUser.grade) ? currentUser.grade : ((currentUser && currentUser.duty && currentUser.duty.includes("고3")) ? "고3" : "학생");
+
+      const newQna = {
+        id: "qna_" + Date.now(),
+        authorId: currentUserId,
+        authorName: authorName,
+        authorGrade: authorGrade,
+        isAnonymous: isAnon,
+        target: targetVal,
+        tag: selectedTag,
+        content: content,
+        method: methodVal,
+        createdAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+        answer: null,
+        likes: 0,
+        likedBy: []
+      };
+
+      if (!appState.studentQna) appState.studentQna = [];
+      appState.studentQna.unshift(newQna);
+      saveState();
+
+      contentEl.value = "";
+      if (isAnonEl) isAnonEl.checked = false;
+
+      showToast(`💌 ${targetVal}께 무물 질문이 전달되었습니다! (토요예배 Q&A 또는 알림으로 답변해드려요 ✨)`, "success", 4000);
+      renderStudentQnaSection();
+    });
+  }
+
+  // 5. Quick verse insert buttons in answer modal
+  document.querySelectorAll(".quick-verse-btn").forEach(btn => {
+    if (!btn.dataset.initialized) {
+      btn.dataset.initialized = "true";
+      btn.addEventListener("click", () => {
+        const verse = btn.dataset.verse || "";
+        const input = document.getElementById("answerQnaContentInput");
+        if (input && verse) {
+          const val = input.value.trim();
+          input.value = val ? `${val}\n\n[말씀] ${verse}` : `[말씀] ${verse}`;
+          input.focus();
+        }
+      });
+    }
+  });
+
+  // 6. Submit answer form (for pastors and teachers)
+  const answerForm = document.getElementById("answerQnaForm");
+  if (answerForm && !answerForm.dataset.initialized) {
+    answerForm.dataset.initialized = "true";
+    answerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const qnaId = document.getElementById("answerQnaIdInput").value;
+      const content = document.getElementById("answerQnaContentInput").value.trim();
+      if (!content) {
+        showToast("답변 내용을 입력해 주세요 ✨", "warning");
+        return;
+      }
+
+      const qna = (appState.studentQna || []).find(q => q.id === qnaId);
+      if (!qna) return;
+
+      const cu = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      const answeredBy = cu ? cu.name : "정하람 전도사";
+      const answeredRole = cu ? cu.role : "pastor";
+
+      // Detect scripture verse in content
+      let verseMatch = content.match(/\[말씀\]\s*([^\n\r]+)/);
+      const verse = verseMatch ? verseMatch[1].trim() : "";
+
+      qna.answer = {
+        answeredBy: answeredBy,
+        answeredRole: answeredRole,
+        answeredAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+        content: content,
+        verse: verse || null
+      };
+
+      saveState();
+      closeModal("answerQnaModal");
+      showToast("💬 답변이 따뜻하게 등록되었습니다!", "success");
+      renderStudentQnaSection();
+    });
+  }
+
+  // Initial render if container exists
+  renderStudentQnaSection();
 }
 
 
@@ -13260,6 +13778,7 @@ function renderAll() {
   renderHomeQuickActions();
   renderSchedulerSubTabsByRole();
   renderCalendarSection();
+  renderStudentQnaSection();
   updateStaffBoxHomeBadge();
   updateMeetingNavBadge();
 }
@@ -13875,6 +14394,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initReceiptSection();
   initAccountingSubTabs();
   initRoleEvents();
+  initStudentQnaEvents();
   initUserManagementEvents();
   initDeleteUserConfirm();
   initEditUserEvents();

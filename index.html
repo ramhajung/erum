@@ -1282,54 +1282,119 @@
 
 
       <!-- ===================================================================
-           ROLE EXCLUSIVE VIEW 3: 학생 전용 (1:1 비밀 고민 상담 신청)
+      <!-- ===================================================================
+           ROLE EXCLUSIVE VIEW 3: 학생 전용 (인스타 '무물' Q&A & 마음 나눔)
            =================================================================== -->
-      <section class="screen-view" id="view-student-counsel">
-        <div class="agenda-date-badge" style="background:#eaf2fb; border-color:#bcdcf9; color:#1b65a4;">
-          🔒 전도사님 & 선생님 1:1 비밀 고민 상담
+      <section class="screen-view space-y-4" id="view-student-counsel">
+        <!-- 1. Instagram Ask Me Anything Header Banner -->
+        <div class="relative overflow-hidden rounded-3xl p-5 text-white shadow-sm bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-400">
+          <div class="relative z-10 space-y-1.5">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[11px] font-black tracking-wide border border-white/30">
+              <span>✨</span>
+              <span>예랑 무엇이든 물어보살</span>
+            </div>
+            <h2 class="text-[19px] font-black leading-tight tracking-tight">
+              궁금한 거, 마음에 둔 고민<br>무엇이든 툭 남겨줘! 💌
+            </h2>
+            <p class="text-[11.5px] text-white/90 font-medium leading-relaxed pt-0.5">
+              성경 읽다 생긴 질문부터 학교/진로 고민, 전도사님께 하고 싶은 말까지 편하게 적어보세요. 익명도 가능해요!
+            </p>
+          </div>
+          <div class="absolute -right-6 -bottom-8 w-32 h-32 bg-white/15 rounded-full blur-xl pointer-events-none"></div>
+          <div class="absolute right-4 top-3 text-[44px] opacity-25 pointer-events-none select-none">💬</div>
         </div>
 
-        <div style="background:#fdfcfb; border:1px solid #ebdcd1; border-radius:var(--radius-md); padding:14px; margin-bottom:14px;">
-          <p style="font-size:12px; color:var(--text-muted); line-height:1.4;">
-            혼자 끙끙 앓지 말고 언제든 편하게 털어놓으세요. 나눈 모든 내용은 <b>비밀이 절대 보장</b>됩니다. 🕊️
-          </p>
+        <!-- 2. Instagram Q&A Sticker Submission Box -->
+        <div class="bg-white rounded-3xl p-4.5 border border-rose-100/90 shadow-xs space-y-3">
+          <div class="flex items-center justify-between pb-1 border-b border-stone-100">
+            <span class="text-[13px] font-black text-stone-800 flex items-center gap-1.5">
+              <span>📝</span>
+              <span>새 질문 / 마음 남기기</span>
+            </span>
+            <span class="text-[11px] text-rose-500 font-bold">부담 없이 한두 줄로 쏙!</span>
+          </div>
+
+          <form id="studentQnaForm" class="space-y-3">
+            <!-- 1) 받는 사람 선택 -->
+            <div>
+              <label class="block text-[11.5px] font-bold text-stone-600 mb-1">누구에게 보낼까요?</label>
+              <div class="grid grid-cols-2 gap-2" id="qnaTargetSelector">
+                <label class="qna-target-label flex items-center justify-center gap-1.5 p-2 rounded-xl border border-rose-300 bg-rose-50/60 text-rose-950 font-bold text-[12px] cursor-pointer transition-all">
+                  <input type="radio" name="qnaTarget" value="정하람 전도사님" checked class="hidden">
+                  <span>🧑🏻‍💼</span>
+                  <span>정하람 전도사님</span>
+                </label>
+                <label class="qna-target-label flex items-center justify-center gap-1.5 p-2 rounded-xl border border-stone-200 bg-white text-stone-600 font-bold text-[12px] cursor-pointer transition-all">
+                  <input type="radio" name="qnaTarget" value="우리반 담임선생님" class="hidden">
+                  <span>🧑🏻‍🏫</span>
+                  <span>우리반 담임선생님</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 2) 고민/질문 태그 칩 (원터치) -->
+            <div>
+              <label class="block text-[11.5px] font-bold text-stone-600 mb-1.5">어떤 주제인가요?</label>
+              <div class="flex items-center gap-1.5 flex-wrap" id="qnaTagChips">
+                <button type="button" class="qna-tag-chip active px-2.5 py-1 rounded-full text-[11.5px] font-extrabold border transition-all cursor-pointer bg-rose-500 text-white border-rose-500" data-tag="신앙/성경">📖 신앙/성경</button>
+                <button type="button" class="qna-tag-chip px-2.5 py-1 rounded-full text-[11.5px] font-extrabold border transition-all cursor-pointer bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100" data-tag="진로/학업">🏫 진로/학업</button>
+                <button type="button" class="qna-tag-chip px-2.5 py-1 rounded-full text-[11.5px] font-extrabold border transition-all cursor-pointer bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100" data-tag="친구/마음">💭 친구/마음</button>
+                <button type="button" class="qna-tag-chip px-2.5 py-1 rounded-full text-[11.5px] font-extrabold border transition-all cursor-pointer bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100" data-tag="전도사님께">💌 전도사님께</button>
+                <button type="button" class="qna-tag-chip px-2.5 py-1 rounded-full text-[11.5px] font-extrabold border transition-all cursor-pointer bg-stone-50 text-stone-600 border-stone-200 hover:bg-stone-100" data-tag="비밀상담">🔒 비밀상담</button>
+              </div>
+            </div>
+
+            <!-- 3) 질문 내용 입력창 -->
+            <div>
+              <textarea id="qnaContentInput" rows="3" placeholder="예: 성경 읽다 궁금했던 점이나 마음에 남는 고민을 자유롭게 남겨줘! (짧아도 괜찮아요 ✨)" class="w-full bg-stone-50 border border-stone-200 rounded-2xl p-3 text-[13px] font-medium text-stone-900 focus:outline-none focus:border-rose-400 focus:bg-white transition-all leading-relaxed resize-none" required></textarea>
+            </div>
+
+            <!-- 4) 옵션: 익명 여부 & 답변 방식 -->
+            <div class="space-y-2 pt-1">
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-100">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="qnaAnonymousCheckbox" class="w-4 h-4 text-rose-500 rounded border-stone-300 focus:ring-rose-400">
+                  <span class="text-[12px] font-bold text-stone-700">🕶️ 익명으로 보내기 (이름 숨기기)</span>
+                </label>
+                <span class="text-[10.5px] text-stone-400 font-medium">안심 보장 🔒</span>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-stone-500 mb-1">어떻게 답변 받길 원하나요?</label>
+                <select id="qnaMethodSelect" class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-[12px] font-bold text-stone-800">
+                  <option value="토요예배 Q&A 공유">📢 토요예배 때 알기 쉽게 답해주세요 (공개 Q&A)</option>
+                  <option value="카카오톡 1:1 비밀 상담">💬 카카오톡으로 조용히 1:1 답해주세요 (개인 비밀)</option>
+                  <option value="토요예배 후 교회 카페 심방">☕ 토요예배 후 맛있는 음료 마시며 얘기해요</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 5) 전송 버튼 -->
+            <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-95 active:scale-98 text-white font-black text-[13.5px] shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <span>💌</span>
+              <span>무물 질문 보내기</span>
+            </button>
+          </form>
         </div>
 
-        <form id="studentCounselForm">
-          <div class="form-group">
-            <label>상담받고 싶은 사역자 / 선생님</label>
-            <select id="counselTargetInput">
-              <option value="정하람 전도사님" selected>정하람 전도사님</option>
-              <option value="김대한 선생님 (고3 담임)">김대한 선생님 (고3 담임)</option>
-              <option value="소예진 선생님 (찬양팀 담당)">소예진 선생님 (찬양팀 담당)</option>
-              <option value="나하은 선생님">나하은 선생님</option>
-            </select>
+        <!-- 3. 우리가 나눈 무물 이야기 & 전도사님 답변 피드 -->
+        <div class="space-y-2.5 mt-5">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-[13.5px] font-black text-stone-900 flex items-center gap-1.5">
+              <span>📬</span>
+              <span>우리가 나눈 이야기 & 답변</span>
+            </span>
+            <div class="flex items-center gap-1" id="qnaFilterChips">
+              <button type="button" class="qna-filter-btn active text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all cursor-pointer bg-rose-500 text-white border-rose-500" data-filter="ALL">전체</button>
+              <button type="button" class="qna-filter-btn text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all cursor-pointer bg-stone-100 text-stone-600 border-stone-200" data-filter="ANSWERED">답변완료 ✨</button>
+              <button type="button" class="qna-filter-btn text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all cursor-pointer bg-stone-100 text-stone-600 border-stone-200" data-filter="MINE">내 질문 🙋</button>
+            </div>
           </div>
-          <div class="form-group">
-            <label>고민 분야</label>
-            <select id="counselCategoryInput">
-              <option value="수시 / 진로 / 학업 스트레스" selected>수시 / 진로 / 학업 스트레스 📖</option>
-              <option value="친구 관계 및 학교 생활">친구 관계 및 학교 생활 👥</option>
-              <option value="신앙적 의문 및 기도 요청">신앙적 의문 및 기도 요청 🙏</option>
-              <option value="가정 및 개인 고민">가정 및 개인 고민 🏠</option>
-            </select>
+
+          <div id="studentQnaFeedContainer" class="space-y-3">
+            <!-- Populated dynamically by JS -->
           </div>
-          <div class="form-group">
-            <label>희망하는 상담 방식</label>
-            <select id="counselMethodInput">
-              <option value="카카오톡 1:1 비밀 상담">카카오톡 1:1 비밀 상담 💬</option>
-              <option value="토요예배 후 교회 카페 대면 심방">토요예배 후 교회 카페 대면 심방 ☕</option>
-              <option value="조용한 전화 통화">조용한 전화 통화 📞</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>나누고 싶은 이야기 (자유롭게)</label>
-            <textarea id="counselContentInput" rows="4" placeholder="수시 원서를 넣으면서 마음이 너무 불안하고 기도가 잘 안 돼요... 이야기 나누고 싶어요." required></textarea>
-          </div>
-          <button type="submit" class="btn-orange" style="background:#4a90e2; box-shadow:0 4px 14px rgba(74,144,226,0.35);">
-            <span>🕊️</span> <span>비밀 상담 신청서 보내기</span>
-          </button>
-        </form>
+        </div>
       </section>
 
     </main>
@@ -3617,6 +3682,62 @@
             <span>✝️ 전도사(총괄 관리자) 본래 계정으로 복귀</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal: 사역자/선생님 무물 답변 등록 모달 -->
+    <div class="modal-backdrop" id="answerQnaModal" style="z-index: 1050;">
+      <div class="bottom-sheet" style="max-height: 90%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[18px]">💬</span>
+              <h3 class="sheet-title">무물 답변 남기기</h3>
+              <span class="text-[10px] font-extrabold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded-md border border-rose-200" id="answerQnaTagBadge">신앙/성경</span>
+            </div>
+            <p class="text-[11.5px] text-stone-500 mt-0.5" id="answerQnaTargetDesc">학생의 질문에 따뜻한 응답과 신앙적 조언을 남겨주세요.</p>
+          </div>
+          <button type="button" class="sheet-close-btn" data-close="answerQnaModal" aria-label="닫기">✕</button>
+        </div>
+
+        <form id="answerQnaForm" class="space-y-3 pt-1">
+          <input type="hidden" id="answerQnaIdInput">
+
+          <!-- 질문 내용 미리보기 박스 -->
+          <div class="bg-rose-50/70 border border-rose-100 rounded-2xl p-3.5 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[11.5px] font-black text-rose-900" id="answerQnaStudentName">학생 질문</span>
+              <span class="text-[10.5px] text-rose-500 font-bold" id="answerQnaDate">2026.10.17</span>
+            </div>
+            <p class="text-[13px] font-medium text-stone-800 leading-relaxed" id="answerQnaQuestionText">질문 내용이 여기에 표시됩니다.</p>
+          </div>
+
+          <!-- 답변 작성란 -->
+          <div class="form-group mb-0">
+            <label for="answerQnaContentInput" class="block text-[11.5px] font-bold text-stone-700 mb-1">
+              <span>✍️ 답변 내용</span>
+              <span class="text-[10px] text-stone-400 font-normal ml-1">(학생에게 알림 및 피드에 등록됩니다)</span>
+            </label>
+            <textarea id="answerQnaContentInput" rows="5" class="w-full bg-stone-50 border border-stone-200 rounded-2xl p-3 text-[13px] font-medium text-stone-900 focus:outline-none focus:border-rose-400 focus:bg-white transition-all leading-relaxed resize-none" placeholder="학생을 축복하고 공감하는 따뜻한 메시지를 적어주세요. (성경 구절이나 권면 포함)" required></textarea>
+          </div>
+
+          <!-- 추천 성경구절/응원 한마디 빠른 삽입 -->
+          <div>
+            <span class="block text-[11px] font-bold text-stone-500 mb-1">💡 빠른 성경 말씀 태그 (클릭 시 자동 삽입)</span>
+            <div class="flex flex-wrap gap-1.5" id="qnaVerseQuickTags">
+              <button type="button" class="quick-verse-btn px-2 py-1 rounded-lg text-[10.5px] font-bold bg-stone-100 text-stone-600 border border-stone-200 hover:bg-rose-50 hover:text-rose-600 transition-all cursor-pointer" data-verse="여호수아 1:9 (담대하라 내가 너와 함께함이라)">📖 수 1:9 담대함</button>
+              <button type="button" class="quick-verse-btn px-2 py-1 rounded-lg text-[10.5px] font-bold bg-stone-100 text-stone-600 border border-stone-200 hover:bg-rose-50 hover:text-rose-600 transition-all cursor-pointer" data-verse="빌립보서 4:6-7 (아무것도 염려하지 말고 기도와 간구로)">🙏 빌 4:6-7 평안</button>
+              <button type="button" class="quick-verse-btn px-2 py-1 rounded-lg text-[10.5px] font-bold bg-stone-100 text-stone-600 border border-stone-200 hover:bg-rose-50 hover:text-rose-600 transition-all cursor-pointer" data-verse="잠언 3:5-6 (너는 마음을 다하여 여호와를 신뢰하라)">✨ 잠 3:5-6 인도하심</button>
+              <button type="button" class="quick-verse-btn px-2 py-1 rounded-lg text-[10.5px] font-bold bg-stone-100 text-stone-600 border border-stone-200 hover:bg-rose-50 hover:text-rose-600 transition-all cursor-pointer" data-verse="로마서 8:28 (모든 것이 합력하여 선을 이루느니라)">🌿 롬 8:28 합력하여 선</button>
+            </div>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" class="btn-secondary flex-1 py-3 text-[13px] font-bold cursor-pointer" data-close="answerQnaModal">닫기</button>
+            <button type="submit" class="btn-primary flex-1 py-3 text-[13px] font-extrabold bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-95 text-white border-none shadow-sm cursor-pointer">답변 등록하기 ✓</button>
+          </div>
+        </form>
       </div>
     </div>
 
