@@ -286,7 +286,7 @@ const INITIAL_DATA = {
       id: "tp_6",
       name: "나하은 선생님",
       duty: "중고등부 회계 & 재정 장부 결산",
-      avatar: "💼",
+      avatar: "👩🏻‍🏫",
       badge: "부서 회계",
       badgeColor: "bg-purple-100 text-purple-900 border-purple-200/80",
       phone: "010-2345-6789",
@@ -992,7 +992,7 @@ const INITIAL_DATA = {
     // 과거 및 다른 월 생일 주인공
     { id: "bday_6", month: 8, day: 30, name: "김희순 집사", roleDesc: "부장집사님", avatar: "👔" },
     { id: "bday_7", month: 9, day: 10, name: "김대한T", roleDesc: "선생님(공과반)", avatar: "🧑🏻‍🏫" },
-    { id: "bday_8", month: 11, day: 7, name: "나하은T", roleDesc: "선생님(회계)", avatar: "💼" },
+    { id: "bday_8", month: 11, day: 7, name: "나하은T", roleDesc: "선생님(회계)", avatar: "👩🏻‍🏫" },
     { id: "bday_9", month: 12, day: 19, name: "정하람 전도사", roleDesc: "전도사", avatar: "🧑🏻‍💼" }
   ],
   users: [
@@ -1017,7 +1017,7 @@ const INITIAL_DATA = {
       duty: "중고등부 회계 & 재정 장부 결산",
       birthday: "1997-08-20",
       phone: "010-2345-6789",
-      avatar: "💼",
+      avatar: "👩🏻‍🏫",
       isAdmin: false
     },
     {
@@ -1178,6 +1178,24 @@ function loadState() {
         const pastorBday = (parsed.birthdays || []).find(b => b.name && b.name.includes("정하람"));
         if (pastorBday && (pastorBday.avatar === "👑" || pastorBday.avatar === "✝️")) {
           pastorBday.avatar = "🧑🏻‍💼";
+        }
+
+        // Migrate u2 accountant avatar from legacy 💼 to 👩🏻‍🏫
+        const accountantUser = parsed.users.find(u => u.id === "u2" || u.role === "accountant" || (u.name && u.name.includes("나하은")));
+        if (accountantUser && accountantUser.avatar === "💼") {
+          accountantUser.avatar = "👩🏻‍🏫";
+        }
+        if (parsed.teachers) {
+          const accTeacher = parsed.teachers.find(t => t.id === "tp_6" || (t.name && t.name.includes("나하은")));
+          if (accTeacher && accTeacher.avatar === "💼") {
+            accTeacher.avatar = "👩🏻‍🏫";
+          }
+        }
+        if (parsed.birthdays) {
+          const accBday = parsed.birthdays.find(b => b.id === "bday_8" || (b.name && b.name.includes("나하은")));
+          if (accBday && accBday.avatar === "💼") {
+            accBday.avatar = "👩🏻‍🏫";
+          }
         }
       }
       if (!parsed.currentUserId) {
@@ -5678,7 +5696,7 @@ const MASTER_TEACHER_ROSTER = [
   { name: "양선아 선생님", duty: "고2 담임 / 안내팀 지도", avatar: "👩🏻‍💼" },
   { name: "소예진 선생님", duty: "중등부 담임 / 새친구 멘토", avatar: "👩🏻‍🏫" },
   { name: "박지훈 선생님", duty: "새친구반 담임 / 찬양팀 멘토", avatar: "🧑🏻‍🏫" },
-  { name: "나하은 선생님", duty: "회계 / 재정 장부 결산", avatar: "💼" },
+  { name: "나하은 선생님", duty: "회계 / 재정 장부 결산", avatar: "👩🏻‍🏫" },
   { name: "김희순 부장집사", duty: "부장집사 / 간식 및 총무", avatar: "👔" },
   { name: "김신원 선생님", duty: "방송실 음향 / 미디어", avatar: "🧑🏻‍💻" },
   { name: "이진우 선생님", duty: "찬양팀 세션 / 예배 준비", avatar: "🎸" }
@@ -7775,7 +7793,7 @@ const ROLE_BADGES = {
 
 const DEFAULT_AVATARS = {
   pastor: "🧑🏻‍💼",
-  accountant: "💼",
+  accountant: "👩🏻‍🏫",
   deacon: "👔",
   teacher_grade: "🧑🏻‍🏫",
   teacher_new: "🌱",
@@ -8388,6 +8406,11 @@ function openEditUserModal(userId) {
   if (bdayInput) bdayInput.value = user.birthday || "";
   document.getElementById("editUserPhoneInput").value = user.phone || "";
 
+  const avatarSelect = document.getElementById("editUserAvatarSelect");
+  if (avatarSelect) {
+    avatarSelect.value = user.avatar || DEFAULT_AVATARS[user.role] || "👤";
+  }
+
   // Reset password in edit modal
   const editResetBtn = document.getElementById("editUserResetPwBtn");
   if (editResetBtn) {
@@ -8442,6 +8465,22 @@ function initEditUserEvents() {
       user.birthday = birthday;
       user.phone = phone;
 
+      const avatarSelect = document.getElementById("editUserAvatarSelect");
+      if (avatarSelect && avatarSelect.value) {
+        user.avatar = avatarSelect.value;
+
+        // 교사 목록 및 생일 캘린더 동기화
+        if (appState.teachers) {
+          const matchedTeacher = appState.teachers.find(t => t.name === user.name || (user.phone && t.phone === user.phone));
+          if (matchedTeacher) matchedTeacher.avatar = user.avatar;
+        }
+        if (appState.birthdayCalendar) {
+          const shortName = user.name.replace("선생님", "").replace("전도사", "").trim();
+          const matchedBday = appState.birthdayCalendar.find(b => b.name === user.name || b.name === shortName || b.name.includes(shortName));
+          if (matchedBday) matchedBday.avatar = user.avatar;
+        }
+      }
+
       saveState();
       closeModal("editUserModal");
       renderUserManagerSection();
@@ -8449,6 +8488,9 @@ function initEditUserEvents() {
       renderUserHeaderBar();
       if (typeof renderCalendarSection === "function") {
         renderCalendarSection();
+      }
+      if (typeof renderAttendingTeachersSection === "function") {
+        renderAttendingTeachersSection();
       }
 
       showToast(`✅ '${name}' 계정 정보가 성공적으로 수정되었습니다!`);
