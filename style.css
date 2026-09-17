@@ -2348,6 +2348,10 @@ button:active, .btn:active, .interactive-card:active {
   border-left-color: #8e7bd9;
 }
 
+.staff-box-card.gold-border {
+  border-left-color: #f59e0b;
+}
+
 .staff-box-title {
   font-size: 14px;
   font-weight: 800;

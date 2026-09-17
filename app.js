@@ -963,7 +963,8 @@ const INITIAL_DATA = {
     items: [
       { id: 1, type: "구매요청", title: "방송실 고속 HDMI 케이블 & 멀티탭 10구", author: "김대한T", budget: "45,000원", status: "승인완료", badgeType: "approved" },
       { id: 2, type: "사역건의", title: "청소년부 쉼터 힐링 공간 분리 제안", author: "소예진T", budget: null, status: "검토중", badgeType: "review" },
-      { id: 3, type: "회의안건", title: "찬양팀 토요 연습시간 변경의 건", author: "소예진 선생님", budget: null, status: "검토중", badgeType: "review", agendaId: 101 }
+      { id: 3, type: "회의안건", title: "찬양팀 토요 연습시간 변경의 건", author: "소예진 선생님", budget: null, status: "검토중", badgeType: "review", agendaId: 101 },
+      { id: 4, type: "재정건의", title: "10월 토요예배 분반 활동비 및 간식비 집행 기준 조정 요청", author: "나하은T", budget: null, status: "검토중", badgeType: "review" }
     ]
   },
   worshipDuty: {
@@ -1289,6 +1290,10 @@ function loadState() {
       }
       if (!parsed.staffBox) {
         parsed.staffBox = JSON.parse(JSON.stringify(INITIAL_DATA.staffBox));
+      } else if (parsed.staffBox && Array.isArray(parsed.staffBox.items)) {
+        if (!parsed.staffBox.items.some(it => it.type === "재정건의" || it.id === 4)) {
+          parsed.staffBox.items.push(JSON.parse(JSON.stringify(INITIAL_DATA.staffBox.items[3])));
+        }
       }
       if (!parsed.worshipDuty || !parsed.worshipDuty.prePrayer) {
         parsed.worshipDuty = JSON.parse(JSON.stringify(INITIAL_DATA.worshipDuty));
@@ -10355,7 +10360,7 @@ function renderHomeQuickActions() {
   }
 
   if (teacherBox) {
-    teacherBox.style.display = (!isPastor && !isAccountant && !isStudent) ? "block" : "none";
+    teacherBox.style.display = (!isPastor && !isStudent) ? "block" : "none";
 
     const currentUser = getCurrentUser();
     if (currentUser && appState.staffBox && appState.staffBox.items) {
@@ -10502,6 +10507,22 @@ function initHomeDashboardEvents() {
     const authorInput = document.getElementById("staffReqAuthorInput");
     if (authorInput && currentUser) {
       authorInput.value = currentUser.name;
+    }
+    const typeInput = document.getElementById("staffReqTypeInput");
+    if (typeInput) {
+      if (currentUser && currentUser.role === "accountant") {
+        typeInput.value = "재정건의";
+      } else {
+        typeInput.value = "사역건의";
+      }
+    }
+    const titleInput = document.getElementById("staffReqTitleInput");
+    if (titleInput) {
+      if (currentUser && currentUser.role === "accountant") {
+        titleInput.placeholder = "예: [재정건의] 10월 토요예배 분반 활동비 및 간식비 집행 기준 조정 요청";
+      } else {
+        titleInput.placeholder = "예: [사역건의] 예랑 찬양팀 연습 간식 및 쉼터 공간 분리 제안";
+      }
     }
     openModal("addStaffRequestModal");
   }
@@ -11929,9 +11950,10 @@ function renderStaffBoxSection(filter = currentStaffFilter) {
     let borderClass = "";
     if (item.type === "사역건의") borderClass = "mint-border";
     if (item.type === "회의안건") borderClass = "purple-border";
+    if (item.type === "재정건의") borderClass = "gold-border";
     card.className = `staff-box-card ${borderClass}`;
 
-    const iconMap = { "구매요청": "🛒", "사역건의": "💡", "회의안건": "📝" };
+    const iconMap = { "구매요청": "🛒", "사역건의": "💡", "재정건의": "💰", "회의안건": "📝" };
     const icon = iconMap[item.type] || "📌";
 
     const budgetText = item.budget ? ` | 예산: ${item.budget}` : "";
@@ -12129,6 +12151,22 @@ function initStaffBoxEvents() {
       const authorInput = document.getElementById("staffReqAuthorInput");
       if (authorInput && currentUser) {
         authorInput.value = currentUser.name;
+      }
+      const typeInput = document.getElementById("staffReqTypeInput");
+      if (typeInput) {
+        if (currentUser && currentUser.role === "accountant") {
+          typeInput.value = "재정건의";
+        } else {
+          typeInput.value = "사역건의";
+        }
+      }
+      const titleInput = document.getElementById("staffReqTitleInput");
+      if (titleInput) {
+        if (currentUser && currentUser.role === "accountant") {
+          titleInput.placeholder = "예: [재정건의] 10월 토요예배 분반 활동비 및 간식비 집행 기준 조정 요청";
+        } else {
+          titleInput.placeholder = "예: [사역건의] 예랑 찬양팀 연습 간식 및 쉼터 공간 분리 제안";
+        }
       }
       openModal("addStaffRequestModal");
     });
