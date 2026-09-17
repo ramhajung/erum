@@ -1934,6 +1934,232 @@ function initTransferStudentEvents() {
 
 window.openTransferStudentModal = openTransferStudentModal;
 
+// =============================================================================
+// 공과 분반 종합 관리 시스템 (Manage Classes System - Pastor Only)
+// =============================================================================
+
+function openManageClassesModal() {
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const isPastor = (currentUser && currentUser.role === "pastor") || currentRole === "pastor";
+  if (!isPastor) {
+    showToast("⚠️ 분반 관리는 전도사님 고유 권한입니다 🔒", "warning");
+    return;
+  }
+  renderManageClassesList();
+  openModal("manageClassesModal");
+}
+
+function renderManageClassesList() {
+  const container = document.getElementById("manageClassesListContainer");
+  const countText = document.getElementById("manageClassesCountText");
+  if (!container) return;
+
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  if (countText) countText.textContent = `운영 중인 분반 ${classes.length}개`;
+
+  container.innerHTML = classes.map(c => {
+    const studentNames = (c.students || []).map(s => s.name).join(", ");
+    const studentSummary = studentNames ? `재적 ${c.students.length}명 (${studentNames})` : "등록된 학생 없음 (0명)";
+
+    return `
+      <div class="p-3 bg-white border border-stone-200/80 rounded-2xl flex items-center justify-between gap-2 shadow-2xs">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:${c.color || '#ea580c'}15; border:1px solid ${c.color || '#ea580c'}35;">
+            ${c.teacherAvatar || '🧑🏻‍🏫'}
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-sm font-black text-stone-900">${c.grade}</span>
+              <span class="text-[11px] font-bold text-stone-500">(${c.teacherName})</span>
+            </div>
+            <div class="text-[11px] text-stone-500 truncate mt-0.5">${studentSummary}</div>
+            <div class="text-[10px] text-stone-400 mt-0.5">${c.teacherDuty || '공과담임'} · 📞 ${c.teacherPhone || '미등록'}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="openEditClassModal('${c.id}')" class="px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-all active:scale-95 cursor-pointer" title="분반 및 교사 정보 수정">
+            ✏️ 수정
+          </button>
+          <button type="button" onclick="handleDeleteClass('${c.id}')" class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold transition-all active:scale-95 cursor-pointer" title="분반 삭제 (통폐합)">
+            🗑️
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openAddClassModal() {
+  const form = document.getElementById("addClassForm");
+  if (form) form.reset();
+  openModal("addClassModal");
+}
+
+function openEditClassModal(classId) {
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  const targetClass = classes.find(c => c.id === classId);
+  if (!targetClass) return;
+
+  const idInput = document.getElementById("editClassIdInput");
+  const gradeInput = document.getElementById("editClassGradeInput");
+  const teacherNameInput = document.getElementById("editClassTeacherNameInput");
+  const teacherDutyInput = document.getElementById("editClassTeacherDutyInput");
+  const teacherPhoneInput = document.getElementById("editClassTeacherPhoneInput");
+  const avatarSelect = document.getElementById("editClassAvatarSelect");
+  const colorSelect = document.getElementById("editClassColorSelect");
+
+  if (idInput) idInput.value = targetClass.id;
+  if (gradeInput) gradeInput.value = targetClass.grade || "";
+  if (teacherNameInput) teacherNameInput.value = targetClass.teacherName || "";
+  if (teacherDutyInput) teacherDutyInput.value = targetClass.teacherDuty || "";
+  if (teacherPhoneInput) teacherPhoneInput.value = targetClass.teacherPhone || "";
+  if (avatarSelect) avatarSelect.value = targetClass.teacherAvatar || "🧑🏻‍🏫";
+  if (colorSelect) colorSelect.value = targetClass.color || "#9a3412";
+
+  openModal("editClassModal");
+}
+
+function handleDeleteClass(classId) {
+  const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+  if (classes.length <= 1) {
+    showToast("⚠️ 최소 1개 이상의 분반이 유지되어야 합니다.", "warn");
+    return;
+  }
+  const targetClass = classes.find(c => c.id === classId);
+  if (!targetClass) return;
+
+  const studentCount = (targetClass.students || []).length;
+  const otherClasses = classes.filter(c => c.id !== classId);
+
+  if (studentCount > 0) {
+    const defaultTarget = otherClasses[0];
+    const targetNames = otherClasses.map((c, i) => `${i + 1}. ${c.grade} (${c.teacherName})`).join("\n");
+    const choiceStr = prompt(
+      `'${targetClass.grade}'에 소속된 학생 ${studentCount}명이 있습니다.\n\n학생들을 안전하게 이동시킬 분반의 번호를 입력해주세요:\n\n${targetNames}\n\n(번호 입력, 예: 1):`,
+      "1"
+    );
+    if (!choiceStr) return;
+    const choiceNum = parseInt(choiceStr, 10);
+    const selectedTarget = (choiceNum >= 1 && choiceNum <= otherClasses.length) ? otherClasses[choiceNum - 1] : defaultTarget;
+
+    // 학생들 일괄 안전 이관
+    targetClass.students.forEach(s => {
+      s.grade = selectedTarget.grade;
+      s.className = selectedTarget.grade;
+      s.recentVisit = `[${selectedTarget.grade} 통합 이동] ${targetClass.grade} 분반 통폐합`;
+      selectedTarget.students.push(s);
+    });
+  } else {
+    if (!confirm(`'${targetClass.grade}' 분반을 정말 삭제하시겠습니까?`)) {
+      return;
+    }
+  }
+
+  appState.gradeClasses = classes.filter(c => c.id !== classId);
+  if (appState.currentSelectedClassId === classId) {
+    appState.currentSelectedClassId = otherClasses[0].id;
+  }
+
+  saveState();
+  renderClassMinistrySection();
+  renderManageClassesList();
+  if (typeof renderStudentRosterList === "function") renderStudentRosterList();
+  showToast(`'${targetClass.grade}' 분반이 안전하게 정리되었습니다. ✓`, "success");
+}
+
+function initManageClassesEvents() {
+  const openAddBtn = document.getElementById("openAddClassBtnInManage");
+  if (openAddBtn) {
+    openAddBtn.onclick = openAddClassModal;
+  }
+
+  const addForm = document.getElementById("addClassForm");
+  if (addForm) {
+    addForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const grade = document.getElementById("addClassGradeInput").value.trim();
+      const teacherName = document.getElementById("addClassTeacherNameInput").value.trim();
+      const teacherDuty = document.getElementById("addClassTeacherDutyInput").value.trim() || "공과반 담임";
+      const teacherPhone = document.getElementById("addClassTeacherPhoneInput").value.trim() || "010-0000-0000";
+      const teacherAvatar = document.getElementById("addClassAvatarSelect").value || "🧑🏻‍🏫";
+      const color = document.getElementById("addClassColorSelect").value || "#9a3412";
+
+      const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+      const newId = `class_${Date.now()}`;
+      const newClass = {
+        id: newId,
+        grade: grade,
+        className: `${grade} 선생님반`,
+        teacherName: teacherName,
+        teacherDuty: teacherDuty,
+        teacherPhone: teacherPhone,
+        teacherAvatar: teacherAvatar,
+        color: color,
+        badgeColor: "#fef5ea",
+        students: []
+      };
+
+      classes.push(newClass);
+      appState.gradeClasses = classes;
+      appState.currentSelectedClassId = newId;
+
+      saveState();
+      renderClassMinistrySection();
+      renderManageClassesList();
+      if (typeof renderStudentRosterList === "function") renderStudentRosterList();
+      closeModal("addClassModal");
+      showToast(`🎉 새로운 분반 '${grade}'이(가) 성공적으로 개설되었습니다!`, "success");
+    });
+  }
+
+  const editForm = document.getElementById("editClassForm");
+  if (editForm) {
+    editForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const classId = document.getElementById("editClassIdInput").value;
+      const grade = document.getElementById("editClassGradeInput").value.trim();
+      const teacherName = document.getElementById("editClassTeacherNameInput").value.trim();
+      const teacherDuty = document.getElementById("editClassTeacherDutyInput").value.trim();
+      const teacherPhone = document.getElementById("editClassTeacherPhoneInput").value.trim();
+      const teacherAvatar = document.getElementById("editClassAvatarSelect").value;
+      const color = document.getElementById("editClassColorSelect").value;
+
+      const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
+      const targetClass = classes.find(c => c.id === classId);
+      if (!targetClass) return;
+
+      const oldGrade = targetClass.grade;
+      targetClass.grade = grade;
+      targetClass.className = `${grade} 선생님반`;
+      targetClass.teacherName = teacherName;
+      if (teacherDuty) targetClass.teacherDuty = teacherDuty;
+      if (teacherPhone) targetClass.teacherPhone = teacherPhone;
+      if (teacherAvatar) targetClass.teacherAvatar = teacherAvatar;
+      if (color) targetClass.color = color;
+
+      // 소속 학생들의 분반명 동기화
+      if (oldGrade !== grade && targetClass.students) {
+        targetClass.students.forEach(s => {
+          s.className = grade;
+        });
+      }
+
+      saveState();
+      renderClassMinistrySection();
+      renderManageClassesList();
+      if (typeof renderStudentRosterList === "function") renderStudentRosterList();
+      closeModal("editClassModal");
+      showToast(`'${grade}' 분반 정보가 성공적으로 수정되었습니다! ✓`, "success");
+    });
+  }
+}
+
+window.openManageClassesModal = openManageClassesModal;
+window.renderManageClassesList = renderManageClassesList;
+window.openAddClassModal = openAddClassModal;
+window.openEditClassModal = openEditClassModal;
+window.handleDeleteClass = handleDeleteClass;
+
 function toggleNewcomerStep(studentId, week) {
   const data = appState.newcomerMinistry || INITIAL_DATA.newcomerMinistry;
   const student = data.students.find(s => s.id === studentId);
@@ -2139,7 +2365,7 @@ function renderClassMinistrySection() {
     let chipsHtml = "";
     if (isPastorOrDeacon) {
       chipsHtml = `
-        <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:8px; margin-bottom:12px; scrollbar-width:none;">
+        <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:8px; margin-bottom:12px; scrollbar-width:none; align-items:center;">
           ${classes.map(c => {
             const isSel = c.id === activeClass.id;
             return `
@@ -2149,6 +2375,11 @@ function renderClassMinistrySection() {
               </button>
             `;
           }).join('')}
+          ${isPastor ? `
+            <button type="button" onclick="openManageClassesModal()" style="padding:7px 11px; font-size:11.5px; font-weight:800; border-radius:12px; border:1.5px dashed #ea580c; background:#fff7ed; color:#c2410c; white-space:nowrap; cursor:pointer; display:flex; align-items:center; gap:4px; box-shadow:none; transition:all 0.15s ease;" title="분반 추가/수정/삭제 및 담당 교사 배정">
+              <span>⚙️</span> <span>분반 관리</span>
+            </button>
+          ` : ''}
         </div>
       `;
     }
@@ -13181,6 +13412,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuthScreen();
   initAddStudentToClassEvents();
   initTransferStudentEvents();
+  initManageClassesEvents();
   initAddNewcomerEvents();
   initPullToRefresh();
 
