@@ -7429,34 +7429,32 @@ function getActualAuthenticatedUser() {
 }
 
 function isCurrentRolePastor() {
-  const actualUser = getActualAuthenticatedUser();
-  if (actualUser) {
-    return actualUser.role === "pastor" || !!actualUser.isAdmin;
+  if (isViewAsMode()) {
+    const viewRole = (appState.viewAsState && appState.viewAsState.viewRole) || currentRole;
+    return viewRole === "pastor";
   }
   const currentUser = getCurrentUser();
-  return (currentUser && (currentUser.role === "pastor" || currentUser.isAdmin)) || currentRole === "pastor";
+  if (currentUser) {
+    const hasPrivilege = currentUser.role === "pastor" || !!currentUser.isAdmin;
+    return hasPrivilege && currentRole === "pastor";
+  }
+  return currentRole === "pastor";
 }
 
 // 행사 체크리스트 접근 권한 확인: 전도사, 선생님(공과반/새친구반/회계), 부장집사만 허용 (학생 제외)
 function canAccessChecklist() {
-  const actualUser = getActualAuthenticatedUser();
-  if (actualUser) {
-    return ["pastor", "teacher", "teacher_grade", "teacher_new", "accountant", "deacon"].includes(actualUser.role) || !!actualUser.isAdmin;
-  }
-  const currentUser = getCurrentUser();
-  const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
+  const role = isViewAsMode()
+    ? ((appState.viewAsState && appState.viewAsState.viewRole) || currentRole)
+    : (getCurrentUser()?.role || currentRole);
   return ["pastor", "teacher", "teacher_grade", "teacher_new", "accountant", "deacon"].includes(role);
 }
 
 // 재정 영수증 승인/송금 결재 권한 확인: 전도사, 회계 선생님
 function canManageAccounting() {
-  const actualUser = getActualAuthenticatedUser();
-  if (actualUser) {
-    return actualUser.role === "pastor" || actualUser.role === "accountant" || !!actualUser.isAdmin;
-  }
-  const currentUser = getCurrentUser();
-  const role = (currentUser && currentUser.role) ? currentUser.role : currentRole;
-  return role === "pastor" || role === "accountant" || (currentUser && currentUser.isAdmin);
+  const role = isViewAsMode()
+    ? ((appState.viewAsState && appState.viewAsState.viewRole) || currentRole)
+    : (getCurrentUser()?.role || currentRole);
+  return role === "pastor" || role === "accountant";
 }
 
 function getCurrentUser() {
@@ -11208,7 +11206,12 @@ function renderDayScheduleCard(day) {
               <button type="button" class="day-event-edit-btn w-6 h-6 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-[11px] text-gray-600 active:scale-95 transition-all" data-event-id="${e.id}" data-raw-id="${e.rawEventId || e.id}" title="일정 수정">✏️</button>
               <button type="button" class="day-event-delete-btn w-6 h-6 rounded-lg bg-white border border-rose-200 hover:bg-rose-50 flex items-center justify-center text-[11px] text-rose-600 active:scale-95 transition-all" data-event-id="${e.id}" data-raw-id="${e.rawEventId || e.id}" title="일정 삭제">🗑️</button>
             </div>
-          ` : ''}
+          ` : `
+            <div class="shrink-0 flex items-center text-primary/70 text-[11px] font-bold">
+              <span>체크리스트</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            </div>
+          `}
         </div>
       `;
     });
@@ -11245,6 +11248,10 @@ function renderDayScheduleCard(day) {
 
   container.querySelectorAll(".day-event-edit-btn").forEach(btn => {
     btn.onclick = () => {
+      if (!isCurrentRolePastor()) {
+        showToast("⚠️ 사역 캘린더 행사 수정은 전도사님(총괄 관리자)만 가능합니다.", "warn");
+        return;
+      }
       const evtId = btn.dataset.eventId;
       const allSchedules = getAllCalendarSchedules();
       const target = allSchedules.find(e => String(e.id) === String(evtId) || String(e.rawEventId) === String(evtId));
@@ -11261,6 +11268,10 @@ function renderDayScheduleCard(day) {
 
   container.querySelectorAll(".day-event-delete-btn").forEach(btn => {
     btn.onclick = () => {
+      if (!isCurrentRolePastor()) {
+        showToast("⚠️ 사역 캘린더 행사 삭제는 전도사님(총괄 관리자)만 가능합니다.", "warn");
+        return;
+      }
       const evtId = btn.dataset.eventId;
       const allSchedules = getAllCalendarSchedules();
       const target = allSchedules.find(e => String(e.id) === String(evtId) || String(e.rawEventId) === String(evtId));
