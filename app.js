@@ -6800,13 +6800,14 @@ function updateAccountingNotificationBadges() {
     }
   }
 
-  // 2. 홈 화면 결재 대기 알림 배너 갱신
+  // 2. 홈 화면 결재 대기 알림 배너 갱신 (전도사 전용: 회계선생님은 상단 전용 위젯 제공)
   const homeBanner = document.getElementById("homeReceiptApprovalBanner");
   const countTextEl = document.getElementById("homeReceiptCountText");
   const subTextEl = document.getElementById("homeReceiptSubText");
 
   if (homeBanner) {
-    if (isPrivileged && pendingCount > 0) {
+    const showPastorBanner = (role === "pastor" || (currentUser && currentUser.isAdmin)) && pendingCount > 0;
+    if (showPastorBanner) {
       homeBanner.classList.remove("hidden");
       if (countTextEl) {
         countTextEl.textContent = `영수증 청구 ${pendingCount}건 (총 ${totalPendingAmount.toLocaleString()}원)`;
@@ -9782,45 +9783,88 @@ function renderAccountantHomeWidget() {
   if (!appState.accounting) return;
 
   const receipts = appState.accounting.receipts || [];
-  let totalExpense = 0;
-  receipts.forEach(r => totalExpense += Number(r.amount) || 0);
-  const liveBalance = (appState.accounting.initialBalance || 0) + (appState.accounting.income || 0) - totalExpense;
-
-  const balanceText = document.getElementById("accHomeBalanceText");
-  if (balanceText) {
-    balanceText.innerHTML = `${liveBalance.toLocaleString()} <span class="text-[12px] font-bold">원</span>`;
-  }
-
-  const subText = document.getElementById("accHomeIncomeExpenseSubText");
-  if (subText) {
-    subText.innerHTML = `<span>수입: +${(appState.accounting.income || 0).toLocaleString()}원</span> · <span>지출: -${totalExpense.toLocaleString()}원</span>`;
-  }
-
-  // Pending receipts calculation
   const pendingReceipts = receipts.filter(r => r.status === "승인대기" || (!r.status || (r.status !== "정산완료" && r.status !== "반려")));
   const pendingCount = pendingReceipts.length;
+  let pendingAmount = 0;
+  pendingReceipts.forEach(r => pendingAmount += Number(r.amount) || 0);
 
+  // 1. Badge in Header
   const badgeContainer = document.getElementById("accHomePendingBadgeContainer");
   if (badgeContainer) {
     if (pendingCount > 0) {
       badgeContainer.innerHTML = `
-        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-black bg-amber-100 text-amber-900 border border-amber-300">
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-          <span>${pendingCount}건 결재 대기 중</span>
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-black bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs">
+          <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse"></span>
+          <span>${pendingCount}건 대기 중 ⏳</span>
         </span>
       `;
     } else {
       badgeContainer.innerHTML = `
-        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11.5px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
           <span>✓ 모두 정산완료</span>
         </span>
       `;
     }
   }
 
+  // 2. Total receipts count
   const totalCountText = document.getElementById("accHomeTotalReceiptCountText");
   if (totalCountText) {
     totalCountText.textContent = `전체 영수증 ${receipts.length}건`;
+  }
+
+  // 3. Main Title
+  const mainTitle = document.getElementById("accHomePendingMainTitle");
+  if (mainTitle) {
+    if (pendingCount > 0) {
+      mainTitle.innerHTML = `총 <span class="text-primary font-black">${pendingCount}건</span>의 영수증이 결재를 기다리고 있어요`;
+    } else {
+      mainTitle.textContent = "현재 결재 대기 중인 영수증이 없습니다 ✨";
+    }
+  }
+
+  // 4. Amount Row
+  const amountRow = document.getElementById("accHomePendingAmountRow");
+  const amountText = document.getElementById("accHomePendingAmountText");
+  if (amountRow && amountText) {
+    if (pendingCount > 0) {
+      amountRow.style.display = "flex";
+      amountText.textContent = `${pendingAmount.toLocaleString()}원`;
+    } else {
+      amountRow.style.display = "none";
+    }
+  }
+
+  // 5. Authors Summary
+  const authorsText = document.getElementById("accHomePendingAuthorsText");
+  if (authorsText) {
+    if (pendingCount > 0) {
+      const rawAuthors = pendingReceipts.map(r => (r.author || "").replace(/\s*(선생님|전도사|집사님|집사)\s*/g, "T").trim()).filter(Boolean);
+      const uniqueAuthors = [...new Set(rawAuthors)];
+      let authorSummary = "";
+      if (uniqueAuthors.length === 1) {
+        authorSummary = `청구자: ${uniqueAuthors[0]}`;
+      } else if (uniqueAuthors.length === 2) {
+        authorSummary = `청구자: ${uniqueAuthors[0]}, ${uniqueAuthors[1]}`;
+      } else if (uniqueAuthors.length > 2) {
+        authorSummary = `청구자: ${uniqueAuthors[0]}, ${uniqueAuthors[1]} 외 ${uniqueAuthors.length - 2}명`;
+      } else {
+        authorSummary = "교사 제출 영수증 청구";
+      }
+      authorsText.textContent = `${authorSummary} · 승인 시 실시간 잔액 차감`;
+    } else {
+      authorsText.textContent = "선생님들이 청구한 모든 영수증이 정산 완료되었습니다. 🎉";
+    }
+  }
+
+  // 6. Review Button Label
+  const btnLabel = document.getElementById("accHomeReviewBtnLabel");
+  if (btnLabel) {
+    if (pendingCount > 0) {
+      btnLabel.textContent = `🧾 결재 대기 영수증 검토하기 (${pendingCount}건)`;
+    } else {
+      btnLabel.textContent = "장부 전체 내역 확인하기";
+    }
   }
 }
 
@@ -9838,6 +9882,8 @@ function initHomeDashboardEvents() {
   if (accGotoLedgerBtn) {
     accGotoLedgerBtn.addEventListener("click", () => {
       switchToTab("view-accounting");
+      const allChip = document.getElementById("filterRcptAll");
+      if (allChip) allChip.click();
     });
   }
 
@@ -9845,27 +9891,15 @@ function initHomeDashboardEvents() {
   if (accReviewReceiptsBtn) {
     accReviewReceiptsBtn.addEventListener("click", () => {
       switchToTab("view-accounting");
-      const pendingChip = document.getElementById("filterRcptPending");
-      if (pendingChip) pendingChip.click();
-    });
-  }
-
-  const accExportBtn = document.getElementById("accHomeExportBtn");
-  if (accExportBtn) {
-    accExportBtn.addEventListener("click", () => {
-      const originalExportBtn = document.getElementById("exportCsvBtn");
-      if (originalExportBtn) {
-        originalExportBtn.click();
+      const receipts = appState.accounting ? (appState.accounting.receipts || []) : [];
+      const hasPending = receipts.some(r => r.status === "승인대기" || (!r.status || (r.status !== "정산완료" && r.status !== "반려")));
+      if (hasPending) {
+        const pendingChip = document.getElementById("filterRcptPending");
+        if (pendingChip) pendingChip.click();
       } else {
-        showToast("장부 CSV 다운로드 중...", "info");
+        const allChip = document.getElementById("filterRcptAll");
+        if (allChip) allChip.click();
       }
-    });
-  }
-
-  const accSuggestBtn = document.getElementById("accHomeSuggestBtn");
-  if (accSuggestBtn) {
-    accSuggestBtn.addEventListener("click", () => {
-      openTeacherSuggestModal();
     });
   }
 
