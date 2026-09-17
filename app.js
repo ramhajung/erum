@@ -901,6 +901,7 @@ const INITIAL_DATA = {
       tag: "Worship",
       theme: "butter",
       icon: "menu_book",
+      status: "completed",
       items: [
         { id: 101, title: "개강예배 주보 및 순서지 인쇄 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" },
         { id: 102, title: "새 학기 분반 교재 배부 준비 (김대한 선생님)", manager: "김대한 선생님", checked: true, color: "green" },
@@ -918,6 +919,7 @@ const INITIAL_DATA = {
       tag: "Open Sunday",
       theme: "sage",
       icon: "volunteer_activism",
+      status: "active",
       items: [
         { id: 301, title: "초청 선물 키트 준비 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" },
         { id: 302, title: "환영 찬양 및 특별 순서 연습 (소예진T)", manager: "소예진T", checked: false, color: "default" },
@@ -935,6 +937,7 @@ const INITIAL_DATA = {
       tag: "Blessing Day",
       theme: "butter",
       icon: "cake",
+      status: "active",
       items: [
         { id: 201, title: "생일 선물 포장 및 롤링페이퍼 준비 (소예진T)", manager: "소예진T", checked: false, color: "default" },
         { id: 202, title: "생일 케이크 및 다과 주문 (김희순 집사)", manager: "김희순 집사", checked: true, color: "green" },
@@ -942,15 +945,15 @@ const INITIAL_DATA = {
       ]
     }
   ],
-  currentChecklistEventId: "event_open",
+  currentChecklistEventId: "event_2",
   checklist: {
-    eventName: "2학기 개강예배",
-    dday: "D-Day",
+    eventName: "친구초청예배",
+    dday: "D-12",
     manager: "정하람 전도사",
     items: [
-      { id: 101, title: "개강예배 주보 및 순서지 인쇄 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" },
-      { id: 102, title: "새 학기 분반 교재 배부 준비 (김대한 선생님)", manager: "김대한 선생님", checked: true, color: "green" },
-      { id: 103, title: "찬양팀 특별 찬양 순서 연습 (소예진 선생님)", manager: "소예진 선생님", checked: true, color: "yellow" }
+      { id: 301, title: "초청 선물 키트 준비 (정하람 전도사)", manager: "정하람 전도사", checked: true, color: "green" },
+      { id: 302, title: "환영 찬양 및 특별 순서 연습 (소예진T)", manager: "소예진T", checked: false, color: "default" },
+      { id: 303, title: "새친구 환영 만찬 테이블 세팅 (김대한T)", manager: "김대한T", checked: false, color: "default" }
     ]
   },
   staffBox: {
@@ -1204,12 +1207,21 @@ function loadState() {
         if (!parsed.events.some(ev => ev.id === "event_open")) {
           parsed.events.unshift(JSON.parse(JSON.stringify(INITIAL_DATA.events[0])));
         }
+        parsed.events.forEach(ev => {
+          if (!ev.status) {
+            ev.status = (ev.id === "event_open" ? "completed" : "active");
+          }
+        });
+      }
+      if (!parsed.checklistFilter) {
+        parsed.checklistFilter = "active";
       }
       if (parsed.calendarEvents && Array.isArray(parsed.calendarEvents)) {
         parsed.calendarEvents = parsed.calendarEvents.filter(ev => ev.id !== "evt_3" && !ev.title.includes("스카"));
       }
       if (!parsed.currentChecklistEventId || parsed.currentChecklistEventId === "event_1" || !parsed.events.some(ev => ev.id === parsed.currentChecklistEventId)) {
-        parsed.currentChecklistEventId = (parsed.events && parsed.events.length > 0) ? parsed.events[0].id : "event_open";
+        const activeOne = parsed.events.find(ev => ev.status !== "completed");
+        parsed.currentChecklistEventId = activeOne ? activeOne.id : (parsed.events[0] ? parsed.events[0].id : "event_2");
       }
       if (parsed.agendas && parsed.agendas.pending && parsed.staffBox && parsed.staffBox.items) {
         parsed.agendas.pending.forEach(pa => {
@@ -9545,7 +9557,8 @@ function getActiveChecklistEvent() {
   }
   let event = appState.events.find(e => e.id === appState.currentChecklistEventId);
   if (!event) {
-    event = appState.events[0];
+    const activeOne = appState.events.find(e => e.status !== "completed");
+    event = activeOne || appState.events[0];
     appState.currentChecklistEventId = event.id;
   }
   // Keep appState.checklist in sync for backward compatibility
@@ -9564,8 +9577,11 @@ function renderUpcomingEventsSection() {
   const viewAllEventsBtn = document.getElementById("viewAllEventsBtn");
   if (!container || !appState.events) return;
 
+  const activeEvents = appState.events.filter(e => e.status !== "completed");
+  const displayEvents = activeEvents.length > 0 ? activeEvents : appState.events;
+
   if (countBadge) {
-    countBadge.textContent = `${appState.events.length}개`;
+    countBadge.textContent = `${displayEvents.length}개`;
   }
 
   const currentUser = getCurrentUser();
@@ -9578,7 +9594,7 @@ function renderUpcomingEventsSection() {
 
   container.innerHTML = "";
 
-  appState.events.forEach((event, index) => {
+  displayEvents.forEach((event, index) => {
     const totalItems = event.items ? event.items.length : 0;
     const checkedItems = event.items ? event.items.filter(i => i.checked).length : 0;
     const pct = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
@@ -9888,19 +9904,38 @@ function renderChecklistSection() {
     openAddEventHomeBtn.style.display = isPastor ? "" : "none";
   }
 
-  // 행사 전환 탭/알약 (Event Selector Pills)
+  // 행사 전환 탭/알약 (Event Selector Pills: 진행 중인 사역 vs 완료된 지난 사역)
   if (selectorContainer && appState.events) {
     selectorContainer.innerHTML = "";
-    appState.events.forEach(ev => {
+
+    const activeEvents = appState.events.filter(ev => ev.status !== "completed");
+    const completedEvents = appState.events.filter(ev => ev.status === "completed");
+
+    if (!appState.checklistFilter) appState.checklistFilter = "active";
+    if (appState.checklistFilter === "active" && activeEvents.length === 0 && completedEvents.length > 0) {
+      appState.checklistFilter = "completed";
+    }
+
+    const currentList = appState.checklistFilter === "completed" ? completedEvents : activeEvents;
+
+    // 현재 선택된 행사가 현재 필터 목록에 없으면 첫 번째 항목으로 재설정
+    if (currentList.length > 0 && !currentList.some(ev => ev.id === currentEvent.id)) {
+      appState.currentChecklistEventId = currentList[0].id;
+      renderChecklistSection();
+      return;
+    }
+
+    currentList.forEach(ev => {
       const isSelected = ev.id === currentEvent.id;
       const pill = document.createElement("button");
       pill.type = "button";
       pill.className = `px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 flex-shrink-0 ${
         isSelected
-          ? "bg-[#9E4830] text-white shadow-sm ring-1 ring-[#9E4830]"
+          ? (ev.status === "completed" ? "bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-700" : "bg-[#9E4830] text-white shadow-sm ring-1 ring-[#9E4830]")
           : "bg-surface-card text-text-secondary border border-outline-variant/40 hover:border-[#9E4830]/40"
       }`;
-      pill.innerHTML = `<span>${ev.title}</span><span class="text-[10px] opacity-80">(${ev.dday})</span>`;
+      const statusText = ev.status === "completed" ? "✓ 완료" : ev.dday;
+      pill.innerHTML = `<span>${ev.title}</span><span class="text-[10px] opacity-80">(${statusText})</span>`;
       pill.addEventListener("click", () => {
         appState.currentChecklistEventId = ev.id;
         saveState();
@@ -9910,11 +9945,44 @@ function renderChecklistSection() {
       selectorContainer.appendChild(pill);
     });
 
+    // 지난 사역(완료) <-> 진행 중인 사역 전환 토글 알약
+    if (appState.checklistFilter === "active" && completedEvents.length > 0) {
+      const archiveBtn = document.createElement("button");
+      archiveBtn.type = "button";
+      archiveBtn.className = "px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 flex-shrink-0 bg-stone-100 text-stone-600 border border-stone-300 hover:bg-stone-200 active:scale-95";
+      archiveBtn.innerHTML = `<span>📁</span> <span>지난 사역 (${completedEvents.length})</span>`;
+      archiveBtn.title = "완료되어 캘린더에 영구 보존된 지난 사역 보기";
+      archiveBtn.addEventListener("click", () => {
+        appState.checklistFilter = "completed";
+        if (completedEvents.length > 0) {
+          appState.currentChecklistEventId = completedEvents[0].id;
+        }
+        saveState();
+        renderChecklistSection();
+      });
+      selectorContainer.appendChild(archiveBtn);
+    } else if (appState.checklistFilter === "completed" && activeEvents.length > 0) {
+      const activeBtn = document.createElement("button");
+      activeBtn.type = "button";
+      activeBtn.className = "px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 flex-shrink-0 bg-amber-50 text-[#8B3B24] border border-[#d4a373]/60 hover:bg-amber-100 active:scale-95";
+      activeBtn.innerHTML = `<span>← 🚀</span> <span>진행 중 사역 (${activeEvents.length})</span>`;
+      activeBtn.title = "현재 준비 중인 다가오는 사역 목록으로 돌아가기";
+      activeBtn.addEventListener("click", () => {
+        appState.checklistFilter = "active";
+        if (activeEvents.length > 0) {
+          appState.currentChecklistEventId = activeEvents[0].id;
+        }
+        saveState();
+        renderChecklistSection();
+      });
+      selectorContainer.appendChild(activeBtn);
+    }
+
     // 전도사인 경우 알약 목록 끝에 "+ 행사 추가" 퀵 버튼 추가
     if (isPastor) {
       const addEventPill = document.createElement("button");
       addEventPill.type = "button";
-      addEventPill.className = "px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 flex-shrink-0 bg-amber-50 text-[#8B3B24] border border-[#d4a373]/60 hover:bg-amber-100/70";
+      addEventPill.className = "px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1 flex-shrink-0 bg-white text-primary border border-primary/40 hover:bg-amber-50";
       addEventPill.innerHTML = `<span>＋</span> <span>행사 추가</span>`;
       addEventPill.addEventListener("click", () => {
         openModal("addEventModal");
@@ -9929,11 +9997,66 @@ function renderChecklistSection() {
   const ddayBadgeEl = document.getElementById("chkEventDdayBadge");
   const managerTextEl = document.getElementById("chkEventManagerText");
   const managerPillEl = document.getElementById("chkEventManagerPill");
+  const completeToggleBtn = document.getElementById("chkEventCompleteToggleBtn");
+
+  const isCompleted = (currentEvent.status === "completed");
 
   if (mainTitleEl) mainTitleEl.textContent = currentEvent.title;
   if (subTitleEl) subTitleEl.textContent = currentEvent.subTitle ? `(${currentEvent.subTitle})` : "";
-  if (ddayBadgeEl) ddayBadgeEl.textContent = currentEvent.dday;
+  if (ddayBadgeEl) {
+    if (isCompleted) {
+      ddayBadgeEl.textContent = "✓ 완료됨";
+      ddayBadgeEl.className = "dday-badge-large bg-emerald-600 text-white";
+    } else {
+      ddayBadgeEl.textContent = currentEvent.dday;
+      ddayBadgeEl.className = "dday-badge-large";
+    }
+  }
   if (managerTextEl) managerTextEl.textContent = `담당: ${currentEvent.manager || "미정"}`;
+
+  if (completeToggleBtn) {
+    if (isPastor) {
+      completeToggleBtn.style.display = "inline-flex";
+      if (isCompleted) {
+        completeToggleBtn.className = "text-[11px] font-extrabold px-2.5 py-1 rounded-full transition-all active:scale-95 flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 shadow-xs cursor-pointer";
+        completeToggleBtn.innerHTML = `<span>✅ 사역 완료</span> <span class="text-[9.5px] opacity-75 underline ml-0.5">다시 열기</span>`;
+        completeToggleBtn.title = "클릭하여 진행 중 상태로 복원";
+        completeToggleBtn.onclick = () => {
+          if (confirm(`'${currentEvent.title}' 사역을 다시 '진행 중' 상태로 변경하시겠습니까?`)) {
+            currentEvent.status = "active";
+            appState.checklistFilter = "active";
+            saveState();
+            renderUpcomingEventsSection();
+            renderChecklistSection();
+            renderCalendarSection();
+            showToast(`🚀 '${currentEvent.title}' 사역이 진행 중으로 복원되었습니다.`);
+          }
+        };
+      } else {
+        completeToggleBtn.className = "text-[11px] font-extrabold px-2.5 py-1 rounded-full transition-all active:scale-95 flex items-center gap-1 bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 shadow-xs cursor-pointer";
+        completeToggleBtn.innerHTML = `<span>🎉 사역 완료 처리</span>`;
+        completeToggleBtn.title = "클릭하여 사역 완료 처리 (캘린더에는 영구 보존됩니다)";
+        completeToggleBtn.onclick = () => {
+          if (confirm(`'${currentEvent.title}' 사역을 완료 처리하시겠습니까?\n\n✨ 캘린더에는 해당 날짜에 영구히 보존되며,\n체크리스트는 '지난 사역'으로 안전하게 보관됩니다.`)) {
+            currentEvent.status = "completed";
+            saveState();
+            renderUpcomingEventsSection();
+            renderChecklistSection();
+            renderCalendarSection();
+            showToast(`🎉 '${currentEvent.title}' 사역이 완료 처리되었습니다! 캘린더에 영구 보존됩니다.`);
+          }
+        };
+      }
+    } else {
+      if (isCompleted) {
+        completeToggleBtn.style.display = "inline-flex";
+        completeToggleBtn.className = "text-[11px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-300 pointer-events-none";
+        completeToggleBtn.innerHTML = `<span>✅ 사역 완료</span>`;
+      } else {
+        completeToggleBtn.style.display = "none";
+      }
+    }
+  }
 
   if (managerPillEl) {
     const editIcon = managerPillEl.querySelector(".chk-mgr-edit-icon");
@@ -10387,6 +10510,9 @@ function initChecklistEvents() {
     if (subTitleInput) subTitleInput.value = event.subTitle || "";
     if (locationInput) locationInput.value = event.location || "";
 
+    const statusSel = document.getElementById("editEventStatusSelect");
+    if (statusSel) statusSel.value = event.status || "active";
+
     // 날짜 및 스마트 D-Day 연동 (당일/수련회 등 자동 감지)
     if (editDateHelper) {
       editDateHelper.populateFromText(event.date || "");
@@ -10436,6 +10562,7 @@ function initChecklistEvents() {
       const newSubTitle = document.getElementById("editEventSubTitleInput").value.trim();
       const newDate = document.getElementById("editEventDateInput").value.trim();
       let newDday = document.getElementById("editEventDdayInput").value.trim();
+      const newStatus = document.getElementById("editEventStatusSelect")?.value || targetEvent.status || "active";
 
       if (newDate) {
         newDday = calculateDdayFromDateString(newDate) || newDday || "D-Day";
@@ -10449,6 +10576,7 @@ function initChecklistEvents() {
       targetEvent.subTitle = newSubTitle;
       targetEvent.dday = newDday;
       targetEvent.manager = newManager;
+      targetEvent.status = newStatus;
       if (newDate) targetEvent.date = newDate;
       if (newLocation) targetEvent.location = newLocation;
 
@@ -10893,9 +11021,11 @@ function getAllCalendarSchedules() {
       if (!event.date) return;
       registeredEventTitles.add(event.title.trim());
 
-      const icon = getSmartEventIcon(event.title, event.tag);
-      const iconPrefix = icon === "forest" ? "🏕️" : (icon === "cake" ? "🎂" : (icon === "menu_book" ? "📖" : (icon === "sports_soccer" ? "⚽" : (icon === "volunteer_activism" ? "❤️" : "🎉"))));
-      const displayTitle = event.title.startsWith(iconPrefix) ? event.title : `${iconPrefix} ${event.title}`;
+      const isCompleted = (event.status === "completed");
+      const icon = isCompleted ? "check_circle" : getSmartEventIcon(event.title, event.tag);
+      const iconPrefix = isCompleted ? "✓" : (icon === "forest" ? "🏕️" : (icon === "cake" ? "🎂" : (icon === "menu_book" ? "📖" : (icon === "sports_soccer" ? "⚽" : (icon === "volunteer_activism" ? "❤️" : "🎉")))));
+      let cleanTitle = event.title.replace(/^(✓|🏕️|🎂|📖|⚽|❤️|🎉)\s*/, "");
+      const displayTitle = isCompleted ? `✓ ${cleanTitle}` : (event.title.startsWith(iconPrefix) ? event.title : `${iconPrefix} ${event.title}`);
 
       // 텍스트로부터 시작일, 종료일, 시간 추출
       const extracted = extractDatesFromText(event.date);
@@ -10923,11 +11053,12 @@ function getAllCalendarSchedules() {
             time: extracted.time,
             location: event.location || "이룸교회",
             manager: event.manager || "정하람 전도사",
-            tag: "주요행사",
-            color: "orange",
+            tag: isCompleted ? "사역완료" : "주요행사",
+            color: isCompleted ? "mint" : "orange",
             type: "event",
             isMainEvent: true,
             isPeriod: true,
+            isCompleted: isCompleted,
             eventRef: event
           });
 
@@ -10944,10 +11075,11 @@ function getAllCalendarSchedules() {
           time: extracted.time,
           location: event.location || "이룸교회",
           manager: event.manager || "정하람 전도사",
-          tag: "주요행사",
-          color: "orange",
+          tag: isCompleted ? "사역완료" : "주요행사",
+          color: isCompleted ? "mint" : "orange",
           type: "event",
           isMainEvent: true,
+          isCompleted: isCompleted,
           eventRef: event
         });
       }
@@ -11149,13 +11281,16 @@ function renderDayScheduleCard(day) {
     });
 
     curEvents.forEach(e => {
-      const colorClass = e.color === 'yellow' ? 'border-amber-200 bg-amber-50/60' : (e.color === 'green' ? 'border-emerald-200 bg-emerald-50/60' : 'border-primary/20 bg-orange-50/50');
-      const tagColor = e.color === 'yellow' ? 'bg-amber-100 text-amber-800' : (e.color === 'green' ? 'bg-emerald-100 text-emerald-800' : 'bg-primary/15 text-primary');
+      const isCompleted = e.isCompleted || (e.eventRef && e.eventRef.status === "completed");
+      const colorClass = isCompleted ? 'border-emerald-200 bg-emerald-50/60' : (e.color === 'yellow' ? 'border-amber-200 bg-amber-50/60' : (e.color === 'green' ? 'border-emerald-200 bg-emerald-50/60' : 'border-primary/20 bg-orange-50/50'));
+      const tagColor = isCompleted ? 'bg-emerald-100 text-emerald-800' : (e.color === 'yellow' ? 'bg-amber-100 text-amber-800' : (e.color === 'green' ? 'bg-emerald-100 text-emerald-800' : 'bg-primary/15 text-primary'));
+      const displayTag = isCompleted ? '✅ 사역완료' : (e.tag || "사역");
+
       html += `
         <div class="p-2.5 rounded-xl border ${colorClass} flex items-center justify-between gap-2">
           <div class="min-w-0 flex-1 cursor-pointer day-event-info-click" data-event-id="${e.id}" data-raw-id="${e.rawEventId || e.id}">
             <div class="flex items-center gap-1.5">
-              <span class="text-[9.5px] font-extrabold px-1.5 py-0.2 rounded ${tagColor}">${e.tag || "사역"}</span>
+              <span class="text-[9.5px] font-extrabold px-1.5 py-0.2 rounded ${tagColor}">${displayTag}</span>
               <span class="text-[12.5px] font-extrabold text-gray-900 truncate">${e.title}</span>
               ${e.isPeriod ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-orange-100 text-orange-800 shrink-0">기간 행사</span>` : ''}
             </div>
@@ -11167,12 +11302,13 @@ function renderDayScheduleCard(day) {
           </div>
           ${isPastor ? `
             <div class="flex items-center gap-1 shrink-0">
+              <button type="button" class="day-event-chk-btn w-6 h-6 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 flex items-center justify-center text-[11px] text-primary active:scale-95 transition-all" data-event-id="${e.id}" data-raw-id="${e.rawEventId || e.id}" title="체크리스트 열람">📋</button>
               <button type="button" class="day-event-edit-btn w-6 h-6 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-[11px] text-gray-600 active:scale-95 transition-all" data-event-id="${e.id}" data-raw-id="${e.rawEventId || e.id}" title="일정 수정">✏️</button>
               <button type="button" class="day-event-delete-btn w-6 h-6 rounded-lg bg-white border border-rose-200 hover:bg-rose-50 flex items-center justify-center text-[11px] text-rose-600 active:scale-95 transition-all" data-event-id="${e.id}" data-raw-id="${e.rawEventId || e.id}" title="일정 삭제">🗑️</button>
             </div>
           ` : `
-            <div class="shrink-0 flex items-center text-primary/70 text-[11px] font-bold">
-              <span>체크리스트</span>
+            <div class="shrink-0 flex items-center ${isCompleted ? 'text-emerald-700' : 'text-primary/70'} text-[11px] font-bold">
+              <span>${isCompleted ? '사역기록' : '체크리스트'}</span>
               <span class="material-symbols-outlined text-[14px]">chevron_right</span>
             </div>
           `}
@@ -11193,11 +11329,12 @@ function renderDayScheduleCard(day) {
       const target = allSchedules.find(e => String(e.id) === String(evtId) || String(e.rawEventId) === String(evtId));
       if (!target) return;
       if (target.isMainEvent && target.eventRef) {
+        appState.currentChecklistEventId = target.eventRef.id;
+        appState.checklistFilter = target.eventRef.status === "completed" ? "completed" : "active";
+        saveState();
         if (isPastor) {
           openEditEventModal(target.eventRef);
         } else {
-          appState.currentChecklistEventId = target.eventRef.id;
-          saveState();
           switchToTab("view-scheduler");
           switchSchedulerSubTab("subTabChecklist");
           renderChecklistSection();
@@ -11207,6 +11344,22 @@ function renderDayScheduleCard(day) {
         const evt = (appState.calendarEvents || []).find(e => String(e.id) === String(evtId));
         if (evt) openManageCalendarItemModal("event", evt);
       }
+    };
+  });
+
+  container.querySelectorAll(".day-event-chk-btn").forEach(btn => {
+    btn.onclick = () => {
+      const evtId = btn.dataset.eventId;
+      const allSchedules = getAllCalendarSchedules();
+      const target = allSchedules.find(e => String(e.id) === String(evtId) || String(e.rawEventId) === String(evtId));
+      if (!target || !target.eventRef) return;
+      appState.currentChecklistEventId = target.eventRef.id;
+      appState.checklistFilter = target.eventRef.status === "completed" ? "completed" : "active";
+      saveState();
+      switchToTab("view-scheduler");
+      switchSchedulerSubTab("subTabChecklist");
+      renderChecklistSection();
+      showToast(`'${target.eventRef.title}' 행사 체크리스트로 이동했습니다. 📋`);
     };
   });
 
