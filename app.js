@@ -1989,9 +1989,69 @@ function renderManageClassesList() {
   }).join('');
 }
 
+function populateTeacherSelect(selectId, currentTeacherName = "", currentUserId = "") {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+
+  const users = appState.users || INITIAL_DATA.users || [];
+  // Filter for teachers, staff, leaders (exclude pending and students)
+  const teachers = users.filter(u => {
+    if (u.isPending) return false;
+    if (u.role && u.role.startsWith("student")) return false;
+    if (u.name && u.name.includes("학생")) return false;
+    return true;
+  });
+
+  const cleanCurrentName = (currentTeacherName || "").replace(/(선생님|전도사|교사|목사|집사|간사|\s)/g, "");
+
+  let optionsHtml = `<option value="">-- 직접 입력 (또는 선생님 선택) --</option>`;
+  teachers.forEach(u => {
+    const cleanUName = (u.name || "").replace(/(선생님|전도사|교사|목사|집사|간사|\s)/g, "");
+    const isSelected = (currentUserId && u.id === currentUserId) ||
+                       (!currentUserId && cleanCurrentName && cleanUName && (cleanUName === cleanCurrentName || cleanCurrentName.includes(cleanUName) || cleanUName.includes(cleanCurrentName)));
+    const roleBadge = u.role === "pastor" ? "전도사" : (u.duty ? u.duty.split("/")[0].trim() : "선생님");
+    const phoneStr = u.phone ? ` (${u.phone})` : "";
+    const avatarStr = u.avatar || "🧑🏻‍🏫";
+    optionsHtml += `<option value="${u.id}" ${isSelected ? "selected" : ""}>${avatarStr} ${u.name} [${roleBadge}]${phoneStr}</option>`;
+  });
+  select.innerHTML = optionsHtml;
+}
+
+function handleTeacherSelectChange(selectEl, gradeInputId, nameInputId, dutyInputId, phoneInputId, isNewClass) {
+  const userId = selectEl.value;
+  if (!userId) return;
+
+  const users = appState.users || INITIAL_DATA.users || [];
+  const user = users.find(u => u.id === userId);
+  if (!user) return;
+
+  const gradeInput = document.getElementById(gradeInputId);
+  const nameInput = document.getElementById(nameInputId);
+  const dutyInput = document.getElementById(dutyInputId);
+  const phoneInput = document.getElementById(phoneInputId);
+
+  if (nameInput) nameInput.value = user.name || "";
+  if (dutyInput) dutyInput.value = user.duty || "공과반 담임";
+  if (phoneInput) phoneInput.value = user.phone || "";
+
+  // Recommend class grade name
+  if (gradeInput) {
+    const rawName = (user.name || "").replace(/(선생님|전도사|교사|목사|집사|간사|\s)/g, "");
+    const shortName = rawName.length >= 3 ? rawName.slice(-2) : rawName;
+    const suggestedName = shortName ? `${shortName}쌤` : `${user.name}반`;
+
+    if (isNewClass || !gradeInput.value || gradeInput.value.endsWith("쌤") || gradeInput.value.endsWith("반")) {
+      gradeInput.value = suggestedName;
+    }
+  }
+
+  showToast(`${user.name}의 정보가 자동으로 반영되었습니다! ✨`, "info");
+}
+
 function openAddClassModal() {
   const form = document.getElementById("addClassForm");
   if (form) form.reset();
+  populateTeacherSelect("addClassTeacherSelect", "", "");
   openModal("addClassModal");
 }
 
@@ -2011,6 +2071,8 @@ function openEditClassModal(classId) {
   if (teacherNameInput) teacherNameInput.value = targetClass.teacherName || "";
   if (teacherDutyInput) teacherDutyInput.value = targetClass.teacherDuty || "";
   if (teacherPhoneInput) teacherPhoneInput.value = targetClass.teacherPhone || "";
+
+  populateTeacherSelect("editClassTeacherSelect", targetClass.teacherName || "", targetClass.teacherUserId || "");
 
   openModal("editClassModal");
 }
@@ -2069,6 +2131,20 @@ function initManageClassesEvents() {
     openAddBtn.onclick = openAddClassModal;
   }
 
+  const addTeacherSelect = document.getElementById("addClassTeacherSelect");
+  if (addTeacherSelect) {
+    addTeacherSelect.addEventListener("change", () => {
+      handleTeacherSelectChange(addTeacherSelect, "addClassGradeInput", "addClassTeacherNameInput", "addClassTeacherDutyInput", "addClassTeacherPhoneInput", true);
+    });
+  }
+
+  const editTeacherSelect = document.getElementById("editClassTeacherSelect");
+  if (editTeacherSelect) {
+    editTeacherSelect.addEventListener("change", () => {
+      handleTeacherSelectChange(editTeacherSelect, "editClassGradeInput", "editClassTeacherNameInput", "editClassTeacherDutyInput", "editClassTeacherPhoneInput", false);
+    });
+  }
+
   const addForm = document.getElementById("addClassForm");
   if (addForm) {
     addForm.addEventListener("submit", (e) => {
@@ -2078,15 +2154,19 @@ function initManageClassesEvents() {
       const teacherDuty = document.getElementById("addClassTeacherDutyInput").value.trim() || "공과반 담임";
       const teacherPhone = document.getElementById("addClassTeacherPhoneInput").value.trim() || "010-0000-0000";
 
+      const selectedUserId = document.getElementById("addClassTeacherSelect")?.value;
+      const matchedUser = selectedUserId ? (appState.users || []).find(u => u.id === selectedUserId) : (appState.users || []).find(u => u.name === teacherName);
+
       const palette = ["#9a3412", "#0369a1", "#0f766e", "#be123c", "#7e22ce"];
       const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
       const color = palette[classes.length % palette.length];
       const isFemale = /은혜|선아|예진|하은|희순|유리|민서|하람|미경|수진|지은|혜진/.test(teacherName);
-      const teacherAvatar = isFemale ? "👩🏻‍🏫" : "🧑🏻‍🏫";
+      const teacherAvatar = (matchedUser && matchedUser.avatar) ? matchedUser.avatar : (isFemale ? "👩🏻‍🏫" : "🧑🏻‍🏫");
 
       const newId = `class_${Date.now()}`;
       const newClass = {
         id: newId,
+        teacherUserId: matchedUser?.id || "",
         grade: grade,
         className: `${grade} 선생님반`,
         teacherName: teacherName,
@@ -2121,6 +2201,9 @@ function initManageClassesEvents() {
       const teacherDuty = document.getElementById("editClassTeacherDutyInput").value.trim();
       const teacherPhone = document.getElementById("editClassTeacherPhoneInput").value.trim();
 
+      const selectedUserId = document.getElementById("editClassTeacherSelect")?.value;
+      const matchedUser = selectedUserId ? (appState.users || []).find(u => u.id === selectedUserId) : (appState.users || []).find(u => u.name === teacherName);
+
       const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses;
       const targetClass = classes.find(c => c.id === classId);
       if (!targetClass) return;
@@ -2131,6 +2214,10 @@ function initManageClassesEvents() {
       targetClass.teacherName = teacherName;
       if (teacherDuty) targetClass.teacherDuty = teacherDuty;
       if (teacherPhone) targetClass.teacherPhone = teacherPhone;
+      if (matchedUser) {
+        targetClass.teacherUserId = matchedUser.id;
+        if (matchedUser.avatar) targetClass.teacherAvatar = matchedUser.avatar;
+      }
 
       // 소속 학생들의 분반명 동기화
       if (oldGrade !== grade && targetClass.students) {

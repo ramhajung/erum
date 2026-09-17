@@ -3180,6 +3180,19 @@
         </div>
 
         <form id="addClassForm" class="space-y-3">
+          <!-- 가입된 교사 빠른 선택 -->
+          <div class="form-group mb-0 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/90 flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label for="addClassTeacherSelect" class="text-[11px] font-extrabold text-amber-950 flex items-center gap-1 cursor-pointer">
+                <span>⚡</span> 가입된 선생님 불러오기
+              </label>
+              <span class="text-[10px] font-medium text-amber-700">선택 시 정보 자동 입력</span>
+            </div>
+            <select id="addClassTeacherSelect" class="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-2 text-xs font-bold text-stone-800">
+              <option value="">-- 직접 입력 (선생님 선택) --</option>
+            </select>
+          </div>
+
           <div class="form-group mb-0">
             <label for="addClassGradeInput" class="block text-[11.5px] font-bold text-text-secondary mb-1">
               🏷️ 분반 이름 (표시명) <span class="text-rose-500">*</span>
@@ -3238,6 +3251,19 @@
 
         <form id="editClassForm" class="space-y-3">
           <input type="hidden" id="editClassIdInput" value="">
+
+          <!-- 가입된 교사 빠른 선택 -->
+          <div class="form-group mb-0 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/90 flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label for="editClassTeacherSelect" class="text-[11px] font-extrabold text-amber-950 flex items-center gap-1 cursor-pointer">
+                <span>⚡</span> 가입된 선생님 불러오기
+              </label>
+              <span class="text-[10px] font-medium text-amber-700">선택 시 정보 자동 입력</span>
+            </div>
+            <select id="editClassTeacherSelect" class="w-full bg-white border border-amber-300 rounded-lg px-2.5 py-2 text-xs font-bold text-stone-800">
+              <option value="">-- 직접 입력 (선생님 선택) --</option>
+            </select>
+          </div>
 
           <div class="form-group mb-0">
             <label for="editClassGradeInput" class="block text-[11.5px] font-bold text-text-secondary mb-1">
