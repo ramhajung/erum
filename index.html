@@ -959,23 +959,26 @@
           </div>
 
           <div class="price-field-box">
-            <div>
-              <div class="field-label">💰 지출 금액 (자동인식)</div>
-              <div class="price-large" id="rcptPriceDisplay">45,000 <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span></div>
+            <div style="flex:1;">
+              <div class="field-label">💰 지출 금액</div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="number" class="field-input" id="rcptAmountInput" value="45000" min="0" step="100" style="font-size:20px; font-weight:800; color:#d94343; padding:8px 12px; flex:1; max-width:200px;">
+                <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>
+              </div>
+              <div class="price-large" id="rcptPriceDisplay" style="font-size:13px; color:#8c7d6b; margin-top:2px;"></div>
             </div>
-            <span class="accuracy-pill">인식정확도 100%</span>
           </div>
 
           <div class="form-row-grid">
             <div class="field-box">
               <div class="field-label">🏷️ 카테고리</div>
               <select class="field-select" id="rcptCategory">
-                <option value="스카/시험기간 💻" selected>스카/시험기간 💻</option>
-                <option value="중등부 분반 간식비 🥪">중등부 분반 간식비 🥪</option>
-                <option value="고등부 분반 간식비 🍕">고등부 분반 간식비 🍕</option>
-                <option value="찬양팀/세션 지원 🎵">찬양팀/세션 지원 🎵</option>
-                <option value="생일 축하/행사비 🎂">생일 축하/행사비 🎂</option>
-                <option value="문구/공과 교재비 📚">문구/공과 교재비 📚</option>
+                <option value="간식비" selected>간식비 (분반/모임 간식) 🥪</option>
+                <option value="비품비">비품비 (문구/소모품/시설) 💻</option>
+                <option value="교재/공과비">교재/공과비 (성경/공과책) 📚</option>
+                <option value="사역지원비">사역지원비 (인쇄/차량/찬양팀) 🎵</option>
+                <option value="행사비">행사비 (생일/수련회/행사) 🎂</option>
+                <option value="새친구/정착비">새친구/정착비 (환영/선물) 🌱</option>
               </select>
             </div>
             <div class="field-box">

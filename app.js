@@ -766,7 +766,7 @@ const INITIAL_DATA = {
       date: "2026.09.06",
       store: "다이소 이룸점",
       amount: 45000,
-      category: "스카/시험기간 💻",
+      category: "비품비",
       user: "김대한 선생님",
       purpose: "예랑 스카 야간 자습용 고속 멀티탭 10구 3개 구매",
       icon: "🧾"
@@ -776,7 +776,7 @@ const INITIAL_DATA = {
       date: "2026.09.13",
       store: "파리바게트 역삼점",
       amount: 22000,
-      category: "중등부 분반 간식비 🥪",
+      category: "간식비",
       user: "김대한 선생님",
       purpose: "중등부 2학기 분반 모임 샌드위치 & 주스 구매",
       icon: "🥐"
@@ -786,7 +786,7 @@ const INITIAL_DATA = {
       date: "2026.08.30",
       store: "뚜레쥬르 이룸점",
       amount: 62000,
-      category: "생일 축하/행사비 🎂",
+      category: "행사비",
       user: "김희순 집사님",
       purpose: "8월 생일자 축하 케이크 2개 및 파티 용품",
       icon: "🎂"
@@ -6223,7 +6223,8 @@ const SMART_CATEGORIES = {
   "비품비": ["다이소", "알파문구", "쿠팡", "네이버페이", "이마트", "홈플러스", "롯데마트", "문구", "오피스"],
   "교재/공과비": ["교보문고", "예스24", "알라딘", "두란노", "생명의말씀사", "기독교서점", "출판"],
   "사역지원비": ["인쇄", "복사", "현수막", "카셰어링", "쏘카", "주유소", "하이패스", "택시", "우체국"],
-  "행사비": ["수련회", "기도회", "체육대회", "캠프", "볼링장", "방탈출", "영화관", "CGV", "메가박스"]
+  "행사비": ["수련회", "기도회", "체육대회", "캠프", "볼링장", "방탈출", "영화관", "CGV", "메가박스"],
+  "새친구/정착비": ["새친구", "웰컴", "선물", "올리브영"]
 };
 
 function detectCategoryFromStore(storeName) {
@@ -6245,17 +6246,32 @@ function detectReceiptAnomalies(receipt, allReceipts = []) {
   if (!receipt) return anomalies;
 
   // 1. 고액 지출 점검 (50,000원 이상)
-  if (receipt.amount >= 50000) {
+  if (Number(receipt.amount) >= 50000) {
     anomalies.push({ type: "high", label: "고액 지출 (5만원 이상)", tagClass: "anomaly-tag-high" });
   }
 
-  // 2. 중복 청구 의심 (동일 가맹점 + 동일 금액)
-  const isDuplicate = allReceipts.some(r =>
-    r.id !== receipt.id &&
-    r.store && receipt.store &&
-    r.store.trim().toLowerCase() === receipt.store.trim().toLowerCase() &&
-    Number(r.amount) === Number(receipt.amount)
-  );
+  // 2. 중복 청구 의심 (반려되지 않은 건 중 동일 가맹점 + 동일 금액 + 7일 이내 또는 동일 일자)
+  const isDuplicate = allReceipts.some(r => {
+    if (String(r.id) === String(receipt.id)) return false;
+    if (r.status === "반려") return false;
+    if (!r.store || !receipt.store) return false;
+    if (r.store.trim().toLowerCase() !== receipt.store.trim().toLowerCase()) return false;
+    if (Number(r.amount) !== Number(receipt.amount)) return false;
+
+    // 날짜가 모두 존재할 경우 7일 이내인지 대조
+    if (r.date && receipt.date) {
+      try {
+        const d1 = new Date(String(r.date).replace(/\./g, "-"));
+        const d2 = new Date(String(receipt.date).replace(/\./g, "-"));
+        if (!isNaN(d1) && !isNaN(d2)) {
+          const diffDays = Math.abs((d1 - d2) / (1000 * 60 * 60 * 24));
+          return diffDays <= 7;
+        }
+      } catch (e) {}
+    }
+    return true;
+  });
+
   if (isDuplicate) {
     anomalies.push({ type: "duplicate", label: "중복 의심 (동일처·동일액)", tagClass: "anomaly-tag-warn" });
   }
@@ -6270,7 +6286,7 @@ function detectReceiptAnomalies(receipt, allReceipts = []) {
 
 let currentPresetIndex = 0;
 let currentUploadedImage = null;
-let currentLedgerMonth = 1;
+let currentLedgerMonth = (new Date()).getMonth() + 1;
 
 // 공식 구글 Apps Script Webhook URL 기본값
 const DEFAULT_GSHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxGj8aUgeBqKZ1yfVRBdn2ZtiPLIRfqXJWvy1ZCRi19qBNqK7uEZqoHVB5fJsqxPwNx/exec";
@@ -6298,18 +6314,20 @@ function doPost(e) {
       sheet = ss.getSheets()[0];
     }
 
-    // 2) 영수증 사진 구글 드라이브 자동 저장 (월별 하위 폴더 자동 분류)
-    let receiptUrl = "";
-    if (data.imageBase64) {
-      const fileName = "[" + dateStr + "] " + (data.store || "지출") + "_" + (amount ? amount.toLocaleString() + "원" : "") + "_" + (data.author || "교사") + ".jpg";
-      receiptUrl = saveReceiptToDrive(data.imageBase64, fileName, ss, sheetName);
-    }
-
-    // 3) 해당 월 시트에 데이터 기입
+    // 2) 데이터 파싱
     const amount = Number(data.amount) || 0;
     const author = data.author || "";
     const store = data.store || "";
     const purpose = data.purpose || "";
+
+    // 3) 영수증 사진 구글 드라이브 자동 저장 (월별 하위 폴더 자동 분류)
+    let receiptUrl = "";
+    if (data.imageBase64) {
+      const fileName = "[" + dateStr + "] " + (store || "지출") + "_" + (amount ? amount.toLocaleString() + "원" : "") + "_" + (author || "교사") + ".jpg";
+      receiptUrl = saveReceiptToDrive(data.imageBase64, fileName, ss, sheetName);
+    }
+
+    // 4) 해당 월 시트에 데이터 기입
     const titleMemo = author ? author + " / " + store + " (" + purpose + ")" : store + " (" + purpose + ")";
     const receiptFormula = receiptUrl ? '=HYPERLINK("' + receiptUrl + '", "영수증 보기 📑")' : "증빙 없음";
 
@@ -6462,9 +6480,18 @@ function initReceiptSection() {
 
   if (storeInput) {
     storeInput.addEventListener("input", (e) => {
-      const preset = appState.receiptPresets[currentPresetIndex];
-      const amt = preset ? preset.amount : 45000;
+      const amtInput = document.getElementById("rcptAmountInput");
+      const amt = amtInput ? (Number(amtInput.value) || 0) : 45000;
       updateFormSmartBadges(e.target.value, amt);
+    });
+  }
+
+  const amountInput = document.getElementById("rcptAmountInput");
+  if (amountInput) {
+    amountInput.addEventListener("input", (e) => {
+      const currentStore = storeInput ? storeInput.value : "";
+      const amt = Number(e.target.value) || 0;
+      updateFormSmartBadges(currentStore, amt);
     });
   }
 
@@ -6493,6 +6520,8 @@ function initReceiptSection() {
 
         document.getElementById("rcptDate").value = preset.date;
         document.getElementById("rcptStore").value = preset.store;
+        const amtInput = document.getElementById("rcptAmountInput");
+        if (amtInput) amtInput.value = preset.amount;
         document.getElementById("rcptPriceDisplay").innerHTML = `${preset.amount.toLocaleString()} <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>`;
         document.getElementById("rcptCategory").value = preset.category;
         
@@ -6520,6 +6549,8 @@ function initReceiptSection() {
   // Initial trigger for form
   const initialPreset = appState.receiptPresets[0];
   if (initialPreset) {
+    const amtInput = document.getElementById("rcptAmountInput");
+    if (amtInput) amtInput.value = initialPreset.amount;
     updateFormSmartBadges(initialPreset.store, initialPreset.amount);
     currentUploadedImage = initialPreset.receiptUrl || "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80";
   }
@@ -6549,7 +6580,8 @@ function initReceiptSection() {
       const category = document.getElementById("rcptCategory").value;
       let user = document.getElementById("rcptUser").value;
       const purpose = document.getElementById("rcptPurpose").value;
-      const amount = preset ? preset.amount : 45000;
+      const amountInput = document.getElementById("rcptAmountInput");
+      const amount = amountInput ? (Number(amountInput.value) || 0) : (preset ? preset.amount : 45000);
 
       // 교사(선생님) 권한인 경우 본인의 이름으로 확실히 청구 등록
       const submitUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
@@ -6604,8 +6636,7 @@ function initReceiptSection() {
         try {
           fetch(webhookUrl, {
             method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({
               date: date,
               store: store,
@@ -6616,9 +6647,11 @@ function initReceiptSection() {
               status: "승인대기",
               imageBase64: receiptPhoto.startsWith("data:") ? receiptPhoto : null
             })
-          }).then(() => {
-            console.log("Sent to Google Apps Script Webhook");
-          }).catch(err => console.error("Webhook error:", err));
+          }).then(res => {
+            console.log("Sent to Google Apps Script Webhook:", res);
+          }).catch(err => {
+            console.warn("Webhook network notice (data saved locally in app):", err);
+          });
         } catch (e) {
           console.error("Fetch exception:", e);
         }
@@ -6646,9 +6679,13 @@ function renderAccountingSection() {
   const totalBalanceEl = document.getElementById("totalBalanceAmount");
   const gsheetTableBody = document.getElementById("gsheetTableBody");
 
-  // Live balance and expense sum
+  // Live balance and expense sum (반려된 영수증은 지출 합산에서 제외)
   let totalExpense = 0;
-  appState.accounting.receipts.forEach(r => totalExpense += Number(r.amount) || 0);
+  appState.accounting.receipts.forEach(r => {
+    if (r.status !== "반려") {
+      totalExpense += Number(r.amount) || 0;
+    }
+  });
   const liveBalance = appState.accounting.initialBalance + appState.accounting.income - totalExpense;
 
   if (totalBalanceEl) {
@@ -7265,6 +7302,7 @@ function renderProfitLoss() {
   const categoryTotals = {};
 
   appState.accounting.receipts.forEach(r => {
+    if (r.status === "반려") return;
     const amt = Number(r.amount) || 0;
     totalExpense += amt;
     const cat = r.category || "기타";
@@ -7339,13 +7377,18 @@ function renderMonthEndClose(liveBalance, totalExpense) {
   let totalExp = totalExpense;
   if (totalExp === undefined) {
     totalExp = 0;
-    appState.accounting.receipts.forEach(r => totalExp += Number(r.amount) || 0);
+    appState.accounting.receipts.forEach(r => {
+      if (r.status !== "반려") {
+        totalExp += Number(r.amount) || 0;
+      }
+    });
   }
   const bankBalance = appState.accounting.initialBalance + appState.accounting.income - totalExp;
   const ledgerBalance = liveBalance !== undefined ? liveBalance : bankBalance;
   const diff = bankBalance - ledgerBalance;
 
-  const currentMonth = "2026년 9월";
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
   const isClosed = appState.accounting.closedMonths && appState.accounting.closedMonths.includes(currentMonth);
 
   container.innerHTML = `
@@ -7419,7 +7462,7 @@ function renderMonthEndClose(liveBalance, totalExpense) {
       </div>
 
       <button class="close-month-btn" id="closeMonthBtn" ${isClosed ? 'disabled' : ''}>
-        ${isClosed ? '🔒 2026년 9월 결산 마감 완료됨 (장부 잠금)' : '🔒 2026년 9월 회계 결산 마감 확정하기'}
+        ${isClosed ? `🔒 ${currentMonth} 결산 마감 완료됨 (장부 잠금)` : `🔒 ${currentMonth} 회계 결산 마감 확정하기`}
       </button>
     </div>
   `;
@@ -7433,7 +7476,7 @@ function renderMonthEndClose(liveBalance, totalExpense) {
       appState.accounting.closedMonths.push(currentMonth);
       saveState();
       renderAccountingSection();
-      showToast("🎉 2026년 9월 회계 결산이 성공적으로 마감되었습니다! 장부가 안전하게 보존됩니다.");
+      showToast(`🎉 ${currentMonth} 회계 결산이 성공적으로 마감되었습니다! 장부가 안전하게 보존됩니다.`);
     });
   }
 }
@@ -7701,9 +7744,15 @@ async function syncFromGoogleSheet(isManual = false) {
       }
     });
 
-    // 1월 historical entries from user's original Numbers screenshot
-    const janEntries = (appState.accounting.ledgerEntries || []).filter(e => Number(e.month) === 1);
-    appState.accounting.ledgerEntries = [...janEntries, ...fetchedLedgerEntries];
+    // 1월 historical entries 및 앱에서 직접 등록한 로컬 장부 내역 안전하게 보존
+    const fetchedLedgerIds = new Set(fetchedLedgerEntries.map(e => String(e.id)));
+    const preservedLocalLedger = (appState.accounting.ledgerEntries || []).filter(e => {
+      return Number(e.month) === 1 || !fetchedLedgerIds.has(String(e.id));
+    });
+    const ledgerMap = new Map();
+    preservedLocalLedger.forEach(e => ledgerMap.set(String(e.id), e));
+    fetchedLedgerEntries.forEach(e => ledgerMap.set(String(e.id), e));
+    appState.accounting.ledgerEntries = Array.from(ledgerMap.values());
     
     const mappedGsheetReceipts = fetchedReceipts.map(r => {
       const local = localStatusMap.get(String(r.id));
