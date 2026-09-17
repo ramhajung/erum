@@ -8251,17 +8251,29 @@ function renderUserHeaderBar() {
   const user = getCurrentUser();
   const avatarEl = document.getElementById("userHeaderAvatar");
   const nameEl = document.getElementById("userHeaderName");
+  const deptEl = document.getElementById("userHeaderDept");
   const adminBanner = document.getElementById("adminUserMgmtBanner");
 
-  let avatar = user.avatar || "👤";
-  if (user.role === "pastor" || user.id === "u1" || (user.name && user.name.includes("정하람")) || avatar.includes("✝") || avatar.includes("👑")) {
-    avatar = "🧑🏻‍💼";
-    user.avatar = "🧑🏻‍💼";
+  if (avatarEl) {
+    avatarEl.style.display = "none";
   }
-
-  if (avatarEl) avatarEl.textContent = avatar;
   if (nameEl) {
-    nameEl.textContent = user.name;
+    nameEl.textContent = user.name || "사용자";
+  }
+  if (deptEl) {
+    let deptText = "청소년부";
+    if (user.role === "pastor") {
+      deptText = "청소년부";
+    } else if (user.role === "accountant") {
+      deptText = "회계";
+    } else if (user.role === "teacher_grade" || user.role === "teacher_new" || user.role === "teacher") {
+      deptText = user.duty || "교사";
+    } else if (user.role === "student_grade" || user.role === "student_new" || user.role === "student") {
+      deptText = user.duty || "학생";
+    } else if (user.duty) {
+      deptText = user.duty;
+    }
+    deptEl.textContent = deptText;
   }
 
   // Admin banner visibility: only visible if current active role is 'pastor'
@@ -8305,9 +8317,10 @@ function renderUserSwitchGrid() {
     // Render only the current user's profile card
     const card = document.createElement("div");
     card.className = "col-span-2 user-switch-card active-user";
+    const curInitial = escapeHtml((currentUser.name || "유").trim().charAt(0));
     card.innerHTML = `
       <div style="display:flex; align-items:center; gap:10px;">
-        <div class="user-mgmt-avatar">${currentUser.avatar || "👤"}</div>
+        <div class="user-mgmt-avatar">${curInitial}</div>
         <div>
           <div style="font-size:13.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
             <span>${escapeHtml(currentUser.name)}</span>
@@ -8334,9 +8347,10 @@ function renderUserSwitchGrid() {
     const isCurrent = user.id === appState.currentUserId;
     const card = document.createElement("div");
     card.className = `user-switch-card ${isCurrent ? "active-user" : ""}`;
+    const initialChar = escapeHtml((user.name || "유").trim().charAt(0));
     card.innerHTML = `
       <div style="display:flex; align-items:center; gap:10px;">
-        <div class="user-mgmt-avatar">${user.avatar || "👤"}</div>
+        <div class="user-mgmt-avatar">${initialChar}</div>
         <div>
           <div style="font-size:13.5px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
             <span>${escapeHtml(user.name)}</span>
@@ -8527,9 +8541,10 @@ function renderUserManagerSection(filterCategory = "ALL") {
       </select>
     `;
 
+    const userInitial = escapeHtml((user.name || "유").trim().charAt(0));
     card.innerHTML = `
       <div class="user-mgmt-info">
-        <div class="user-mgmt-avatar">${user.avatar || "👤"}</div>
+        <div class="user-mgmt-avatar">${userInitial}</div>
         <div class="user-mgmt-details" style="flex:1;">
           <div class="user-mgmt-name" style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
             <span>${escapeHtml(user.name)}</span>
