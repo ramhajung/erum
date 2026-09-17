@@ -2045,6 +2045,9 @@ function handleTeacherSelectChange(selectEl, gradeInputId, nameInputId, dutyInpu
     }
   }
 
+  // 선택 완료 후 포커스 및 마우스 캡처 즉시 해제
+  selectEl.blur();
+
   showToast(`${user.name}의 정보가 자동으로 반영되었습니다! ✨`, "info");
 }
 
@@ -9117,8 +9120,20 @@ function initSheetDragToDismiss() {
     const DISMISS_THRESHOLD = 80; // drag distance in px to dismiss
 
     function onPointerDown(e) {
-      // Only drag if scrolled to top (scrollTop <= 0) or dragging directly from handle
+      // 1. Never drag if clicking on interactive form elements or buttons
+      if (e.target.closest("select, input, textarea, button, a, label, [role='button'], option, .form-group")) {
+        return;
+      }
+
+      // 2. On desktop (mouse), strictly only allow drag from handle or header
       const isHandle = e.target.closest(".sheet-handle");
+      const isHeader = e.target.closest(".sheet-header");
+      const isMouseEvent = e.type === "mousedown";
+      if (isMouseEvent && !isHandle && !isHeader) {
+        return;
+      }
+
+      // Only drag if scrolled to top (scrollTop <= 0) or dragging directly from handle
       const innerScroll = e.target.closest("#allPrayersModalListContainer, #friendPrayerSheetListContainer, [style*='overflow-y'], .overflow-y-auto");
       if (!isHandle && (sheet.scrollTop > 5 || (innerScroll && innerScroll.scrollTop > 2))) return;
 
@@ -9179,6 +9194,13 @@ function initSheetDragToDismiss() {
     sheet.addEventListener("mousedown", onPointerDown);
     window.addEventListener("mousemove", onPointerMove);
     window.addEventListener("mouseup", onPointerUp);
+    window.addEventListener("blur", () => {
+      if (isDragging) {
+        isDragging = false;
+        sheet.style.transition = "transform 0.24s cubic-bezier(0.32, 0.72, 0, 1)";
+        sheet.style.transform = "translateY(0)";
+      }
+    });
   });
 }
 
