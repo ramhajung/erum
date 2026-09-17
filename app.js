@@ -7751,9 +7751,9 @@ const ROLE_NAMES = {
   teacher_grade: "선생님(공과반)",
   teacher_new: "선생님(새친구반)",
   teacher: "선생님(공과반)",
-  student_grade: "학생(공과반)",
-  student_new: "학생(새친구반)",
-  student: "학생(공과반)"
+  student_grade: "학생",
+  student_new: "학생",
+  student: "학생"
 };
 
 const ROLE_BADGES = {
@@ -7763,9 +7763,9 @@ const ROLE_BADGES = {
   teacher_grade: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님(공과반)</span>',
   teacher_new: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🌱 선생님(새친구반)</span>',
   teacher: '<span class="role-identity-tag tag-teacher" style="font-size:10px; padding:2px 6px;">🧑🏻‍🏫 선생님(공과반)</span>',
-  student_grade: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생(공과반)</span>',
-  student_new: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px; background:#e8f5e9; color:#2e7d32; border:1px solid #c8e6c9;">🌱 학생(새친구반)</span>',
-  student: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생(공과반)</span>'
+  student_grade: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>',
+  student_new: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px; background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">🌱 학생</span>',
+  student: '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>'
 };
 
 const DEFAULT_AVATARS = {
@@ -8181,6 +8181,7 @@ function renderUserSwitchGrid() {
 }
 
 function renderUserManagerSection(filterCategory = "ALL") {
+  window._currentUserMgmtFilter = filterCategory;
   const container = document.getElementById("userMgmtListContainer");
   if (!container) return;
   container.innerHTML = "";
@@ -8189,8 +8190,9 @@ function renderUserManagerSection(filterCategory = "ALL") {
   const filteredUsers = users.filter(user => {
     if (filterCategory === "ALL") return true;
     if (filterCategory === "TEACHERS") return !isStudentRole(user.role);
-    if (filterCategory === "STUDENT_GRADE") return user.role === "student_grade" || (user.role === "student" && user.id !== "u6");
-    if (filterCategory === "STUDENT_NEW") return user.role === "student_new" || (user.role === "student" && user.id === "u6");
+    if (filterCategory === "STUDENTS") return isStudentRole(user.role);
+    if (filterCategory === "STUDENT_GRADE") return isStudentRole(user.role);
+    if (filterCategory === "STUDENT_NEW") return isStudentRole(user.role);
     return true;
   });
 
@@ -8208,6 +8210,31 @@ function renderUserManagerSection(filterCategory = "ALL") {
     card.className = "user-mgmt-card";
     const pendingBadge = user.isPending ? '<span style="font-size:10.5px; background:#fef3c7; color:#b45309; padding:2px 7px; border-radius:6px; font-weight:800; border:1px solid #fde68a;">승인 대기중 ⏳</span>' : '';
 
+    const isStudent = isStudentRole(user.role);
+    const isFemaleStudent = isStudent && ((user.avatar && (user.avatar.includes("👧") || user.avatar.includes("👩"))) || /은혜|선아|예진|하은|희순|유리|민서|하람|미경|수진|지은|혜진/.test(user.name));
+    const roleBadgeHtml = isStudent
+      ? (isFemaleStudent 
+          ? '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👧🏻 학생</span>'
+          : '<span class="role-identity-tag tag-student" style="font-size:10px; padding:2px 6px;">👦🏻 학생</span>')
+      : (ROLE_BADGES[user.role] || "");
+
+    const controlHtml = isStudent ? `
+      <div style="flex:1; min-width:145px; display:flex; align-items:center; gap:5px;">
+        <span style="font-size:11.5px; font-weight:800; color:#78716c; white-space:nowrap;">소속:</span>
+        <select class="student-class-select-dropdown" data-user-id="${escapeHtml(user.id)}" style="flex:1; padding:6px 8px; font-size:12px; font-weight:bold; border-radius:8px; border:1.5px solid #fed7aa; background:#fffaf5; color:#9a3412; cursor:pointer;">
+          ${generateClassOptionsForStudent(user)}
+        </select>
+      </div>
+    ` : `
+      <select class="role-select-dropdown" data-user-id="${escapeHtml(user.id)}" style="flex:1; min-width:130px;">
+        <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사</option>
+        <option value="deacon" ${user.role === "deacon" ? "selected" : ""}>👔 부장집사님</option>
+        <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 선생님(회계)</option>
+        <option value="teacher_grade" ${(user.role === "teacher_grade" || user.role === "teacher") ? "selected" : ""}>🧑🏻‍🏫 선생님(공과반)</option>
+        <option value="teacher_new" ${user.role === "teacher_new" ? "selected" : ""}>🌱 선생님(새친구반)</option>
+      </select>
+    `;
+
     card.innerHTML = `
       <div class="user-mgmt-info">
         <div class="user-mgmt-avatar">${user.avatar || "👤"}</div>
@@ -8216,7 +8243,7 @@ function renderUserManagerSection(filterCategory = "ALL") {
             <span>${escapeHtml(user.name)}</span>
             ${pendingBadge}
             ${user.resetRequested ? '<span style="font-size:10.5px; background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; padding:2px 7px; border-radius:6px; font-weight:800; display:inline-flex; align-items:center; gap:3px;">⚠️ 비번 초기화 요청</span>' : ''}
-            ${ROLE_BADGES[user.role] || ""}
+            ${roleBadgeHtml}
             ${isCurrent ? '<span style="font-size:10px; background:#e8def8; color:#4a148c; padding:2px 6px; border-radius:4px; margin-left:2px;">현재 본인</span>' : ''}
           </div>
           <div class="user-mgmt-duty">${escapeHtml(user.duty || "-")} · ${escapeHtml(user.phone || "")}</div>
@@ -8237,15 +8264,7 @@ function renderUserManagerSection(filterCategory = "ALL") {
             🔑 1234 초기화
           </button>
         ` : ''}
-        <select class="role-select-dropdown" data-user-id="${escapeHtml(user.id)}" style="flex:1; min-width:130px;">
-          <option value="pastor" ${user.role === "pastor" ? "selected" : ""}>✝️ 전도사</option>
-          <option value="deacon" ${user.role === "deacon" ? "selected" : ""}>👔 부장집사님</option>
-          <option value="accountant" ${user.role === "accountant" ? "selected" : ""}>💼 선생님(회계)</option>
-          <option value="teacher_grade" ${(user.role === "teacher_grade" || user.role === "teacher") ? "selected" : ""}>🧑🏻‍🏫 선생님(공과반)</option>
-          <option value="teacher_new" ${user.role === "teacher_new" ? "selected" : ""}>🌱 선생님(새친구반)</option>
-          <option value="student_grade" ${(user.role === "student_grade" || (user.role === "student" && user.id !== "u6")) ? "selected" : ""}>👦🏻 학생(공과반)</option>
-          <option value="student_new" ${(user.role === "student_new" || (user.role === "student" && user.id === "u6")) ? "selected" : ""}>🌱 학생(새친구반)</option>
-        </select>
+        ${controlHtml}
         <button type="button" class="edit-user-btn" data-user-id="${escapeHtml(user.id)}" style="padding:6px 10px; font-size:12px; font-weight:700; background:#f5efff; color:#6c35c4; border-radius:8px; border:1.5px solid #e0c8ff; cursor:pointer; display:flex; align-items:center; gap:3px; white-space:nowrap;" title="계정 정보 수정">
           <span>✏️</span> <span>수정</span>
         </button>
@@ -8276,6 +8295,13 @@ function renderUserManagerSection(filterCategory = "ALL") {
           showToast(`✅ '${user.name}'님의 비밀번호가 '1234'로 초기화되었습니다.`);
           renderUserManagerSection();
         }
+      });
+    }
+
+    const studentClassSelect = card.querySelector(".student-class-select-dropdown");
+    if (studentClassSelect) {
+      studentClassSelect.addEventListener("change", (e) => {
+        handleStudentClassChange(user.id, e.target.value);
       });
     }
 
@@ -8313,6 +8339,8 @@ function openEditUserModal(userId) {
   const isStudent = typeof isStudentRole === "function" ? isStudentRole(user.role) : (user.role && user.role.includes("student"));
   const teacherGroup = document.getElementById("editUserDutyTeacherGroup");
   const studentGroup = document.getElementById("editUserGradeStudentGroup");
+  const classGroup = document.getElementById("editUserClassStudentGroup");
+  const classSelect = document.getElementById("editUserClassSelect");
   const dutyInput = document.getElementById("editUserDutyInput");
   const gradeSelect = document.getElementById("editUserGradeSelect");
 
@@ -8322,6 +8350,12 @@ function openEditUserModal(userId) {
   if (isStudent) {
     if (teacherGroup) teacherGroup.style.display = "none";
     if (studentGroup) studentGroup.style.display = "block";
+    if (classGroup) {
+      classGroup.style.display = "block";
+      if (classSelect) {
+        classSelect.innerHTML = generateClassOptionsForStudent(user);
+      }
+    }
     
     // Determine existing grade from duty or role
     let matchedGrade = "고3";
@@ -8341,6 +8375,7 @@ function openEditUserModal(userId) {
   } else {
     if (teacherGroup) teacherGroup.style.display = "block";
     if (studentGroup) studentGroup.style.display = "none";
+    if (classGroup) classGroup.style.display = "none";
     if (dutyInput) dutyInput.value = user.duty || "";
   }
 
@@ -8458,32 +8493,110 @@ function initDeleteUserConfirm() {
   }
 }
 
-function approveUser(userId) {
+function approveAsTeacher(userId) {
   const user = appState.users.find(u => u.id === userId);
   if (!user) return;
 
   user.isPending = false;
-  user.duty = `${ROLE_NAMES[user.role]}`;
-  saveState();
+  user.role = "teacher_grade";
+  user.duty = "공과반 담임 / 교사";
+  const isFemale = /은혜|선아|예진|하은|희순|유리|민서|하람|미경|수진|지은|혜진/.test(user.name);
+  user.avatar = isFemale ? "👩🏻‍🏫" : "🧑🏻‍🏫";
 
-  renderUserManagerSection();
-  renderUserSwitchGrid();
+  saveState();
   renderMemberApprovalModal();
+  renderUserManagerSection(window._currentUserMgmtFilter || "ALL");
+  renderUserSwitchGrid();
   updatePendingCountBadge();
-  showToast(`🎉 '${user.name}'님의 가입 승인이 완료되었습니다! 이제 로그인 가능합니다.`, "success");
+  showToast(`🎉 '${user.name}'님이 [선생님]으로 승인되었습니다!`, "success");
+}
+
+function openApproveStudentClassModal(userId) {
+  const user = appState.users.find(u => u.id === userId);
+  if (!user) return;
+
+  const idInput = document.getElementById("approveStudentUserIdInput");
+  const title = document.getElementById("approveStudentModalTitle");
+  const subtitle = document.getElementById("approveStudentModalSubtitle");
+  const classSelect = document.getElementById("approveStudentClassSelect");
+  const gradeSelect = document.getElementById("approveStudentGradeSelect");
+
+  if (idInput) idInput.value = user.id;
+  if (title) title.textContent = `[${user.name}] 학생 승인 & 분반 배정`;
+  if (subtitle) subtitle.textContent = `${user.name} 학생을 배정할 분반과 학년을 선택해주세요.`;
+
+  if (classSelect) {
+    const classes = appState.gradeClasses || INITIAL_DATA.gradeClasses || [];
+    let html = "";
+    classes.forEach(c => {
+      html += `<option value="class:${c.id}">🏫 ${c.grade} (${c.teacherName || '담임'})</option>`;
+    });
+    html += `<option value="newcomer">🌱 새친구반 (정착/새가족)</option>`;
+    html += `<option value="none">⚪ 분반 미배정 (나중에 지정)</option>`;
+    classSelect.innerHTML = html;
+  }
+
+  if (gradeSelect && user.birthday) {
+    const birthYear = parseInt(user.birthday.slice(0, 4), 10);
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+    if (age === 19) gradeSelect.value = "고3";
+    else if (age === 18) gradeSelect.value = "고2";
+    else if (age === 17) gradeSelect.value = "고1";
+    else if (age === 16) gradeSelect.value = "중3";
+    else if (age === 15) gradeSelect.value = "중2";
+    else if (age === 14) gradeSelect.value = "중1";
+  }
+
+  openModal("approveStudentModal");
+}
+
+function initApproveStudentEvents() {
+  const form = document.getElementById("approveStudentForm");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const userId = document.getElementById("approveStudentUserIdInput").value;
+      const classVal = document.getElementById("approveStudentClassSelect").value;
+      const gradeVal = document.getElementById("approveStudentGradeSelect")?.value || "고3";
+
+      const user = appState.users.find(u => u.id === userId);
+      if (!user) return;
+
+      user.isPending = false;
+      const isFemale = /은혜|선아|예진|하은|희순|유리|민서|하람|미경|수진|지은|혜진/.test(user.name);
+      user.avatar = isFemale ? "👧🏻" : "👦🏻";
+
+      handleStudentClassChange(user.id, classVal);
+
+      if (gradeVal && user.duty) {
+        user.duty = `${gradeVal} / ${user.duty}`;
+      }
+
+      saveState();
+      closeModal("approveStudentModal");
+      renderMemberApprovalModal();
+      renderUserManagerSection(window._currentUserMgmtFilter || "ALL");
+      renderUserSwitchGrid();
+      updatePendingCountBadge();
+    });
+  }
 }
 
 function rejectUser(userId) {
   const user = appState.users.find(u => u.id === userId);
   if (!user) return;
+  if (!confirm(`'${user.name}'님의 가입 신청을 거절하고 삭제하시겠습니까?`)) {
+    return;
+  }
   const userName = user.name;
   appState.users = appState.users.filter(u => u.id !== userId);
   saveState();
   renderMemberApprovalModal();
-  renderUserManagerSection();
+  renderUserManagerSection(window._currentUserMgmtFilter || "ALL");
   renderUserSwitchGrid();
   updatePendingCountBadge();
-  showToast(`❌ '${userName}'님의 가입 신청이 거절되었습니다.`, "info");
+  showToast(`'${userName}'님의 가입 신청이 거절되었습니다.`, "info");
 }
 
 function renderMemberApprovalModal() {
@@ -8505,24 +8618,39 @@ function renderMemberApprovalModal() {
 
   pendingUsers.forEach(user => {
     const card = document.createElement("div");
-    card.style.cssText = "background:#fff; border:1.5px solid #d1fae5; border-radius:14px; padding:14px 14px; display:flex; align-items:center; gap:12px;";
+    card.style.cssText = "background:#fff; border:1.5px solid #d1fae5; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px;";
     card.innerHTML = `
-      <div style="width:40px; height:40px; border-radius:50%; background:#ecfdf5; display:flex; align-items:center; justify-content:center; font-size:20px; border:1.5px solid #a7f3d0; shrink:0;">
-        ${user.avatar || "👤"}
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:42px; height:42px; border-radius:50%; background:#ecfdf5; display:flex; align-items:center; justify-content:center; font-size:22px; border:1.5px solid #a7f3d0; shrink:0;">
+          ${user.avatar || "👤"}
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span style="font-size:15px; font-weight:800; color:#1e293b;">${escapeHtml(user.name)}</span>
+            <span style="font-size:10.5px; background:#fef3c7; color:#b45309; padding:2px 7px; border-radius:6px; font-weight:800; border:1px solid #fde68a;">신규 가입 신청</span>
+          </div>
+          <div style="font-size:12px; color:#64748b; margin-top:2px;">ID: <b style="color:#334155;">${escapeHtml(user.username || "-")}</b> · 📞 ${escapeHtml(user.phone || "번호 없음")}</div>
+          ${user.birthday ? `<div style="font-size:11px; color:#d97706; margin-top:2px; font-weight:700;">🎂 생일: ${escapeHtml(user.birthday)}</div>` : ''}
+        </div>
+        <button type="button" data-reject-id="${escapeHtml(user.id)}" style="padding:6px 10px; font-size:12px; font-weight:700; background:#fff1f2; color:#e11d48; border-radius:8px; border:1.5px solid #fecdd3; cursor:pointer; white-space:nowrap;" title="가입 거절">
+          ✕ 거절
+        </button>
       </div>
-      <div style="flex:1; min-width:0;">
-        <div style="font-size:14px; font-weight:800; color:#1e293b; margin-bottom:2px;">${escapeHtml(user.name)}</div>
-        <div style="font-size:11.5px; color:#64748b;">ID: ${escapeHtml(user.username || "-")} · ${escapeHtml(user.phone || "번호 없음")}</div>
-        <div style="font-size:11px; color:#f59e0b; font-weight:700; margin-top:2px;">⏳ 승인 대기중</div>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:6px; shrink:0;">
-        <button type="button" data-approve-id="${escapeHtml(user.id)}" style="padding:7px 12px; font-size:12px; font-weight:800; background:#10b981; color:white; border-radius:9px; border:none; cursor:pointer; white-space:nowrap;">✓ 승인</button>
-        <button type="button" data-reject-id="${escapeHtml(user.id)}" style="padding:7px 12px; font-size:12px; font-weight:800; background:#f1f5f9; color:#ef4444; border-radius:9px; border:1.5px solid #fecaca; cursor:pointer; white-space:nowrap;">✕ 거절</button>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; padding-top:6px; border-top:1px dashed #e2e8f0;">
+        <button type="button" data-approve-teacher-id="${escapeHtml(user.id)}" style="padding:9px 8px; font-size:12px; font-weight:800; background:#f0fdf4; color:#15803d; border:1.5px solid #86efac; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.15s;" class="hover:bg-emerald-100 active:scale-95">
+          <span>🧑🏻‍🏫</span> <span>선생님으로 승인</span>
+        </button>
+        <button type="button" data-approve-student-id="${escapeHtml(user.id)}" style="padding:9px 8px; font-size:12px; font-weight:800; background:#eff6ff; color:#1d4ed8; border:1.5px solid #93c5fd; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all 0.15s;" class="hover:bg-blue-100 active:scale-95">
+          <span>👦🏻</span> <span>학생으로 승인 (반 배정)</span>
+        </button>
       </div>
     `;
 
-    card.querySelector("[data-approve-id]").addEventListener("click", () => {
-      approveUser(user.id);
+    card.querySelector("[data-approve-teacher-id]").addEventListener("click", () => {
+      approveAsTeacher(user.id);
+    });
+    card.querySelector("[data-approve-student-id]").addEventListener("click", () => {
+      openApproveStudentClassModal(user.id);
     });
     card.querySelector("[data-reject-id]").addEventListener("click", () => {
       rejectUser(user.id);
@@ -13518,6 +13646,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTransferStudentEvents();
   initManageClassesEvents();
   initAddNewcomerEvents();
+  initApproveStudentEvents();
   initPullToRefresh();
 
   checkAndAutoRollOverMeeting(true);
