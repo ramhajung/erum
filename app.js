@@ -9498,20 +9498,6 @@ function initRoleEvents() {
   const gotoAddBtn = document.getElementById("gotoAddReceiptBtn");
   if (gotoAddBtn) {
     gotoAddBtn.addEventListener("click", () => {
-      const activeUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
-      const rcptUserEl = document.getElementById("rcptUser");
-      if (rcptUserEl && activeUser) {
-        const matchedOpt = Array.from(rcptUserEl.options).find(opt => opt.value.includes(activeUser.name) || activeUser.name.includes(opt.value));
-        if (matchedOpt) {
-          rcptUserEl.value = matchedOpt.value;
-        } else {
-          const newOpt = document.createElement("option");
-          newOpt.value = activeUser.name;
-          newOpt.textContent = activeUser.name;
-          newOpt.selected = true;
-          rcptUserEl.appendChild(newOpt);
-        }
-      }
       switchToTab("view-receipt");
     });
   }
