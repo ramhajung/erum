@@ -6441,6 +6441,57 @@ function initReceiptSection() {
     });
   }
 
+  const customCatInput = document.getElementById("rcptCustomCategoryInput");
+
+  function populateCustomCategories() {
+    if (!catSelect) return;
+    const customList = (appState.accounting && appState.accounting.customCategories) || [];
+    const customChoiceOpt = catSelect.querySelector('option[value="__custom__"]');
+    customList.forEach(c => {
+      const alreadyExists = Array.from(catSelect.options).some(opt => opt.value === c);
+      if (!alreadyExists) {
+        const newOpt = document.createElement("option");
+        newOpt.value = c;
+        newOpt.textContent = `${c} 🏷️`;
+        newOpt.dataset.isCustom = "true";
+        if (customChoiceOpt) {
+          catSelect.insertBefore(newOpt, customChoiceOpt);
+        } else {
+          catSelect.appendChild(newOpt);
+        }
+      }
+    });
+  }
+  populateCustomCategories();
+
+  if (catSelect) {
+    catSelect.addEventListener("change", (e) => {
+      if (e.target.value === "__custom__") {
+        if (customCatInput) {
+          customCatInput.style.display = "block";
+          customCatInput.focus();
+        }
+        showToast("새로운 지출 카테고리를 직접 입력해주세요 ✏️", "info");
+      } else {
+        if (customCatInput) {
+          customCatInput.style.display = "none";
+          customCatInput.value = "";
+        }
+      }
+      const amtInput = document.getElementById("rcptAmountInput");
+      const amt = amtInput ? (Number(amtInput.value) || 0) : 45000;
+      updateFormSmartBadges(storeInput ? storeInput.value : "", amt);
+    });
+  }
+
+  if (customCatInput) {
+    customCatInput.addEventListener("input", () => {
+      const amtInput = document.getElementById("rcptAmountInput");
+      const amt = amtInput ? (Number(amtInput.value) || 0) : 45000;
+      updateFormSmartBadges(storeInput ? storeInput.value : "", amt);
+    });
+  }
+
   function updateFormSmartBadges(storeVal, amountVal) {
     // 1. 스마트 비목 추천
     const suggestedCat = detectCategoryFromStore(storeVal);
@@ -6450,6 +6501,10 @@ function initReceiptSection() {
         smartBadge.innerHTML = `💡 AI 추천 분류: <b>${suggestedCat}</b> (클릭하여 적용)`;
         smartBadge.onclick = () => {
           if (catSelect) catSelect.value = suggestedCat;
+          if (customCatInput) {
+            customCatInput.style.display = "none";
+            customCatInput.value = "";
+          }
           showToast(`분류가 '${suggestedCat}'(으)로 자동 적용되었습니다 ✨`);
         };
       } else {
@@ -6459,11 +6514,15 @@ function initReceiptSection() {
 
     // 2. 실시간 회계 이상 감지 (고액/중복)
     if (anomalyBox) {
+      let currentCat = catSelect ? catSelect.value : "";
+      if (currentCat === "__custom__" && customCatInput) {
+        currentCat = customCatInput.value.trim();
+      }
       const draftReceipt = {
         id: -1,
         store: storeVal,
         amount: Number(amountVal) || 0,
-        category: catSelect ? catSelect.value : ""
+        category: currentCat
       };
       const anomalies = detectReceiptAnomalies(draftReceipt, appState.accounting.receipts);
       if (anomalies.length > 0) {
@@ -6524,14 +6583,15 @@ function initReceiptSection() {
         if (amtInput) amtInput.value = preset.amount;
         document.getElementById("rcptPriceDisplay").innerHTML = `${preset.amount.toLocaleString()} <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>`;
         document.getElementById("rcptCategory").value = preset.category;
-        
-        // 현재 로그인/시점의 사용자가 있으면 프리셋의 이름으로 덮어쓰지 않고 현재 사용자 유지
-        const activeUserNow = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
-        if (!activeUserNow || activeUserNow.role === "pastor" || activeUserNow.isAdmin) {
-          document.getElementById("rcptUser").value = preset.user;
-        } else {
-          document.getElementById("rcptUser").value = activeUserNow.name;
+        if (customCatInput) {
+          customCatInput.style.display = "none";
+          customCatInput.value = "";
         }
+        
+        // 지출 담당자는 회계선생님(나하은 선생님)으로 고정 유지
+        const rcptUserEl = document.getElementById("rcptUser");
+        if (rcptUserEl) rcptUserEl.value = "나하은 선생님";
+
         document.getElementById("rcptPurpose").value = preset.purpose;
 
         const scanTitle = document.getElementById("receiptScanStatusTitle");
@@ -6555,39 +6615,39 @@ function initReceiptSection() {
     currentUploadedImage = initialPreset.receiptUrl || "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80";
   }
 
-  // 현재 로그인된 사용자를 지출 담당자 기본값으로 선택
-  const activeUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
-  const rcptUserEl = document.getElementById("rcptUser");
-  if (rcptUserEl && activeUser) {
-    const matchedOpt = Array.from(rcptUserEl.options).find(opt => opt.value.includes(activeUser.name) || activeUser.name.includes(opt.value));
-    if (matchedOpt) {
-      rcptUserEl.value = matchedOpt.value;
-    } else {
-      const newOpt = document.createElement("option");
-      newOpt.value = activeUser.name;
-      newOpt.textContent = activeUser.name;
-      newOpt.selected = true;
-      rcptUserEl.appendChild(newOpt);
-    }
-  }
-
   // Submit Receipt to Google Sheets
   if (submitBtn) {
     submitBtn.addEventListener("click", () => {
       const preset = appState.receiptPresets[currentPresetIndex];
       const date = document.getElementById("rcptDate").value;
       const store = document.getElementById("rcptStore").value;
-      const category = document.getElementById("rcptCategory").value;
-      let user = document.getElementById("rcptUser").value;
+      let category = document.getElementById("rcptCategory").value;
       const purpose = document.getElementById("rcptPurpose").value;
       const amountInput = document.getElementById("rcptAmountInput");
       const amount = amountInput ? (Number(amountInput.value) || 0) : (preset ? preset.amount : 45000);
 
-      // 교사(선생님) 권한인 경우 본인의 이름으로 확실히 청구 등록
-      const submitUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
-      if (submitUser && submitUser.name && !submitUser.isAdmin && submitUser.role !== "pastor") {
-        user = submitUser.name;
+      // 직접 입력 카테고리 처리 및 자동 기억
+      if (category === "__custom__") {
+        const customVal = customCatInput ? customCatInput.value.trim() : "";
+        if (!customVal) {
+          showToast("새 카테고리 이름을 입력해주세요!", "warn");
+          if (customCatInput) customCatInput.focus();
+          return;
+        }
+        category = customVal;
+
+        if (!appState.accounting.customCategories) {
+          appState.accounting.customCategories = [];
+        }
+        if (!appState.accounting.customCategories.includes(category)) {
+          appState.accounting.customCategories.push(category);
+          populateCustomCategories();
+        }
       }
+
+      // 청구 제출자: 현재 로그인된 교사 본인 (미로그인 시 기본값)
+      const submitUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+      let user = (submitUser && submitUser.name) ? submitUser.name : "김대한 선생님";
 
       // Extract month
       const monthMatch = date.match(/\d{4}[.-](\d{1,2})[.-]\d{1,2}/) || date.match(/(\d{1,2})[.-]\d{1,2}/);
