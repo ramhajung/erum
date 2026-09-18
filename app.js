@@ -7045,27 +7045,8 @@ function updateAccountingNotificationBadges() {
   const subTextEl = document.getElementById("homeReceiptSubText");
 
   if (homeBanner) {
-    const showPastorBanner = (role === "pastor" || (currentUser && currentUser.isAdmin)) && pendingCount > 0;
-    if (showPastorBanner) {
-      homeBanner.classList.remove("hidden");
-      if (countTextEl) {
-        countTextEl.textContent = `영수증 청구 ${pendingCount}건 (총 ${totalPendingAmount.toLocaleString()}원)`;
-      }
-      if (subTextEl) {
-        const firstAuthor = pendingReceipts[0].author || "선생님";
-        const othersCount = pendingCount - 1;
-        if (othersCount > 0) {
-          subTextEl.textContent = `${firstAuthor} 외 ${othersCount}건의 영수증이 접수되어 결재를 기다립니다.`;
-        } else {
-          subTextEl.textContent = `${firstAuthor}의 영수증이 접수되어 결재를 기다립니다.`;
-        }
-      }
-      homeBanner.onclick = () => {
-        switchToTab("view-accounting");
-      };
-    } else {
-      homeBanner.classList.add("hidden");
-    }
+    // 상단에 상세 결재 위젯 카드(accountantQuickActions)가 노출되므로 하단 중복 슬림 배너는 숨김 유지
+    homeBanner.classList.add("hidden");
   }
 
   // 3. 회계선생님 홈 위젯 실시간 연동
@@ -10539,9 +10520,10 @@ function renderHomeQuickActions() {
     pastorActions.style.display = isPastor ? "grid" : "none";
   }
 
+  const canManageReceipts = isAccountant || isPastor;
   if (accountantBox) {
-    accountantBox.style.display = isAccountant ? "block" : "none";
-    if (isAccountant) {
+    accountantBox.style.display = canManageReceipts ? "block" : "none";
+    if (canManageReceipts) {
       renderAccountantHomeWidget();
     }
   }
@@ -10562,6 +10544,28 @@ function renderHomeQuickActions() {
 
 function renderAccountantHomeWidget() {
   if (!appState.accounting) return;
+
+  const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+  const role = currentUser ? currentUser.role : currentRole;
+  const isPastor = (role === "pastor" || (currentUser && currentUser.isAdmin));
+
+  // 0. Role Adaptive Header Badge & Subtitle
+  const roleBadge = document.getElementById("accHomeRoleBadge");
+  const roleSubtitle = document.getElementById("accHomeRoleSubtitle");
+  if (roleBadge) {
+    if (isPastor) {
+      roleBadge.textContent = "교역자/결재 ✝️";
+      roleBadge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-orange-100 text-orange-950 border border-orange-300";
+    } else {
+      roleBadge.textContent = "회계 💼";
+      roleBadge.className = "text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300";
+    }
+  }
+  if (roleSubtitle) {
+    roleSubtitle.textContent = isPastor
+      ? "교사 제출 영수증 확인 및 결재 승인"
+      : "교사 제출 영수증 확인 및 정산 승인";
+  }
 
   const receipts = appState.accounting.receipts || [];
   const pendingReceipts = receipts.filter(r => r.status === "승인대기" || (!r.status || (r.status !== "정산완료" && r.status !== "반려")));
