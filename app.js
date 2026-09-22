@@ -6463,7 +6463,7 @@ function initReceiptSection() {
 
         const zone = document.getElementById("receiptZone");
         if (zone) zone.style.opacity = "0.5";
-        showToast("영수증 사진을 분석 중입니다... 🪄");
+        showToast("영수증 사진을 첨부 중입니다... 📷");
 
         setTimeout(() => {
           if (zone) zone.style.opacity = "1";
@@ -6473,7 +6473,7 @@ function initReceiptSection() {
           if (dateInput) dateInput.value = todayStr;
 
           const scanTitle = document.getElementById("receiptScanStatusTitle");
-          if (scanTitle) scanTitle.textContent = "영수증 사진 업로드 & 인식 성공!";
+          if (scanTitle) scanTitle.textContent = "영수증 사진 첨부 완료";
           const subText = document.getElementById("receiptIconSubText");
           if (subText) subText.textContent = "사진 첨부됨 📷";
 
@@ -6545,14 +6545,14 @@ function initReceiptSection() {
     if (smartBadge) {
       if (suggestedCat) {
         smartBadge.style.display = "inline-flex";
-        smartBadge.innerHTML = `💡 AI 추천 분류: <b>${suggestedCat}</b> (클릭하여 적용)`;
+        smartBadge.innerHTML = `💡 추천 분류: <b>${suggestedCat}</b> (클릭하여 적용)`;
         smartBadge.onclick = () => {
           if (catSelect) catSelect.value = suggestedCat;
           if (customCatInput) {
             customCatInput.style.display = "none";
             customCatInput.value = "";
           }
-          showToast(`분류가 '${suggestedCat}'(으)로 자동 적용되었습니다 ✨`);
+          showToast(`분류가 '${suggestedCat}'(으)로 적용되었습니다 ✨`);
         };
       } else {
         smartBadge.style.display = "none";
@@ -6601,22 +6601,16 @@ function initReceiptSection() {
     });
   }
 
+  // Change preset button
   if (changeBtn) {
-    changeBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
+    changeBtn.addEventListener("click", () => {
       currentPresetIndex = (currentPresetIndex + 1) % appState.receiptPresets.length;
       const preset = appState.receiptPresets[currentPresetIndex];
+      currentUploadedImage = preset.receiptUrl;
 
-      // Scanning animation
       const zone = document.getElementById("receiptZone");
-      if (zone) zone.style.opacity = "0.5";
       const iconEl = document.getElementById("receiptIconVisual");
-      if (iconEl) iconEl.textContent = "⚡";
-
-      if (previewThumb) previewThumb.style.display = "none";
-      const defaultIconBox = document.getElementById("receiptDefaultIconBox");
-      if (defaultIconBox) defaultIconBox.style.display = "flex";
-      currentUploadedImage = preset.receiptUrl || null;
+      if (zone) zone.style.opacity = "0.5";
 
       setTimeout(() => {
         if (zone) zone.style.opacity = "1";
@@ -6642,13 +6636,13 @@ function initReceiptSection() {
         document.getElementById("rcptPurpose").value = preset.purpose;
 
         const scanTitle = document.getElementById("receiptScanStatusTitle");
-        if (scanTitle) scanTitle.textContent = "AI 영수증 분석 성공!";
+        if (scanTitle) scanTitle.textContent = "영수증 정보 입력 완료";
         const subText = document.getElementById("receiptIconSubText");
         if (subText) subText.textContent = "업로드됨 ✓";
 
         updateFormSmartBadges(preset.store, preset.amount);
 
-        showToast(`AI 영수증 분석: '${preset.store}' (${preset.amount.toLocaleString()}원) 인식 완료! 🪄`);
+        showToast(`'${preset.store}' (${preset.amount.toLocaleString()}원) 예시가 적용되었습니다! 🧾`);
       }, 200);
     });
   }

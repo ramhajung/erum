@@ -905,7 +905,7 @@
            =================================================================== -->
       <section class="screen-view" id="view-receipt">
         <div class="ai-pill-header">
-          <span>🪄</span> <span>AI 영수증 자동 인식 & 시트 실시간 반영</span>
+          <span>📊</span> <span>영수증 청구 & 구글 시트 실시간 반영</span>
         </div>
 
         <!-- Hidden File Input for Real Photo Upload & Camera Capture -->
@@ -922,10 +922,10 @@
           </div>
           <div class="ai-scan-status">
             <div class="ai-success-title">
-              <span>●</span> <span id="receiptScanStatusTitle">AI 영수증 분석 완료!</span>
+              <span>●</span> <span id="receiptScanStatusTitle">영수증 첨부 완료</span>
             </div>
             <p class="ai-scan-desc" id="aiScanDesc">
-              영수증에서 결제금액(<b id="highlightAmount">45,000원</b>)과 상호명(<b id="highlightStore">다이소</b>)을 자동으로 읽어왔습니다.
+              결제금액(<b id="highlightAmount">45,000원</b>)과 상호명(<b id="highlightStore">다이소</b>)을 확인 후 구글 시트에 청구해주세요.
             </p>
             <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
               <button type="button" class="retake-link" id="triggerCameraBtn" style="background:#fff; border:1px solid #eadcd0; border-radius:6px; padding:3px 8px; font-weight:700; cursor:pointer;">
@@ -944,16 +944,16 @@
             <span class="form-header-title">
               <span>📑</span> <span>구글 스프레드시트에 기입될 내용</span>
             </span>
-            <span class="auto-badge">자동 정리</span>
+            <span class="auto-badge">실시간 반영</span>
           </div>
 
           <div class="form-row-grid">
             <div class="field-box">
-              <div class="field-label">📅 결제일자 (자동인식)</div>
+              <div class="field-label">📅 결제일자</div>
               <input type="text" class="field-input" id="rcptDate" value="2026.09.06">
             </div>
             <div class="field-box">
-              <div class="field-label">🏪 상호/가게 (자동인식)</div>
+              <div class="field-label">🏪 상호/가게</div>
               <input type="text" class="field-input" id="rcptStore" value="다이소 이룸점">
             </div>
           </div>
@@ -994,8 +994,8 @@
           </div>
 
           <!-- Open Accountant: Smart Categorize & Anomaly Detection Badges -->
-          <div id="smartCategoryBadge" class="smart-cat-badge">
-            <span>✨ AI 스마트 분류: </span><b id="smartCatRuleText">가맹점 패턴 매칭 적용됨</b>
+          <div id="smartCategoryBadge" class="smart-cat-badge" style="display:none;">
+            <span>💡 추천 분류: </span><b id="smartCatRuleText">가맹점 패턴 매칭 적용됨</b>
           </div>
           <div id="receiptAnomalyBox" class="receipt-anomaly-alert" style="display:none;"></div>
 
