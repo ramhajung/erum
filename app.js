@@ -1551,6 +1551,11 @@ function initNavigation() {
   tabButtons.forEach(btn => {
     btn.addEventListener("click", () => {
       const targetId = btn.dataset.target;
+      const currentActive = document.querySelector(".screen-view.active");
+      if (currentActive && currentActive.id === targetId && btn.classList.contains("active")) {
+        return;
+      }
+
       const title = btn.dataset.title;
       const subtitle = btn.dataset.subtitle;
 
@@ -1558,7 +1563,7 @@ function initNavigation() {
       tabButtons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
-      // Switch view with Emil Kowalski progressive transition
+      // Switch view without flicker
       views.forEach(v => {
         if (v.id === targetId) {
           v.classList.add("active");
@@ -1571,13 +1576,9 @@ function initNavigation() {
       if (screenTitle && title) screenTitle.textContent = title;
       if (screenSubtitle && subtitle) screenSubtitle.textContent = subtitle;
 
-      // 구글 스프레드시트 실시간 동기화 (청구 직후에는 2.5초 후 백그라운드 지연 동기화하여 깜빡임 방지)
+      // 구글 스프레드시트 실시간 동기화
       if (targetId === "view-accounting" && typeof syncFromGoogleSheet === "function") {
-        if (Date.now() - lastReceiptSubmitTime < 3500) {
-          setTimeout(() => syncFromGoogleSheet(false), 2500);
-        } else {
-          syncFromGoogleSheet(false);
-        }
+        syncFromGoogleSheet(false);
       }
 
       // 스케줄 서브탭 권한 및 캘린더 화면 갱신
@@ -1634,6 +1635,11 @@ function switchToTab(viewId) {
       showToast("새친구반 학생은 새친구반 안내를 확인해 주세요 🌱", "info");
       return;
     }
+  }
+
+  const currentActiveView = document.querySelector(".screen-view.active");
+  if (currentActiveView && currentActiveView.id === viewId) {
+    return;
   }
 
   const btn = document.querySelector(`.bottom-tab-bar .tab-btn[data-target="${viewId}"]`);
@@ -7746,15 +7752,25 @@ function fetchGsheetJSONP(docId) {
 
 let isGsheetSyncing = false;
 let lastReceiptSubmitTime = 0;
+let lastGsheetSyncTime = 0;
 
 async function syncFromGoogleSheet(isManual = false) {
   if (isGsheetSyncing) return;
+
+  // Background throttle: don't sync if recently submitted a receipt or synced within 60s
+  if (!isManual) {
+    if (Date.now() - lastReceiptSubmitTime < 20000) return;
+    if (Date.now() - lastGsheetSyncTime < 60000) return;
+  }
+
   isGsheetSyncing = true;
 
   const syncBtn = document.getElementById("liveSyncGsheetBtn");
   const syncText = document.getElementById("liveSyncText");
-  if (syncBtn) syncBtn.classList.add("syncing");
-  if (syncText) syncText.textContent = "구글시트 동기화 중...";
+  if (isManual) {
+    if (syncBtn) syncBtn.classList.add("syncing");
+    if (syncText) syncText.textContent = "구글시트 동기화 중...";
+  }
 
   try {
     const json = await fetchGsheetJSONP(DEFAULT_GSHEET_DOC_ID);
@@ -7966,11 +7982,9 @@ async function syncFromGoogleSheet(isManual = false) {
       appState.accounting.income = 200000;
     }
 
+    lastGsheetSyncTime = Date.now();
     saveState();
     renderAccountingSection();
-    renderMonthlyLedger(currentLedgerMonth || 9);
-    renderProfitLoss();
-    renderMonthEndClose();
 
     const nowStr = new Date().toLocaleTimeString("ko-KR", { hour: '2-digit', minute: '2-digit' });
     if (syncText) syncText.textContent = `구글시트 실시간 연동됨 (${nowStr}) 🔄`;
@@ -9453,6 +9467,11 @@ function renderRoleTabBar(roleConfig) {
     `;
 
     btn.addEventListener("click", () => {
+      const currentActive = document.querySelector(".screen-view.active");
+      if (currentActive && currentActive.id === tab.target && btn.classList.contains("active")) {
+        return;
+      }
+
       document.querySelectorAll(".bottom-tab-bar .tab-btn").forEach(b => {
         b.classList.remove("active", "text-primary", "font-bold");
         b.classList.add("text-text-muted", "font-semibold");
@@ -9482,13 +9501,9 @@ function renderRoleTabBar(roleConfig) {
       if (titleEl && tab.title) titleEl.textContent = tab.title;
       if (subtitleEl && tab.subtitle) subtitleEl.textContent = tab.subtitle;
 
-      // 구글 스프레드시트 실시간 동기화 (청구 직후에는 2.5초 후 백그라운드 지연 동기화하여 깜빡임 방지)
+      // 구글 스프레드시트 실시간 동기화
       if (tab.target === "view-accounting" && typeof syncFromGoogleSheet === "function") {
-        if (Date.now() - lastReceiptSubmitTime < 3500) {
-          setTimeout(() => syncFromGoogleSheet(false), 2500);
-        } else {
-          syncFromGoogleSheet(false);
-        }
+        syncFromGoogleSheet(false);
       }
 
       // 스케줄 서브탭 권한 및 캘린더 화면 갱신
