@@ -6796,18 +6796,20 @@ function initReceiptSection() {
       lastReceiptSubmitTime = Date.now();
       saveState();
 
-      // 재정 화면 장부 및 내 영수증 목록 즉시 실시간 갱신 (화면 전환 없이 0% 깜빡임)
-      renderAccountingSection();
-
-      // 바텀시트 모달 닫기
+      // 바텀시트 모달 닫기 (부드러운 퇴장 애니메이션 우선 실행)
       closeModal("receiptClaimModal");
 
-      // 파일 입력값 초기화 및 제출 버튼 복원
-      if (fileInput) fileInput.value = "";
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnHtml;
-      }
+      // 모달이 완전히 닫힌 후(300ms) 백그라운드 DOM을 부드럽게 갱신하여 화면 깜빡임 0% 달성
+      setTimeout(() => {
+        renderAccountingSection();
+
+        // 파일 입력값 초기화 및 제출 버튼 복원 (모달이 닫힌 후에 조용히 복원하여 깜빡임 방지)
+        if (fileInput) fileInput.value = "";
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHtml;
+        }
+      }, 300);
 
       showToast("영수증이 청구되었습니다! 구글 스프레드시트에 즉시 반영되었습니다 🚀");
     });
@@ -6818,7 +6820,37 @@ function initReceiptSection() {
 // 8. Screen 5: 역할별 회계 보안 & 권한 분리 시스템 (Open Accountant Engine)
 // =============================================================================
 
-function renderAccountingSection() {
+// DOM 일괄 교체 헬퍼 (화면 깜빡임 원천 차단)
+function replaceElementChildren(parent, newChild) {
+  if (!parent) return;
+  if (typeof parent.replaceChildren === "function") {
+    parent.replaceChildren(newChild);
+  } else {
+    parent.innerHTML = "";
+    parent.appendChild(newChild);
+  }
+}
+
+let _accountingRenderRafId = null;
+
+// requestAnimationFrame 기반 디바운스 래퍼 (동일 프레임 내 중복 호출 1회로 통합)
+function renderAccountingSection(immediate = false) {
+  if (immediate) {
+    if (_accountingRenderRafId) {
+      cancelAnimationFrame(_accountingRenderRafId);
+      _accountingRenderRafId = null;
+    }
+    _doRenderAccountingSection();
+    return;
+  }
+  if (_accountingRenderRafId) return;
+  _accountingRenderRafId = requestAnimationFrame(() => {
+    _accountingRenderRafId = null;
+    _doRenderAccountingSection();
+  });
+}
+
+function _doRenderAccountingSection() {
   const myReceiptList = document.getElementById("myReceiptList");
   const allReceiptList = document.getElementById("allReceiptList");
   const totalBalanceEl = document.getElementById("totalBalanceAmount");
@@ -6856,7 +6888,7 @@ function renderAccountingSection() {
   }
 
   if (myReceiptList) {
-    myReceiptList.innerHTML = "";
+    const frag = document.createDocumentFragment();
     
     // 현재 로그인된 사용자의 영수증만 필터링 (hiddenFromMine 플래그가 없거나 false인 항목)
     const myReceipts = (appState.accounting.receipts || []).filter(r => {
@@ -6870,19 +6902,20 @@ function renderAccountingSection() {
     });
 
     if (myReceipts.length === 0) {
-      myReceiptList.innerHTML = `
+      const emptyDiv = document.createElement("div");
+      emptyDiv.innerHTML = `
         <div style="text-align:center; padding:32px 16px; background:#fff; border:1px dashed #e5e7eb; border-radius:16px; color:#9ca3af;">
           <div style="font-size:28px; margin-bottom:8px;">🧾</div>
           <div style="font-size:13.5px; font-weight:700; color:#4b5563;">제출한 영수증 내역이 없습니다</div>
           <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">하단 [+ 나의 영수증 사진 등록하기] 버튼으로 등록할 수 있습니다.</div>
         </div>
       `;
+      frag.appendChild(emptyDiv.firstElementChild);
     } else {
       myReceipts.forEach(r => {
         const isDone = r.status === "정산완료";
         const isApproved = r.status === "승인완료";
         const isRejected = r.status === "반려";
-        const isWaiting = !isDone && !isApproved && !isRejected; // 승인대기
 
         let statusBadgeClass = "status-wait";
         let statusBadgeText = "승인대기 ⏳";
@@ -6928,14 +6961,15 @@ function renderAccountingSection() {
             ` : ''}
           </div>
         `;
-        myReceiptList.appendChild(el);
+        frag.appendChild(el);
       });
     }
+    replaceElementChildren(myReceiptList, frag);
   }
 
   // 2. All Receipts (Admin View) with Open Accountant Anomaly & Categorization
   if (allReceiptList) {
-    allReceiptList.innerHTML = "";
+    const frag = document.createDocumentFragment();
     
     // 결재 상태별 영수증 카운트 집계
     const allList = appState.accounting.receipts || [];
@@ -6985,13 +7019,15 @@ function renderAccountingSection() {
         COMPLETED: "정산 완료된 영수증 내역이 없습니다.",
         ALL: "등록된 영수증 내역이 없습니다."
       };
-      allReceiptList.innerHTML = `
+      const emptyDiv = document.createElement("div");
+      emptyDiv.innerHTML = `
         <div style="text-align:center; padding:36px 16px; background:#fff; border:1px dashed #e5e7eb; border-radius:16px; color:#9ca3af;">
           <div style="font-size:28px; margin-bottom:8px;">${currentFilter === 'PENDING' ? '🎉' : '🧾'}</div>
           <div style="font-size:13.5px; font-weight:700; color:#4b5563;">${emptyMsgMap[currentFilter] || '내역이 없습니다'}</div>
           <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">${currentFilter === 'PENDING' ? '새로운 영수증이 청구되면 실시간으로 표시됩니다.' : ''}</div>
         </div>
       `;
+      frag.appendChild(emptyDiv.firstElementChild);
     } else {
       displayedReceipts.forEach(r => {
         const anomalies = detectReceiptAnomalies(r, appState.accounting.receipts);
@@ -7062,14 +7098,15 @@ function renderAccountingSection() {
           </div>
         </div>
       `;
-      allReceiptList.appendChild(el);
-    });
+        frag.appendChild(el);
+      });
     }
+    replaceElementChildren(allReceiptList, frag);
   }
 
   // 3. Google Sheet table rows
   if (gsheetTableBody) {
-    gsheetTableBody.innerHTML = "";
+    const frag = document.createDocumentFragment();
     appState.accounting.receipts.forEach((r, idx) => {
       const displayDate = String(r.date || "").startsWith("2026")
         ? r.date
@@ -7085,8 +7122,9 @@ function renderAccountingSection() {
         <td>${r.author}</td>
         <td>${r.title}</td>
       `;
-      gsheetTableBody.appendChild(tr);
+      frag.appendChild(tr);
     });
+    replaceElementChildren(gsheetTableBody, frag);
   }
 
   // 4. Render Numbers Monthly Ledger
@@ -7234,17 +7272,17 @@ function renderMonthlyLedger(selectedMonth = currentLedgerMonth) {
     badgeEl.textContent = `${filtered.length}건 기록`;
   }
 
-  tbody.innerHTML = "";
-
   let totalOffering = 0;
   let totalFee = 0;
   let totalDonation = 0;
   let totalExpense = 0;
 
+  const frag = document.createDocumentFragment();
+
   if (filtered.length === 0) {
     const tr = document.createElement("tr");
     tr.innerHTML = `<td colspan="7" style="text-align:center; padding:24px; color:#8c7d6b;">해당 월의 기장 내역이 없습니다. (새 영수증 등록 시 자동 기입됩니다)</td>`;
-    tbody.appendChild(tr);
+    frag.appendChild(tr);
   } else {
     filtered.forEach(item => {
       totalOffering += Number(item.offering) || 0;
@@ -7264,9 +7302,10 @@ function renderMonthlyLedger(selectedMonth = currentLedgerMonth) {
           ${item.expense > 0 ? `<button class="receipt-view-pill" onclick="openReceiptModalById(${item.id})">📷 보기</button>` : `<span style="color:#bbb;">-</span>`}
         </td>
       `;
-      tbody.appendChild(tr);
+      frag.appendChild(tr);
     });
   }
+  replaceElementChildren(tbody, frag);
 
   // Calculate totals and net
   const totalIncome = totalOffering + totalFee + totalDonation;
@@ -7711,9 +7750,6 @@ function initAccountingSubTabs() {
 
   // Google Sheet Webhook & Apps Script Config
   initGsheetConfig();
-
-  // 앱 실행 시 구글 시트 실시간 데이터 자동 동기화
-  syncFromGoogleSheet(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -9373,8 +9409,11 @@ function switchMasterRole(roleKey, notify = true) {
     if (roleAdminBtn) roleAdminBtn.classList.remove("active");
   }
 
-  // 5. Navigate to role default tab
-  switchToTab(roleConfig.defaultTab);
+  // 5. Navigate to role default tab (이미 활성 탭인 경우 중복 전환 방지)
+  const currentActiveView = document.querySelector(".screen-view.active");
+  if (!currentActiveView || currentActiveView.id !== roleConfig.defaultTab) {
+    switchToTab(roleConfig.defaultTab);
+  }
 
   // 6. Update user header bar and admin banner visibility
   renderUserHeaderBar();
@@ -10159,10 +10198,15 @@ function closeModal(modalId) {
   if (sheet) {
     sheet.style.transition = "transform var(--duration-drawer) var(--ease-out)";
     sheet.style.transform = "translateY(100%)";
+    modal.style.transition = "opacity var(--duration-drawer) var(--ease-out)";
+    modal.style.opacity = "0";
+    modal.style.pointerEvents = "none";
     setTimeout(() => {
       modal.classList.remove("open");
       modal.style.display = "";
       modal.style.opacity = "";
+      modal.style.transition = "";
+      modal.style.pointerEvents = "";
       sheet.style.transform = "";
       sheet.style.transition = "";
     }, 280);
