@@ -901,122 +901,9 @@
 
 
       <!-- ===================================================================
-           TAB 4: 📸 영수증 등록 -> 구글 시트 자동 기입 (Image 4)
+           TAB 4: 📸 영수증 등록 (바텀시트 모달 #receiptClaimModal로 재정 화면 내 통합)
            =================================================================== -->
-      <section class="screen-view" id="view-receipt">
-        <div class="ai-pill-header">
-          <span>📊</span> <span>영수증 청구 & 구글 시트 실시간 반영</span>
-        </div>
-
-        <!-- Hidden File Input for Real Photo Upload & Camera Capture -->
-        <input type="file" id="receiptFileInput" accept="image/*" capture="environment" style="display:none;">
-
-        <!-- Receipt Scanning Trigger / Preview -->
-        <div class="receipt-scanner-zone" id="receiptZone" title="클릭하여 영수증 사진을 직접 촬영하거나 첨부하세요">
-          <div id="receiptPreviewThumb" style="display:none; width:52px; height:52px; border-radius:10px; overflow:hidden; border:2px solid #10b981; margin-right:12px; flex-shrink:0; background:#fff;">
-            <img id="receiptPreviewImg" src="" style="width:100%; height:100%; object-fit:cover;" alt="영수증 미리보기">
-          </div>
-          <div class="receipt-icon-box" id="receiptDefaultIconBox">
-            <span id="receiptIconVisual">🧾</span>
-            <span class="receipt-icon-sub" id="receiptIconSubText">업로드됨 ✓</span>
-          </div>
-          <div class="ai-scan-status">
-            <div class="ai-success-title">
-              <span>●</span> <span id="receiptScanStatusTitle">영수증 첨부 완료</span>
-            </div>
-            <p class="ai-scan-desc" id="aiScanDesc">
-              결제금액(<b id="highlightAmount">45,000원</b>)과 상호명(<b id="highlightStore">다이소</b>)을 확인 후 구글 시트에 청구해주세요.
-            </p>
-            <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
-              <button type="button" class="retake-link" id="triggerCameraBtn" style="background:#fff; border:1px solid #eadcd0; border-radius:6px; padding:3px 8px; font-weight:700; cursor:pointer;">
-                <span>📸 사진 촬영/첨부</span>
-              </button>
-              <button type="button" class="retake-link" id="changeReceiptSampleBtn" style="background:#fff; border:1px solid #eadcd0; border-radius:6px; padding:3px 8px; font-weight:700; cursor:pointer;">
-                <span>🔄 샘플 예시 변경</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Form fields to be written to Google Sheets -->
-        <div class="receipt-form-container">
-          <div class="form-header-row">
-            <span class="form-header-title">
-              <span>📑</span> <span>구글 스프레드시트에 기입될 내용</span>
-            </span>
-            <span class="auto-badge">실시간 반영</span>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="field-box">
-              <div class="field-label">📅 결제일자</div>
-              <input type="text" class="field-input" id="rcptDate" value="2026.09.06">
-            </div>
-            <div class="field-box">
-              <div class="field-label">🏪 상호/가게</div>
-              <input type="text" class="field-input" id="rcptStore" value="다이소 이룸점">
-            </div>
-          </div>
-
-          <div class="price-field-box">
-            <div style="flex:1;">
-              <div class="field-label">💰 지출 금액</div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <input type="number" class="field-input" id="rcptAmountInput" value="45000" min="0" step="100" style="font-size:20px; font-weight:800; color:#d94343; padding:8px 12px; flex:1; max-width:200px;">
-                <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>
-              </div>
-              <div class="price-large" id="rcptPriceDisplay" style="font-size:13px; color:#8c7d6b; margin-top:2px;"></div>
-            </div>
-          </div>
-
-          <div class="form-row-grid">
-            <div class="field-box">
-              <div class="field-label">🏷️ 카테고리</div>
-              <select class="field-select" id="rcptCategory">
-                <option value="간식비" selected>간식비 (분반/모임 간식) 🥪</option>
-                <option value="비품비">비품비 (문구/소모품/시설) 💻</option>
-                <option value="교재/공과비">교재/공과비 (성경/공과책) 📚</option>
-                <option value="사역지원비">사역지원비 (인쇄/차량/찬양팀) 🎵</option>
-                <option value="행사비">행사비 (생일/수련회/행사) 🎂</option>
-                <option value="새친구/정착비">새친구/정착비 (환영/선물) 🌱</option>
-                <option value="__custom__">✏️ 직접 입력 (새 비목 추가)</option>
-              </select>
-              <input type="text" class="field-input" id="rcptCustomCategoryInput" placeholder="새 비목 입력 (예: 차량주유비)" style="display:none; width:100%; margin-top:6px; padding:4px 0 2px 0; border-top:1px dashed #ea580c; color:#c2410c; font-weight:800; font-size:12.5px; background:transparent;">
-            </div>
-            <div class="field-box" style="display:flex; flex-direction:column; justify-content:space-between;">
-              <div class="field-label">💼 지출/회계 담당</div>
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:4px; height:24px;">
-                <span style="font-size:13.5px; font-weight:800; color:#1e293b; letter-spacing:-0.2px;">나하은 선생님</span>
-                <span style="font-size:9.5px; font-weight:800; background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:6px; border:1px solid #cbd5e1; white-space:nowrap;">회계 🔒</span>
-              </div>
-              <input type="hidden" id="rcptUser" value="나하은 선생님">
-            </div>
-          </div>
-
-          <!-- Open Accountant: Smart Categorize & Anomaly Detection Badges -->
-          <div id="smartCategoryBadge" class="smart-cat-badge" style="display:none;">
-            <span>💡 추천 분류: </span><b id="smartCatRuleText">가맹점 패턴 매칭 적용됨</b>
-          </div>
-          <div id="receiptAnomalyBox" class="receipt-anomaly-alert" style="display:none;"></div>
-
-          <div class="field-box" style="margin-top: 10px;">
-            <div class="field-label">📝 지출 목적 / 세부 품목</div>
-            <input type="text" class="field-input" id="rcptPurpose" value="예랑 스카 야간 자습용 고속 멀티탭 10구 3개 구매">
-          </div>
-
-          <div class="info-callout">
-            <span>☁️</span>
-            <div>
-              저장 즉시 구글 시트에 <b>새 행(Row)으로 1초 만에 추가</b>되며, 영수증 사진 링크도 시트에 자동 보관됩니다!
-            </div>
-          </div>
-        </div>
-
-        <!-- Submit to Google Sheet Button -->
-        <button class="btn-orange" id="submitReceiptBtn">
-          <span>📄</span> <span>구글 스프레드시트에 즉시 등록하기 🚀</span>
-        </button>
-      </section>
+      <section class="screen-view" id="view-receipt" style="display:none !important;"></section>
 
 
       <!-- ===================================================================
@@ -2743,6 +2630,130 @@
             </a>
             <button class="btn-primary" data-close="receiptViewerModal" style="flex:1;">확인 및 닫기</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: 영수증 청구 & 구글 시트 실시간 등록 바텀시트 모달 (Receipt Claim Modal) -->
+    <div class="modal-backdrop" id="receiptClaimModal">
+      <div class="bottom-sheet" style="max-height: 92%; overflow-y: auto;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <h3 class="sheet-title">🧾 영수증 청구 & 등록</h3>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">구글 스프레드시트에 즉시 실시간 반영됩니다</p>
+          </div>
+          <button class="sheet-close-btn" data-close="receiptClaimModal">✕</button>
+        </div>
+        <div class="receipt-claim-modal-body" style="padding: 10px 0 20px 0;">
+          <!-- Hidden File Input for Real Photo Upload & Camera Capture -->
+          <input type="file" id="receiptFileInput" accept="image/*" capture="environment" style="display:none;">
+
+          <!-- Receipt Scanning Trigger / Preview -->
+          <div class="receipt-scanner-zone" id="receiptZone" title="클릭하여 영수증 사진을 직접 촬영하거나 첨부하세요">
+            <div id="receiptPreviewThumb" style="display:none; width:52px; height:52px; border-radius:10px; overflow:hidden; border:2px solid #10b981; margin-right:12px; flex-shrink:0; background:#fff;">
+              <img id="receiptPreviewImg" src="" style="width:100%; height:100%; object-fit:cover;" alt="영수증 미리보기">
+            </div>
+            <div class="receipt-icon-box" id="receiptDefaultIconBox">
+              <span id="receiptIconVisual">🧾</span>
+              <span class="receipt-icon-sub" id="receiptIconSubText">업로드됨 ✓</span>
+            </div>
+            <div class="ai-scan-status">
+              <div class="ai-success-title">
+                <span>●</span> <span id="receiptScanStatusTitle">영수증 첨부 완료</span>
+              </div>
+              <p class="ai-scan-desc" id="aiScanDesc">
+                결제금액(<b id="highlightAmount">45,000원</b>)과 상호명(<b id="highlightStore">다이소</b>)을 확인 후 구글 시트에 청구해주세요.
+              </p>
+              <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+                <button type="button" class="retake-link" id="triggerCameraBtn" style="background:#fff; border:1px solid #eadcd0; border-radius:6px; padding:3px 8px; font-weight:700; cursor:pointer;">
+                  <span>📸 사진 촬영/첨부</span>
+                </button>
+                <button type="button" class="retake-link" id="changeReceiptSampleBtn" style="background:#fff; border:1px solid #eadcd0; border-radius:6px; padding:3px 8px; font-weight:700; cursor:pointer;">
+                  <span>🔄 샘플 예시 변경</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form fields to be written to Google Sheets -->
+          <div class="receipt-form-container">
+            <div class="form-header-row">
+              <span class="form-header-title">
+                <span>📑</span> <span>구글 스프레드시트에 기입될 내용</span>
+              </span>
+              <span class="auto-badge">실시간 반영</span>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="field-box">
+                <div class="field-label">📅 결제일자</div>
+                <input type="text" class="field-input" id="rcptDate" value="2026.09.06">
+              </div>
+              <div class="field-box">
+                <div class="field-label">🏪 상호/가게</div>
+                <input type="text" class="field-input" id="rcptStore" value="다이소 이룸점">
+              </div>
+            </div>
+
+            <div class="price-field-box">
+              <div style="flex:1;">
+                <div class="field-label">💰 지출 금액</div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <input type="number" class="field-input" id="rcptAmountInput" value="45000" min="0" step="100" style="font-size:20px; font-weight:800; color:#d94343; padding:8px 12px; flex:1; max-width:200px;">
+                  <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>
+                </div>
+                <div class="price-large" id="rcptPriceDisplay" style="font-size:13px; color:#8c7d6b; margin-top:2px;"></div>
+              </div>
+            </div>
+
+            <div class="form-row-grid">
+              <div class="field-box">
+                <div class="field-label">🏷️ 카테고리</div>
+                <select class="field-select" id="rcptCategory">
+                  <option value="간식비" selected>간식비 (분반/모임 간식) 🥪</option>
+                  <option value="비품비">비품비 (문구/소모품/시설) 💻</option>
+                  <option value="교재/공과비">교재/공과비 (성경/공과책) 📚</option>
+                  <option value="사역지원비">사역지원비 (인쇄/차량/찬양팀) 🎵</option>
+                  <option value="행사비">행사비 (생일/수련회/행사) 🎂</option>
+                  <option value="새친구/정착비">새친구/정착비 (환영/선물) 🌱</option>
+                  <option value="__custom__">✏️ 직접 입력 (새 비목 추가)</option>
+                </select>
+                <input type="text" class="field-input" id="rcptCustomCategoryInput" placeholder="새 비목 입력 (예: 차량주유비)" style="display:none; width:100%; margin-top:6px; padding:4px 0 2px 0; border-top:1px dashed #ea580c; color:#c2410c; font-weight:800; font-size:12.5px; background:transparent;">
+              </div>
+              <div class="field-box" style="display:flex; flex-direction:column; justify-content:space-between;">
+                <div class="field-label">💼 지출/회계 담당</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:4px; height:24px;">
+                  <span style="font-size:13.5px; font-weight:800; color:#1e293b; letter-spacing:-0.2px;">나하은 선생님</span>
+                  <span style="font-size:9.5px; font-weight:800; background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:6px; border:1px solid #cbd5e1; white-space:nowrap;">회계 🔒</span>
+                </div>
+                <input type="hidden" id="rcptUser" value="나하은 선생님">
+              </div>
+            </div>
+
+            <!-- Smart Categorize & Anomaly Detection Badges -->
+            <div id="smartCategoryBadge" class="smart-cat-badge" style="display:none;">
+              <span>💡 추천 분류: </span><b id="smartCatRuleText">가맹점 패턴 매칭 적용됨</b>
+            </div>
+            <div id="receiptAnomalyBox" class="receipt-anomaly-alert" style="display:none;"></div>
+
+            <div class="field-box" style="margin-top: 10px;">
+              <div class="field-label">📝 지출 목적 / 세부 품목</div>
+              <input type="text" class="field-input" id="rcptPurpose" value="예랑 스카 야간 자습용 고속 멀티탭 10구 3개 구매">
+            </div>
+
+            <div class="info-callout" style="margin-top: 12px;">
+              <span>☁️</span>
+              <div>
+                저장 즉시 구글 시트에 <b>새 행(Row)으로 실시간 기입</b>되며, 영수증 사진 링크도 시트에 자동 보관됩니다!
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit to Google Sheet Button -->
+          <button class="btn-orange" id="submitReceiptBtn" style="margin-top:14px; width:100%;">
+            <span>📄</span> <span>구글 스프레드시트에 즉시 등록하기 🚀</span>
+          </button>
         </div>
       </div>
     </div>

@@ -1605,6 +1605,11 @@ function initNavigation() {
 
 // Switch to specific tab programmatically
 function switchToTab(viewId) {
+  if (viewId === "view-receipt") {
+    openModal("receiptClaimModal");
+    return;
+  }
+
   // Enforce role-based access control for segregated class views
   const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
   const userRole = currentUser ? currentUser.role : currentRole;
@@ -6450,6 +6455,13 @@ function initReceiptSection() {
     });
   }
 
+  if (receiptZone && fileInput) {
+    receiptZone.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
+      fileInput.click();
+    });
+  }
+
   if (fileInput) {
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files && e.target.files[0];
@@ -6778,18 +6790,20 @@ function initReceiptSection() {
       lastReceiptSubmitTime = Date.now();
       saveState();
 
-      // 화면 전환 전에 장부 DOM을 백그라운드에서 완전히 사전 렌더링 (전환 시 빈 DOM 깜빡임 완벽 제거)
+      // 재정 화면 장부 및 내 영수증 목록 즉시 실시간 갱신 (화면 전환 없이 0% 깜빡임)
       renderAccountingSection();
 
-      showToast("영수증이 청구되었습니다! 전도사/회계 승인 후 송금됩니다 ⏳");
+      // 바텀시트 모달 닫기
+      closeModal("receiptClaimModal");
 
-      setTimeout(() => {
-        switchToTab("view-accounting");
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalBtnHtml;
-        }
-      }, 300);
+      // 파일 입력값 초기화 및 제출 버튼 복원
+      if (fileInput) fileInput.value = "";
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+      }
+
+      showToast("영수증이 청구되었습니다! 구글 스프레드시트에 즉시 반영되었습니다 🚀");
     });
   }
 }
@@ -7670,10 +7684,10 @@ function initAccountingSubTabs() {
   });
 
   if (gotoAddReceiptAdmin) {
-    gotoAddReceiptAdmin.addEventListener("click", () => switchToTab("view-receipt"));
+    gotoAddReceiptAdmin.addEventListener("click", () => openModal("receiptClaimModal"));
   }
   if (gotoAddReceiptFromLedger) {
-    gotoAddReceiptFromLedger.addEventListener("click", () => switchToTab("view-receipt"));
+    gotoAddReceiptFromLedger.addEventListener("click", () => openModal("receiptClaimModal"));
   }
 
   if (exportCsv) {
@@ -9639,11 +9653,11 @@ function initRoleEvents() {
   // Student Instagram AMA '무물' Q&A Hub Initialization
   initStudentQnaEvents();
 
-  // Jump to Receipt submission
+  // Open Receipt Claim Modal
   const gotoAddBtn = document.getElementById("gotoAddReceiptBtn");
   if (gotoAddBtn) {
     gotoAddBtn.addEventListener("click", () => {
-      switchToTab("view-receipt");
+      openModal("receiptClaimModal");
     });
   }
 
