@@ -1598,7 +1598,7 @@ function initNavigation() {
 
       // Scroll top
       const container = document.getElementById("screensContainer");
-      if (container) container.scrollTo({ top: 0, behavior: "smooth" });
+      if (container) container.scrollTop = 0;
     });
   });
 }
@@ -6663,6 +6663,11 @@ function initReceiptSection() {
   // Submit Receipt to Google Sheets
   if (submitBtn) {
     submitBtn.addEventListener("click", () => {
+      if (submitBtn.disabled) return;
+      submitBtn.disabled = true;
+      const originalBtnHtml = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<span>⏳</span> <span>구글 시트에 실시간 등록 중...</span>';
+
       const preset = appState.receiptPresets[currentPresetIndex];
       const date = document.getElementById("rcptDate").value;
       const store = document.getElementById("rcptStore").value;
@@ -6773,12 +6778,18 @@ function initReceiptSection() {
       lastReceiptSubmitTime = Date.now();
       saveState();
 
+      // 화면 전환 전에 장부 DOM을 백그라운드에서 완전히 사전 렌더링 (전환 시 빈 DOM 깜빡임 완벽 제거)
+      renderAccountingSection();
+
       showToast("영수증이 청구되었습니다! 전도사/회계 승인 후 송금됩니다 ⏳");
 
       setTimeout(() => {
         switchToTab("view-accounting");
-        renderAccountingSection();
-      }, 400);
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHtml;
+        }
+      }, 300);
     });
   }
 }
@@ -9483,7 +9494,7 @@ function renderRoleTabBar(roleConfig) {
       }
 
       const container = document.getElementById("screensContainer");
-      if (container) container.scrollTo({ top: 0, behavior: "smooth" });
+      if (container) container.scrollTop = 0;
     });
 
     tabBar.appendChild(btn);
