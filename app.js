@@ -6274,6 +6274,18 @@ function detectReceiptAnomalies(receipt, allReceipts = []) {
     anomalies.push({ type: "uncategorized", label: "미분류 점검 필요", tagClass: "anomaly-tag" });
   }
 
+  // 4. 구글 시트 감지 이상거래 (심야결제주의, 고액결제확인 등)
+  if (receipt.anomaly && receipt.anomaly !== "정상") {
+    const isAlreadyCovered = anomalies.some(a => receipt.anomaly.includes(a.label) || a.label.includes(receipt.anomaly));
+    if (!isAlreadyCovered) {
+      anomalies.push({
+        type: "sheet_anomaly",
+        label: receipt.anomaly,
+        tagClass: (receipt.anomaly.includes("주의") || receipt.anomaly.includes("심야")) ? "anomaly-tag-warn" : "anomaly-tag-high"
+      });
+    }
+  }
+
   return anomalies;
 }
 
@@ -6284,9 +6296,9 @@ let currentLedgerMonth = (new Date()).getMonth() + 1;
 // 공식 구글 Apps Script Webhook URL 기본값
 const DEFAULT_GSHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxGj8aUgeBqKZ1yfVRBdn2ZtiPLIRfqXJWvy1ZCRi19qBNqK7uEZqoHVB5fJsqxPwNx/exec";
 
-// Google Apps Script 연동 템플릿 코드
+// Google Apps Script 연동 템플릿 코드 (구글 스프레드시트 12개 컬럼 공식 스키마 100% 일치)
 const APPS_SCRIPT_TEMPLATE = `/**
- * 이룸교회 중고등부 예랑 - 스마트 회계 & 영수증 드라이브 자동 연동 스크립트
+ * 이룸교회 중고등부 예랑 - 스마트 회계 & 영수증 드라이브 자동 연동 스크립트 (12컬럼 표준 규격)
  */
 
 const RECEIPT_FOLDER_NAME = "예랑_영수증_보관함";
@@ -6296,46 +6308,88 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    // 1) 결제 일자 분석 -> 해당 '월' 시트 선택 (예: "2026.09.13" -> "9월")
-    const dateStr = data.date || Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy.MM.dd");
+    // 1) 장부 시트 선택: 통합 거래 장부(첫 번째 시트)를 기본으로 하며, 월별 시트가 별도로 존재할 경우 해당 월 시트 선택
+    let sheet = ss.getSheets()[0];
+    const dateStr = data.date || Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd HH:mm:ss");
     const monthMatch = dateStr.match(/\\d{4}[.-](\\d{1,2})[.-]\\d{1,2}/) || dateStr.match(/(\\d{1,2})[.-]\\d{1,2}/);
     const monthNum = monthMatch ? parseInt(monthMatch[1], 10) : (new Date().getMonth() + 1);
-    const sheetName = monthNum + "월";
-
-    let sheet = ss.getSheetByName(sheetName);
-    if (!sheet) {
-      sheet = ss.getSheets()[0];
+    const monthSheet = ss.getSheetByName(monthNum + "월");
+    if (monthSheet && ss.getSheets().length > 1) {
+      sheet = monthSheet;
     }
-
-    // 2) 데이터 파싱
-    const amount = Number(data.amount) || 0;
-    const author = data.author || "";
-    const store = data.store || "";
-    const purpose = data.purpose || "";
-
-    // 3) 영수증 사진 구글 드라이브 자동 저장 (월별 하위 폴더 자동 분류)
-    let receiptUrl = "";
-    if (data.imageBase64) {
-      const fileName = "[" + dateStr + "] " + (store || "지출") + "_" + (amount ? amount.toLocaleString() + "원" : "") + "_" + (author || "교사") + ".jpg";
-      receiptUrl = saveReceiptToDrive(data.imageBase64, fileName, ss, sheetName);
-    }
-
-    // 4) 해당 월 시트에 데이터 기입
-    const titleMemo = author ? author + " / " + store + " (" + purpose + ")" : store + " (" + purpose + ")";
-    const receiptFormula = receiptUrl ? '=HYPERLINK("' + receiptUrl + '", "영수증 보기 📑")' : "증빙 없음";
 
     const newRow = sheet.getLastRow() + 1;
+
+    // 2) 데이터 파싱 및 정규화
+    const cleanDate = dateStr.replace(/\\D/g, "").slice(0, 8) || Utilities.formatDate(new Date(), "Asia/Seoul", "yyyyMMdd");
+    const txId = data.txId || ("EXP-" + cleanDate + "-" + Utilities.formatString("%03d", newRow));
+    const author = data.author || "담당 교사";
+    const category = data.category || "간식비";
+    const purpose = data.purpose || "지출";
+    const store = data.store || "지출처";
+    const amount = Number(data.amount) || 0;
+    const paymentMethod = data.paymentMethod || data.method || "개인카드(교사)";
+    const status = data.status || "승인대기";
+    const memo = data.memo || "";
+
+    // 3) 이상거래 자동 점검
+    let anomaly = "정상";
+    if (amount >= 50000) {
+      anomaly = "고액결제확인";
+    }
+    const hourMatch = dateStr.match(/\\s(\\d{1,2}):/) || dateStr.match(/(\\d{1,2}):/);
+    if (hourMatch) {
+      const hour = parseInt(hourMatch[1], 10);
+      if (hour >= 22 || hour < 6) anomaly = "심야결제주의";
+    }
+
+    // 4) 영수증 사진 구글 드라이브 자동 저장 (월별 하위 폴더 자동 분류)
+    let receiptUrl = "";
+    if (data.imageBase64) {
+      const fileName = "[" + cleanDate + "] " + (store || "지출") + "_" + (amount ? amount.toLocaleString() + "원" : "") + "_" + (author || "교사") + ".jpg";
+      receiptUrl = saveReceiptToDrive(data.imageBase64, fileName, ss, monthNum + "월");
+    } else if (data.receiptUrl && data.receiptUrl.startsWith("http")) {
+      receiptUrl = data.receiptUrl;
+    }
+
+    const receiptFormula = receiptUrl ? '=HYPERLINK("' + receiptUrl + '", "영수증 보기 📑")' : (receiptUrl || "증빙 없음");
+
+    // 5) 12개 컬럼 정확하게 매핑 기입 (구글 스프레드시트 공식 스키마 완벽 일치)
+    // Col 1 (A): 거래ID
+    // Col 2 (B): 결제일시
+    // Col 3 (C): 집행교사
+    // Col 4 (D): 비목
+    // Col 5 (E): 결제내용(적요)
+    // Col 6 (F): 결제처(상호명)
+    // Col 7 (G): 결제금액
+    // Col 8 (H): 결제수단
+    // Col 9 (I): 영수증URL(드라이브)
+    // Col 10 (J): 결재상태 (승인대기 / 승인완료 / 정산완료 / 반려)
+    // Col 11 (K): 이상거래점검 (정상 / 고액결제확인 / 심야결제주의)
+    // Col 12 (L): 비고/관리자메모
+
+    sheet.getRange(newRow, 1).setValue(txId);
     sheet.getRange(newRow, 2).setValue(dateStr);
-    sheet.getRange(newRow, 3).setValue(titleMemo);
+    sheet.getRange(newRow, 3).setValue(author);
+    sheet.getRange(newRow, 4).setValue(category);
+    sheet.getRange(newRow, 5).setValue(purpose);
+    sheet.getRange(newRow, 6).setValue(store);
     sheet.getRange(newRow, 7).setValue(amount);
-    sheet.getRange(newRow, 8).setFormula(receiptFormula);
-    sheet.getRange(newRow, 9).setValue(author);
-    sheet.getRange(newRow, 10).setValue("정산완료");
+    sheet.getRange(newRow, 8).setValue(paymentMethod);
+    if (receiptFormula.startsWith("=")) {
+      sheet.getRange(newRow, 9).setFormula(receiptFormula);
+    } else {
+      sheet.getRange(newRow, 9).setValue(receiptFormula);
+    }
+    sheet.getRange(newRow, 10).setValue(status);
+    sheet.getRange(newRow, 11).setValue(anomaly);
+    sheet.getRange(newRow, 12).setValue(memo);
 
     return ContentService.createTextOutput(JSON.stringify({
       status: "success",
-      sheet: sheetName,
+      sheet: sheet.getName(),
       row: newRow,
+      txId: txId,
       receiptUrl: receiptUrl
     })).setMimeType(ContentService.MimeType.JSON);
 
@@ -6687,18 +6741,26 @@ function initReceiptSection() {
       const webhookUrl = localStorage.getItem("yerang_gsheet_webhook_url") || DEFAULT_GSHEET_WEBHOOK_URL;
       if (webhookUrl && webhookUrl.startsWith("http")) {
         try {
+          const cleanDate = date.replace(/\D/g, "").slice(0, 8) || "20260901";
+          const txId = "EXP-" + cleanDate + "-" + String(newReceipt.id).slice(-3);
+          const formattedDate = date.includes("-") ? date : date.replace(/\./g, "-");
+          const paymentMethod = (preset && preset.method) ? preset.method : "개인카드(교사)";
           fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({
-              date: date,
+              txId: txId,
+              date: formattedDate,
               store: store,
               amount: amount,
               category: category,
               author: user,
               purpose: purpose,
+              paymentMethod: paymentMethod,
               status: "승인대기",
-              imageBase64: receiptPhoto.startsWith("data:") ? receiptPhoto : null
+              memo: `${user} 청구`,
+              imageBase64: receiptPhoto.startsWith("data:") ? receiptPhoto : null,
+              receiptUrl: receiptPhoto.startsWith("http") ? receiptPhoto : null
             })
           }).then(res => {
             console.log("Sent to Google Apps Script Webhook:", res);
@@ -6979,10 +7041,13 @@ function renderAccountingSection() {
   if (gsheetTableBody) {
     gsheetTableBody.innerHTML = "";
     appState.accounting.receipts.forEach((r, idx) => {
+      const displayDate = String(r.date || "").startsWith("2026")
+        ? r.date
+        : (String(r.date || "").includes("/") ? `2026.${String(r.date).replace("/", ".")}` : `2026.${r.date || "09.01"}`);
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${idx + 1}</td>
-        <td>2026.${r.date}</td>
+        <td>${displayDate}</td>
         <td><span style="color:#d94343; font-weight:700;">지출</span></td>
         <td>${r.store || "예랑 지정처"}</td>
         <td style="font-weight:700;">${r.amount.toLocaleString()}원</td>
@@ -7670,6 +7735,18 @@ async function syncFromGoogleSheet(isManual = false) {
       return;
     }
 
+    // 1) 비목 표준 정규화 매핑 테이블 (구글 시트 비목 -> 예랑 앱 비목)
+    const catMap = {
+      "교재/인쇄비": "교재/공과비",
+      "행사/수련회비": "행사비",
+      "예배/찬양비": "사역지원비",
+      "차량/운행비": "사역지원비",
+      "심방/생일비": "행사비",
+      "프로그램비": "행사비",
+      "기타/예비비": "사역지원비",
+      "간식/비품비": "간식비"
+    };
+
     const fetchedReceipts = [];
     const fetchedLedgerEntries = [];
 
@@ -7677,7 +7754,7 @@ async function syncFromGoogleSheet(isManual = false) {
       const cellsV = (r.c || []).map(cell => (cell && cell.v !== undefined) ? cell.v : null);
       const cellsF = (r.c || []).map(cell => (cell && cell.f !== undefined) ? cell.f : (cell ? cell.v : null));
 
-      // Col 1: Date
+      // Col 1: Date (결제일시)
       let rawDate = cellsF[1] || cellsV[1];
       let formattedDate = "2026.09.01";
       let month = 9;
@@ -7702,51 +7779,96 @@ async function syncFromGoogleSheet(isManual = false) {
         }
       }
 
-      const txId = cellsV[0] || `EXP-2026${String(month).padStart(2, '0')}-${String(idx + 1).padStart(3, '0')}`;
-      let rawAuthor = cellsV[2] || "담당 교사";
-      const category = cellsV[3] || "간식/비품비";
-      const purpose = cellsV[4] || "";
-      const store = cellsV[5] || "지출처";
-      const amount = Number(cellsV[6]) || 0;
-      const paymentMethod = cellsV[7] || "체크카드";
-      let receiptUrl = cellsV[8] || "";
-      if (receiptUrl === "[link removed]" || !receiptUrl.startsWith("http")) {
+      // 구글 시트 12개 컬럼 공식 스키마 파싱 (Col 0~11)
+      let txId = cellsV[0] || `EXP-2026${String(month).padStart(2, '0')}-${String(idx + 1).padStart(3, '0')}`;
+      let author = cellsV[2] || "담당 교사";
+      let category = cellsV[3] || "간식비";
+      let purpose = cellsV[4] || "";
+      let store = cellsV[5] || "지출처";
+      let amount = Number(cellsV[6]) || 0;
+      let paymentMethod = cellsV[7] || "개인카드(교사)";
+      let rawReceipt = cellsV[8] || cellsF[8] || "";
+      let rawStatus = cellsV[9];
+      let anomaly = cellsV[10] || "정상";
+      let memo = cellsV[11] || "";
+
+      // 이전 구버전 스크립트 작성 행(#ERROR! 및 3열 합산) 하위 호환 자동 복구
+      const isLegacyBuggyRow = !cellsV[3] && !cellsV[4] && cellsV[2] && String(cellsV[2]).includes(" / ");
+      if (isLegacyBuggyRow) {
+        const fullTitle = String(cellsV[2]);
+        const slashIdx = fullTitle.indexOf(" / ");
+        author = fullTitle.slice(0, slashIdx).trim();
+        const rest = fullTitle.slice(slashIdx + 3).trim();
+        const parenMatch = rest.match(/^(.*?)\s*\((.*?)\)$/);
+        if (parenMatch) {
+          store = parenMatch[1].trim();
+          purpose = parenMatch[2].trim();
+        } else {
+          store = rest;
+          purpose = rest;
+        }
+        paymentMethod = "개인카드(교사)";
+        rawReceipt = "";
+        if (store.includes("다이소") || purpose.includes("멀티탭") || purpose.includes("비품")) {
+          category = "비품비";
+        } else if (store.includes("파리바게뜨") || purpose.includes("간식") || purpose.includes("치킨")) {
+          category = "간식비";
+        } else {
+          category = "기타";
+        }
+      }
+
+      // 비목 정규화
+      if (catMap[category]) {
+        category = catMap[category];
+      }
+
+      // 결재 상태 정규화 (접수대기, 확인요망 -> 승인대기)
+      let status = (rawStatus && String(rawStatus).trim()) ? String(rawStatus).trim() : "승인대기";
+      if (status === "접수대기" || status === "확인요망") {
+        status = "승인대기";
+      }
+
+      // 영수증 URL 정규화
+      let receiptUrl = "";
+      if (typeof rawReceipt === "string") {
+        const httpMatch = rawReceipt.match(/https?:\/\/[^\s"'<>]+/);
+        if (httpMatch) {
+          receiptUrl = httpMatch[0];
+        } else if (rawReceipt.startsWith("http")) {
+          receiptUrl = rawReceipt;
+        }
+      }
+      if (!receiptUrl || receiptUrl === "[link removed]" || receiptUrl === author || !receiptUrl.startsWith("http")) {
         receiptUrl = "https://images.unsplash.com/photo-1554415707-9e49017a1215?w=600&auto=format&fit=crop&q=80";
       }
-      const rawStatus = cellsV[9];
-      const status = (rawStatus && rawStatus.trim()) ? rawStatus.trim() : "승인대기";
-      const anomaly = cellsV[10] || "정상";
-      const memo = cellsV[11] || "";
 
-      // Title & author breakdown
-      let author = rawAuthor;
-      let title = purpose || rawAuthor;
-      if (rawAuthor.includes(" / ")) {
-        const parts = rawAuthor.split(" / ");
-        author = parts[0];
-        title = parts[1];
-      }
+      const displayTitle = purpose ? (purpose.length > 22 ? purpose.slice(0, 22) + "..." : purpose) : `${store} 지출`;
 
-      // Receipt item for Tab 1
+      // 1. 영수증 목록 아이템 (Screen 5 탭 1 및 모바일 청구 목록)
       fetchedReceipts.push({
         id: "gsheet_" + (idx + 1),
-        title: title,
+        txId: txId,
+        title: displayTitle,
         amount: amount,
         store: store,
-        date: formattedDate,
+        date: formattedDate.replace(/^2026\./, "") || "09.01",
+        fullDate: formattedDate,
         author: author,
         category: category,
         status: status,
         anomaly: anomaly,
         method: paymentMethod,
-        purpose: purpose || title,
+        purpose: purpose || displayTitle,
         receiptUrl: receiptUrl,
+        memo: memo,
         isMine: false
       });
 
-      // Ledger entry for Tab 2 (Numbers table)
+      // 2. Numbers 월별 회계장부 행 (Screen 5 탭 2)
       fetchedLedgerEntries.push({
         id: 9000 + idx + 1,
+        txId: txId,
         month: month,
         date: formattedDate,
         title: `${author} / ${store}${purpose ? ` (${purpose})` : ''}`,
@@ -7778,10 +7900,11 @@ async function syncFromGoogleSheet(isManual = false) {
       }
     });
 
-    // 1월 historical entries 및 앱에서 직접 등록한 로컬 장부 내역 안전하게 보존
+    // 1월 historical entries 및 수입 항목(헌금/회비/지원금), 로컬 직접 등록 장부 내역 안전하게 보존
     const fetchedLedgerIds = new Set(fetchedLedgerEntries.map(e => String(e.id)));
     const preservedLocalLedger = (appState.accounting.ledgerEntries || []).filter(e => {
-      return Number(e.month) === 1 || !fetchedLedgerIds.has(String(e.id));
+      const isIncome = (Number(e.offering) > 0 || Number(e.fee) > 0 || Number(e.donation) > 0);
+      return Number(e.month) === 1 || isIncome || !fetchedLedgerIds.has(String(e.id));
     });
     const ledgerMap = new Map();
     preservedLocalLedger.forEach(e => ledgerMap.set(String(e.id), e));
@@ -7805,6 +7928,14 @@ async function syncFromGoogleSheet(isManual = false) {
     // 로컬 추가 영수증을 최상단에 유지하고 시트 데이터와 결합
     appState.accounting.receipts = [...locallyAddedReceipts, ...mappedGsheetReceipts];
 
+    // 기초 잔액 및 총 수입 기본값 영구 보존
+    if (!appState.accounting.initialBalance) {
+      appState.accounting.initialBalance = 1842500;
+    }
+    if (appState.accounting.income === undefined || appState.accounting.income === null) {
+      appState.accounting.income = 200000;
+    }
+
     saveState();
     renderAccountingSection();
     renderMonthlyLedger(currentLedgerMonth || 9);
@@ -7814,7 +7945,7 @@ async function syncFromGoogleSheet(isManual = false) {
     const nowStr = new Date().toLocaleTimeString("ko-KR", { hour: '2-digit', minute: '2-digit' });
     if (syncText) syncText.textContent = `구글시트 실시간 연동됨 (${nowStr}) 🔄`;
     if (isManual) {
-      showToast(`구글 스프레드시트의 최신 내역(${fetchedReceipts.length}건)이 앱에 즉시 동기화되었습니다! 🚀`);
+      showToast(`구글 스프레드시트의 최신 내역(${fetchedReceipts.length}건)이 12개 공식 컬럼 규격에 맞춰 앱에 완벽 동기화되었습니다! 🚀`);
     }
   } catch (err) {
     console.error("GSheet sync error:", err);
