@@ -1571,9 +1571,13 @@ function initNavigation() {
       if (screenTitle && title) screenTitle.textContent = title;
       if (screenSubtitle && subtitle) screenSubtitle.textContent = subtitle;
 
-      // 구글 스프레드시트 실시간 동기화
+      // 구글 스프레드시트 실시간 동기화 (청구 직후에는 2.5초 후 백그라운드 지연 동기화하여 깜빡임 방지)
       if (targetId === "view-accounting" && typeof syncFromGoogleSheet === "function") {
-        syncFromGoogleSheet(false);
+        if (Date.now() - lastReceiptSubmitTime < 3500) {
+          setTimeout(() => syncFromGoogleSheet(false), 2500);
+        } else {
+          syncFromGoogleSheet(false);
+        }
       }
 
       // 스케줄 서브탭 권한 및 캘린더 화면 갱신
@@ -6766,14 +6770,15 @@ function initReceiptSection() {
         }
       }
 
+      lastReceiptSubmitTime = Date.now();
       saveState();
-      renderAccountingSection();
 
       showToast("영수증이 청구되었습니다! 전도사/회계 승인 후 송금됩니다 ⏳");
 
       setTimeout(() => {
         switchToTab("view-accounting");
-      }, 600);
+        renderAccountingSection();
+      }, 400);
     });
   }
 }
@@ -7714,7 +7719,13 @@ function fetchGsheetJSONP(docId) {
   });
 }
 
+let isGsheetSyncing = false;
+let lastReceiptSubmitTime = 0;
+
 async function syncFromGoogleSheet(isManual = false) {
+  if (isGsheetSyncing) return;
+  isGsheetSyncing = true;
+
   const syncBtn = document.getElementById("liveSyncGsheetBtn");
   const syncText = document.getElementById("liveSyncText");
   if (syncBtn) syncBtn.classList.add("syncing");
@@ -7948,6 +7959,7 @@ async function syncFromGoogleSheet(isManual = false) {
       showToast("구글 시트 연동 상태를 확인 중입니다. 캐시된 장부를 표시합니다.");
     }
   } finally {
+    isGsheetSyncing = false;
     if (syncBtn) syncBtn.classList.remove("syncing");
   }
 }
@@ -9445,9 +9457,13 @@ function renderRoleTabBar(roleConfig) {
       if (titleEl && tab.title) titleEl.textContent = tab.title;
       if (subtitleEl && tab.subtitle) subtitleEl.textContent = tab.subtitle;
 
-      // 구글 스프레드시트 실시간 동기화 (재정 탭 열람 시)
+      // 구글 스프레드시트 실시간 동기화 (청구 직후에는 2.5초 후 백그라운드 지연 동기화하여 깜빡임 방지)
       if (tab.target === "view-accounting" && typeof syncFromGoogleSheet === "function") {
-        syncFromGoogleSheet(false);
+        if (Date.now() - lastReceiptSubmitTime < 3500) {
+          setTimeout(() => syncFromGoogleSheet(false), 2500);
+        } else {
+          syncFromGoogleSheet(false);
+        }
       }
 
       // 스케줄 서브탭 권한 및 캘린더 화면 갱신
