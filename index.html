@@ -132,7 +132,7 @@
       }
     };
   </script>
-    <link rel="stylesheet" href="style.css?v=20260926_surgical_v5">
+    <link rel="stylesheet" href="style.css?v=20260926_continuous_v6">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -2646,6 +2646,15 @@
           <button class="sheet-close-btn" data-close="receiptClaimModal">✕</button>
         </div>
         <div class="receipt-claim-modal-body" style="padding: 10px 0 20px 0;">
+          <!-- Continuous Submission Status Alert Banner -->
+          <div id="continuousSessionAlert" style="display:none; margin: 0 0 14px 0; padding:10px 14px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:12px; font-size:12.5px; color:#065f46; font-weight:700; align-items:center; justify-content:space-between; box-shadow:0 2px 6px rgba(16,185,129,0.12);">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">🎉</span>
+              <span id="continuousSessionAlertText">방금 영수증 등록 완료! 다음 영수증을 입력하세요.</span>
+            </div>
+            <span id="continuousSessionCountBadge" style="background:#10b981; color:#fff; font-size:11px; padding:3px 8px; border-radius:12px; font-weight:800; white-space:nowrap;">1건 완료</span>
+          </div>
+
           <!-- Hidden File Input for Real Photo Upload & Camera Capture -->
           <input type="file" id="receiptFileInput" accept="image/*" capture="environment" style="display:none;">
 
@@ -2750,10 +2759,15 @@
             </div>
           </div>
 
-          <!-- Submit to Google Sheet Button -->
-          <button class="btn-orange" id="submitReceiptBtn" style="margin-top:14px; width:100%;">
-            <span>📄</span> <span>구글 스프레드시트에 즉시 등록하기 🚀</span>
-          </button>
+          <!-- Submit Action Buttons: 연속 등록 & 등록 후 닫기 -->
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+            <button type="button" class="btn-primary" id="submitAndNextReceiptBtn" style="width:100%; padding:13px; font-size:14px; font-weight:800; background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:#fff; border:none; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 8px rgba(16,185,129,0.25);">
+              <span>➕</span> <span>등록하고 다음 영수증 계속 등록</span>
+            </button>
+            <button type="button" class="btn-orange" id="submitReceiptBtn" style="width:100%; padding:11px; font-size:13.5px; background:linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color:#fff; border:none; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+              <span>📄</span> <span>등록 완료하고 닫기 🚀</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -3728,7 +3742,7 @@
 
   </div>
 
-  <script src="app.js?v=20260926_surgical_v5"></script>
+  <script src="app.js?v=20260926_continuous_v6"></script>
 </body>
 </html>
 

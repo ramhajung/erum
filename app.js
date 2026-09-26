@@ -6442,6 +6442,7 @@ function saveReceiptToDrive(base64Data, fileName, ss, monthName) {
 function initReceiptSection() {
   const changeBtn = document.getElementById("changeReceiptSampleBtn");
   const submitBtn = document.getElementById("submitReceiptBtn");
+  const submitAndNextBtn = document.getElementById("submitAndNextReceiptBtn");
   const storeInput = document.getElementById("rcptStore");
   const catSelect = document.getElementById("rcptCategory");
   const smartBadge = document.getElementById("smartCategoryBadge");
@@ -6678,142 +6679,249 @@ function initReceiptSection() {
     currentUploadedImage = initialPreset.receiptUrl || "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80";
   }
 
-  // Submit Receipt to Google Sheets
-  if (submitBtn) {
-    submitBtn.addEventListener("click", () => {
-      if (submitBtn.disabled) return;
-      submitBtn.disabled = true;
-      const originalBtnHtml = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<span>⏳</span> <span>구글 시트에 실시간 등록 중...</span>';
+  let continuousSessionCount = 0;
 
-      const preset = appState.receiptPresets[currentPresetIndex];
-      const date = document.getElementById("rcptDate").value;
-      const store = document.getElementById("rcptStore").value;
-      let category = document.getElementById("rcptCategory").value;
-      const purpose = document.getElementById("rcptPurpose").value;
-      const amountInput = document.getElementById("rcptAmountInput");
-      const amount = amountInput ? (Number(amountInput.value) || 0) : (preset ? preset.amount : 45000);
+  function resetReceiptForm(clearSession = false) {
+    if (fileInput) fileInput.value = "";
+    currentUploadedImage = null;
+    if (previewImg) previewImg.src = "";
+    if (previewThumb) previewThumb.style.display = "none";
+    const defaultIconBox = document.getElementById("receiptDefaultIconBox");
+    if (defaultIconBox) defaultIconBox.style.display = "flex";
+    const scanTitle = document.getElementById("receiptScanStatusTitle");
+    if (scanTitle) scanTitle.textContent = "다음 영수증 사진을 첨부하세요";
+    const subText = document.getElementById("receiptIconSubText");
+    if (subText) subText.textContent = "촬영/첨부 대기";
 
-      // 직접 입력 카테고리 처리 및 자동 기억
-      if (category === "__custom__") {
-        const customVal = customCatInput ? customCatInput.value.trim() : "";
-        if (!customVal) {
-          showToast("새 카테고리 이름을 입력해주세요!", "warn");
-          if (customCatInput) customCatInput.focus();
-          return;
-        }
-        category = customVal;
+    const storeEl = document.getElementById("rcptStore");
+    const amountEl = document.getElementById("rcptAmountInput");
+    const priceDisplayEl = document.getElementById("rcptPriceDisplay");
+    const purposeEl = document.getElementById("rcptPurpose");
+    if (storeEl) storeEl.value = "";
+    if (amountEl) amountEl.value = "";
+    if (priceDisplayEl) priceDisplayEl.innerHTML = "";
+    if (purposeEl) purposeEl.value = "";
 
-        if (!appState.accounting.customCategories) {
-          appState.accounting.customCategories = [];
-        }
-        if (!appState.accounting.customCategories.includes(category)) {
-          appState.accounting.customCategories.push(category);
-          populateCustomCategories();
-        }
+    if (smartBadge) smartBadge.style.display = "none";
+    if (anomalyBox) anomalyBox.style.display = "none";
+
+    if (clearSession) {
+      continuousSessionCount = 0;
+      const alertEl = document.getElementById("continuousSessionAlert");
+      if (alertEl) alertEl.style.display = "none";
+    }
+  }
+
+  function handleReceiptSubmit(keepOpen = false) {
+    const submitBtn = document.getElementById("submitReceiptBtn");
+    const submitAndNextBtn = document.getElementById("submitAndNextReceiptBtn");
+
+    if (submitBtn && submitBtn.disabled) return;
+    if (submitAndNextBtn && submitAndNextBtn.disabled) return;
+
+    const amountInput = document.getElementById("rcptAmountInput");
+    const rawAmount = amountInput ? Number(amountInput.value) : 0;
+    const preset = appState.receiptPresets[currentPresetIndex];
+    const amount = (rawAmount > 0) ? rawAmount : (preset ? preset.amount : 0);
+
+    if (amount <= 0) {
+      showToast("지출 금액을 0원보다 크게 입력해주세요! 💰", "warn");
+      if (amountInput) amountInput.focus();
+      return;
+    }
+
+    const date = (document.getElementById("rcptDate") && document.getElementById("rcptDate").value) || "2026.09.01";
+    let store = (document.getElementById("rcptStore") && document.getElementById("rcptStore").value.trim()) || (preset ? preset.store : "예랑 지정처");
+    let category = (document.getElementById("rcptCategory") && document.getElementById("rcptCategory").value) || "간식비";
+    let purpose = (document.getElementById("rcptPurpose") && document.getElementById("rcptPurpose").value.trim()) || `${store} 사역 지출`;
+
+    // 직접 입력 카테고리 처리 및 자동 기억
+    if (category === "__custom__") {
+      const customVal = customCatInput ? customCatInput.value.trim() : "";
+      if (!customVal) {
+        showToast("새 카테고리 이름을 입력해주세요!", "warn");
+        if (customCatInput) customCatInput.focus();
+        return;
+      }
+      category = customVal;
+
+      if (!appState.accounting.customCategories) {
+        appState.accounting.customCategories = [];
+      }
+      if (!appState.accounting.customCategories.includes(category)) {
+        appState.accounting.customCategories.push(category);
+        populateCustomCategories();
+      }
+    }
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (submitAndNextBtn) submitAndNextBtn.disabled = true;
+
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : "";
+    const originalNextBtnHtml = submitAndNextBtn ? submitAndNextBtn.innerHTML : "";
+
+    if (keepOpen && submitAndNextBtn) {
+      submitAndNextBtn.innerHTML = '<span>⏳</span> <span>시트 등록 중...</span>';
+    } else if (submitBtn) {
+      submitBtn.innerHTML = '<span>⏳</span> <span>시트 등록 중...</span>';
+    }
+
+    // 청구 제출자: 현재 로그인된 교사 본인 (미로그인 시 기본값)
+    const submitUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+    let user = (submitUser && submitUser.name) ? submitUser.name : "김대한 선생님";
+
+    // Extract month
+    const monthMatch = date.match(/\d{4}[.-](\d{1,2})[.-]\d{1,2}/) || date.match(/(\d{1,2})[.-]\d{1,2}/);
+    const monthNum = monthMatch ? parseInt(monthMatch[1], 10) : 9;
+
+    const receiptPhoto = currentUploadedImage || (preset ? preset.receiptUrl : "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80");
+
+    // 1. Add to accounting receipts list
+    const newReceipt = {
+      id: Date.now(),
+      date: date.slice(5) || "9/8",
+      title: purpose.slice(0, 18) + (purpose.length > 18 ? "..." : ""),
+      author: user,
+      amount: amount,
+      status: "승인대기",
+      category: category,
+      store: store,
+      receiptUrl: receiptPhoto,
+      isMine: true
+    };
+    appState.accounting.receipts.unshift(newReceipt);
+
+    // 2. Add to Numbers monthly ledger entries
+    const newLedgerEntry = {
+      id: newReceipt.id,
+      month: monthNum,
+      date: date,
+      title: `${(user || "").replace("선생님", "T")} / ${store} (${purpose})`,
+      offering: 0,
+      fee: 0,
+      donation: 0,
+      expense: amount,
+      author: user,
+      store: store,
+      category: category,
+      receiptUrl: receiptPhoto
+    };
+    if (!appState.accounting.ledgerEntries) {
+      appState.accounting.ledgerEntries = [];
+    }
+    appState.accounting.ledgerEntries.unshift(newLedgerEntry);
+
+    // 3. Send to Google Apps Script Web App if configured
+    const webhookUrl = localStorage.getItem("yerang_gsheet_webhook_url") || DEFAULT_GSHEET_WEBHOOK_URL;
+    if (webhookUrl && webhookUrl.startsWith("http")) {
+      try {
+        const cleanDate = date.replace(/\D/g, "").slice(0, 8) || "20260901";
+        const txId = "EXP-" + cleanDate + "-" + String(newReceipt.id).slice(-3);
+        const formattedDate = date.includes("-") ? date : date.replace(/\./g, "-");
+        const paymentMethod = (preset && preset.method) ? preset.method : "개인카드(교사)";
+        fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            txId: txId,
+            date: formattedDate,
+            store: store,
+            amount: amount,
+            category: category,
+            author: user,
+            purpose: purpose,
+            paymentMethod: paymentMethod,
+            status: "승인대기",
+            memo: `${user} 청구`,
+            imageBase64: receiptPhoto.startsWith("data:") ? receiptPhoto : null,
+            receiptUrl: receiptPhoto.startsWith("http") ? receiptPhoto : null
+          })
+        }).then(res => {
+          console.log("Sent to Google Apps Script Webhook:", res);
+        }).catch(err => {
+          console.warn("Webhook network notice (data saved locally in app):", err);
+        });
+      } catch (e) {
+        console.error("Fetch exception:", e);
+      }
+    }
+
+    lastReceiptSubmitTime = Date.now();
+
+    if (keepOpen) {
+      // ➕ 연속 등록 모드: 모달을 닫지 않고 즉시 리스트에 prepend & 폼 리셋
+      continuousSessionCount++;
+      _prependReceiptToDOM(newReceipt);
+      saveState();
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+      }
+      if (submitAndNextBtn) {
+        submitAndNextBtn.disabled = false;
+        submitAndNextBtn.innerHTML = originalNextBtnHtml;
       }
 
-      // 청구 제출자: 현재 로그인된 교사 본인 (미로그인 시 기본값)
-      const submitUser = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
-      let user = (submitUser && submitUser.name) ? submitUser.name : "김대한 선생님";
+      resetReceiptForm(false);
 
-      // Extract month
-      const monthMatch = date.match(/\d{4}[.-](\d{1,2})[.-]\d{1,2}/) || date.match(/(\d{1,2})[.-]\d{1,2}/);
-      const monthNum = monthMatch ? parseInt(monthMatch[1], 10) : 9;
+      // 상단 연속 등록 알림 배너 표시
+      const alertEl = document.getElementById("continuousSessionAlert");
+      const alertText = document.getElementById("continuousSessionAlertText");
+      const badgeEl = document.getElementById("continuousSessionCountBadge");
+      if (alertEl) alertEl.style.display = "flex";
+      if (alertText) alertText.textContent = `방금 '${store}' (${amount.toLocaleString()}원) 등록 완료! 다음 영수증을 입력하세요.`;
+      if (badgeEl) badgeEl.textContent = `총 ${continuousSessionCount}건 완료`;
 
-      const receiptPhoto = currentUploadedImage || (preset ? preset.receiptUrl : "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80");
+      // 모달 상단으로 부드럽게 스크롤
+      const modal = document.getElementById("receiptClaimModal");
+      const sheet = modal ? modal.querySelector(".bottom-sheet") : null;
+      if (sheet) sheet.scrollTo({ top: 0, behavior: "smooth" });
 
-      // 1. Add to accounting receipts list
-      const newReceipt = {
-        id: Date.now(),
-        date: date.slice(5) || "9/8",
-        title: purpose.slice(0, 18) + (purpose.length > 18 ? "..." : ""),
-        author: user,
-        amount: amount,
-        status: "승인대기",
-        category: category,
-        store: store,
-        receiptUrl: receiptPhoto,
-        isMine: true
-      };
-      appState.accounting.receipts.unshift(newReceipt);
+      showToast(`✅ ${continuousSessionCount}번째 영수증 등록 완료! 다음 영수증을 입력해주세요 📸`, "success");
+    } else {
+      // 📄 등록 완료하고 닫기 모드
+      const totalCount = continuousSessionCount + 1;
+      continuousSessionCount = 0;
 
-      // 2. Add to Numbers monthly ledger entries
-      const newLedgerEntry = {
-        id: newReceipt.id,
-        month: monthNum,
-        date: date,
-        title: `${(user || "").replace("선생님", "T")} / ${store} (${purpose})`,
-        offering: 0,
-        fee: 0,
-        donation: 0,
-        expense: amount,
-        author: user,
-        store: store,
-        category: category,
-        receiptUrl: receiptPhoto
-      };
-      if (!appState.accounting.ledgerEntries) {
-        appState.accounting.ledgerEntries = [];
-      }
-      appState.accounting.ledgerEntries.unshift(newLedgerEntry);
-
-      // 3. Send to Google Apps Script Web App if configured
-      const webhookUrl = localStorage.getItem("yerang_gsheet_webhook_url") || DEFAULT_GSHEET_WEBHOOK_URL;
-      if (webhookUrl && webhookUrl.startsWith("http")) {
-        try {
-          const cleanDate = date.replace(/\D/g, "").slice(0, 8) || "20260901";
-          const txId = "EXP-" + cleanDate + "-" + String(newReceipt.id).slice(-3);
-          const formattedDate = date.includes("-") ? date : date.replace(/\./g, "-");
-          const paymentMethod = (preset && preset.method) ? preset.method : "개인카드(교사)";
-          fetch(webhookUrl, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              txId: txId,
-              date: formattedDate,
-              store: store,
-              amount: amount,
-              category: category,
-              author: user,
-              purpose: purpose,
-              paymentMethod: paymentMethod,
-              status: "승인대기",
-              memo: `${user} 청구`,
-              imageBase64: receiptPhoto.startsWith("data:") ? receiptPhoto : null,
-              receiptUrl: receiptPhoto.startsWith("http") ? receiptPhoto : null
-            })
-          }).then(res => {
-            console.log("Sent to Google Apps Script Webhook:", res);
-          }).catch(err => {
-            console.warn("Webhook network notice (data saved locally in app):", err);
-          });
-        } catch (e) {
-          console.error("Fetch exception:", e);
-        }
-      }
-
-      lastReceiptSubmitTime = Date.now();
-
-      // 바텀시트 모달 닫기 (부드러운 퇴장 애니메이션 우선 실행)
       closeModal("receiptClaimModal");
 
-      // 모달이 완전히 닫힌 후(300ms) 새 영수증 1건만 DOM에 직접 삽입 (전체 리렌더링 없음 → 깜빡임 0%)
       setTimeout(() => {
         _prependReceiptToDOM(newReceipt);
-
-        // 상태 저장을 DOM 업데이트 후로 지연하여 메인스레드 블로킹 최소화
         saveState();
 
-        // 파일 입력값 초기화 및 제출 버튼 복원
-        if (fileInput) fileInput.value = "";
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalBtnHtml;
         }
+        if (submitAndNextBtn) {
+          submitAndNextBtn.disabled = false;
+          submitAndNextBtn.innerHTML = originalNextBtnHtml;
+        }
+
+        resetReceiptForm(true);
       }, 300);
 
-      showToast("영수증이 청구되었습니다! 구글 스프레드시트에 즉시 반영되었습니다 🚀");
+      const msg = totalCount > 1
+        ? `총 ${totalCount}건의 영수증이 모두 구글 스프레드시트에 성공적으로 등록되었습니다! 🚀`
+        : "영수증이 청구되었습니다! 구글 스프레드시트에 즉시 반영되었습니다 🚀";
+      showToast(msg);
+    }
+  }
+
+  // Submit Receipt to Google Sheets
+  if (submitBtn) {
+    submitBtn.addEventListener("click", () => handleReceiptSubmit(false));
+  }
+  if (submitAndNextBtn) {
+    submitAndNextBtn.addEventListener("click", () => handleReceiptSubmit(true));
+  }
+
+  // 모달 닫기 버튼 누를 때 세션 상태 정리
+  const modalCloseBtn = document.querySelector("#receiptClaimModal .sheet-close-btn");
+  if (modalCloseBtn) {
+    modalCloseBtn.addEventListener("click", () => {
+      resetReceiptForm(true);
     });
   }
 }
