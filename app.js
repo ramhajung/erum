@@ -6607,20 +6607,125 @@ function initReceiptSection() {
     }
   }
 
-  if (storeInput) {
-    storeInput.addEventListener("input", (e) => {
-      const amtInput = document.getElementById("rcptAmountInput");
-      const amt = amtInput ? (Number(amtInput.value) || 0) : 45000;
-      updateFormSmartBadges(e.target.value, amt);
+  const totalAmountInput = document.getElementById("rcptTotalAmountInput");
+  const amountInput = document.getElementById("rcptAmountInput");
+  const ratioChips = document.querySelectorAll(".claim-ratio-chip");
+  const claimRatioBadge = document.getElementById("claimRatioBadge");
+  const partialClaimNote = document.getElementById("partialClaimNote");
+  const partialClaimDiffText = document.getElementById("partialClaimDiffText");
+  let currentClaimRatio = "100";
+
+  function updateClaimRatioUI(ratio, shouldFocusCustom = false) {
+    currentClaimRatio = ratio;
+    const totalVal = totalAmountInput ? (Number(totalAmountInput.value) || 0) : 0;
+    let claimVal = totalVal;
+
+    if (ratio === "100") {
+      claimVal = totalVal;
+      if (amountInput) amountInput.value = claimVal;
+      if (claimRatioBadge) {
+        claimRatioBadge.textContent = "전액 청구";
+        claimRatioBadge.style.background = "#dcfce7";
+        claimRatioBadge.style.color = "#15803d";
+      }
+      if (partialClaimNote) partialClaimNote.style.display = "none";
+    } else if (ratio === "50") {
+      claimVal = Math.round(totalVal / 2);
+      if (amountInput) amountInput.value = claimVal;
+      if (claimRatioBadge) {
+        claimRatioBadge.textContent = "50% 반액 청구";
+        claimRatioBadge.style.background = "#ffedd5";
+        claimRatioBadge.style.color = "#c2410c";
+      }
+      const diff = totalVal - claimVal;
+      if (partialClaimNote && partialClaimDiffText) {
+        partialClaimNote.style.display = "block";
+        partialClaimDiffText.textContent = `${diff.toLocaleString()}원 (50%)`;
+      }
+    } else if (ratio === "custom") {
+      claimVal = amountInput ? (Number(amountInput.value) || 0) : 0;
+      if (claimRatioBadge) {
+        claimRatioBadge.textContent = "일부 직접 입력";
+        claimRatioBadge.style.background = "#fef3c7";
+        claimRatioBadge.style.color = "#b45309";
+      }
+      const diff = totalVal - claimVal;
+      if (partialClaimNote && partialClaimDiffText) {
+        if (diff > 0) {
+          partialClaimNote.style.display = "block";
+          const pct = totalVal > 0 ? Math.round((diff / totalVal) * 100) : 0;
+          partialClaimDiffText.textContent = `${diff.toLocaleString()}원 (${pct}%)`;
+        } else {
+          partialClaimNote.style.display = "none";
+        }
+      }
+      if (shouldFocusCustom && amountInput) {
+        amountInput.focus();
+        amountInput.select();
+      }
+    }
+
+    // 칩 스타일 업데이트
+    ratioChips.forEach(chip => {
+      const isAct = (chip.dataset.ratio === ratio);
+      if (isAct) {
+        chip.style.border = "1.5px solid #10b981";
+        chip.style.background = "#ecfdf5";
+        chip.style.color = "#065f46";
+        chip.style.fontWeight = "800";
+      } else {
+        chip.style.border = "1px solid #d1d5db";
+        chip.style.background = "#ffffff";
+        chip.style.color = "#4b5563";
+        chip.style.fontWeight = "700";
+      }
+    });
+
+    const priceDisplay = document.getElementById("rcptPriceDisplay");
+    if (priceDisplay) {
+      priceDisplay.innerHTML = `${claimVal.toLocaleString()} <span style="font-size:12px; font-weight:700; color:#555;">원 (실제 청구 지출)</span>`;
+    }
+
+    const currentStore = storeInput ? storeInput.value : "";
+    updateFormSmartBadges(currentStore, claimVal);
+  }
+
+  // 비율 칩 클릭 이벤트
+  ratioChips.forEach(chip => {
+    chip.addEventListener("click", () => {
+      updateClaimRatioUI(chip.dataset.ratio, chip.dataset.ratio === "custom");
+    });
+  });
+
+  if (totalAmountInput) {
+    totalAmountInput.addEventListener("input", () => {
+      if (currentClaimRatio === "100" || currentClaimRatio === "50") {
+        updateClaimRatioUI(currentClaimRatio);
+      } else {
+        updateClaimRatioUI("custom");
+      }
     });
   }
 
-  const amountInput = document.getElementById("rcptAmountInput");
   if (amountInput) {
     amountInput.addEventListener("input", (e) => {
-      const currentStore = storeInput ? storeInput.value : "";
-      const amt = Number(e.target.value) || 0;
-      updateFormSmartBadges(currentStore, amt);
+      const curTotal = totalAmountInput ? (Number(totalAmountInput.value) || 0) : 0;
+      const curClaim = Number(e.target.value) || 0;
+      if (curTotal > 0 && curClaim === curTotal) {
+        currentClaimRatio = "100";
+      } else if (curTotal > 0 && curClaim === Math.round(curTotal / 2)) {
+        currentClaimRatio = "50";
+      } else {
+        currentClaimRatio = "custom";
+      }
+      updateClaimRatioUI(currentClaimRatio);
+    });
+  }
+
+  if (storeInput) {
+    storeInput.addEventListener("input", (e) => {
+      const amt = amountInput ? (Number(amountInput.value) || 0) : 45000;
+      updateFormSmartBadges(e.target.value, amt);
     });
   }
 
@@ -6643,9 +6748,11 @@ function initReceiptSection() {
 
         document.getElementById("rcptDate").value = preset.date;
         document.getElementById("rcptStore").value = preset.store;
-        const amtInput = document.getElementById("rcptAmountInput");
-        if (amtInput) amtInput.value = preset.amount;
-        document.getElementById("rcptPriceDisplay").innerHTML = `${preset.amount.toLocaleString()} <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>`;
+        
+        if (totalAmountInput) totalAmountInput.value = preset.amount;
+        if (amountInput) amountInput.value = preset.amount;
+        updateClaimRatioUI("100");
+
         document.getElementById("rcptCategory").value = preset.category;
         if (customCatInput) {
           customCatInput.style.display = "none";
@@ -6673,9 +6780,9 @@ function initReceiptSection() {
   // Initial trigger for form
   const initialPreset = appState.receiptPresets[0];
   if (initialPreset) {
-    const amtInput = document.getElementById("rcptAmountInput");
-    if (amtInput) amtInput.value = initialPreset.amount;
-    updateFormSmartBadges(initialPreset.store, initialPreset.amount);
+    if (totalAmountInput) totalAmountInput.value = initialPreset.amount;
+    if (amountInput) amountInput.value = initialPreset.amount;
+    updateClaimRatioUI("100");
     currentUploadedImage = initialPreset.receiptUrl || "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80";
   }
 
@@ -6694,13 +6801,12 @@ function initReceiptSection() {
     if (subText) subText.textContent = "촬영/첨부 대기";
 
     const storeEl = document.getElementById("rcptStore");
-    const amountEl = document.getElementById("rcptAmountInput");
-    const priceDisplayEl = document.getElementById("rcptPriceDisplay");
     const purposeEl = document.getElementById("rcptPurpose");
     if (storeEl) storeEl.value = "";
-    if (amountEl) amountEl.value = "";
-    if (priceDisplayEl) priceDisplayEl.innerHTML = "";
+    if (totalAmountInput) totalAmountInput.value = "";
+    if (amountInput) amountInput.value = "";
     if (purposeEl) purposeEl.value = "";
+    updateClaimRatioUI("100");
 
     if (smartBadge) smartBadge.style.display = "none";
     if (anomalyBox) anomalyBox.style.display = "none";
@@ -6719,15 +6825,23 @@ function initReceiptSection() {
     if (submitBtn && submitBtn.disabled) return;
     if (submitAndNextBtn && submitAndNextBtn.disabled) return;
 
-    const amountInput = document.getElementById("rcptAmountInput");
-    const rawAmount = amountInput ? Number(amountInput.value) : 0;
+    const rawClaimAmount = amountInput ? Number(amountInput.value) : 0;
+    const rawTotalAmount = totalAmountInput ? Number(totalAmountInput.value) : 0;
     const preset = appState.receiptPresets[currentPresetIndex];
-    const amount = (rawAmount > 0) ? rawAmount : (preset ? preset.amount : 0);
+
+    const receiptTotal = (rawTotalAmount > 0) ? rawTotalAmount : (rawClaimAmount > 0 ? rawClaimAmount : (preset ? preset.amount : 0));
+    const amount = (rawClaimAmount > 0) ? rawClaimAmount : receiptTotal;
 
     if (amount <= 0) {
-      showToast("지출 금액을 0원보다 크게 입력해주세요! 💰", "warn");
+      showToast("청구 금액을 0원보다 크게 입력해주세요! 💰", "warn");
       if (amountInput) amountInput.focus();
       return;
+    }
+
+    const isPartial = (receiptTotal > amount);
+    let ratioLabel = "전액 청구";
+    if (isPartial) {
+      ratioLabel = (currentClaimRatio === "50" || amount === Math.round(receiptTotal / 2)) ? "50% 반액 청구" : "일부 청구";
     }
 
     const date = (document.getElementById("rcptDate") && document.getElementById("rcptDate").value) || "2026.09.01";
@@ -6780,9 +6894,12 @@ function initReceiptSection() {
     const newReceipt = {
       id: Date.now(),
       date: date.slice(5) || "9/8",
-      title: purpose.slice(0, 18) + (purpose.length > 18 ? "..." : ""),
+      title: (purpose.slice(0, 18) + (purpose.length > 18 ? "..." : "")) + (isPartial ? ` [${ratioLabel}]` : ""),
       author: user,
       amount: amount,
+      receiptTotalAmount: receiptTotal,
+      claimRatio: currentClaimRatio,
+      claimNote: isPartial ? `영수증 총액 ${receiptTotal.toLocaleString()}원 중 ${amount.toLocaleString()}원 ${ratioLabel}` : null,
       status: "승인대기",
       category: category,
       store: store,
@@ -6792,11 +6909,15 @@ function initReceiptSection() {
     appState.accounting.receipts.unshift(newReceipt);
 
     // 2. Add to Numbers monthly ledger entries
+    const ledgerTitle = isPartial
+      ? `${(user || "").replace("선생님", "T")} / ${store} (${purpose} - ${ratioLabel})`
+      : `${(user || "").replace("선생님", "T")} / ${store} (${purpose})`;
+
     const newLedgerEntry = {
       id: newReceipt.id,
       month: monthNum,
       date: date,
-      title: `${(user || "").replace("선생님", "T")} / ${store} (${purpose})`,
+      title: ledgerTitle,
       offering: 0,
       fee: 0,
       donation: 0,
@@ -6832,7 +6953,7 @@ function initReceiptSection() {
             purpose: purpose,
             paymentMethod: paymentMethod,
             status: "승인대기",
-            memo: `${user} 청구`,
+            memo: `${user} 청구${isPartial ? ` (영수증 총 ${receiptTotal.toLocaleString()}원 중 ${amount.toLocaleString()}원 ${ratioLabel})` : ""}`,
             imageBase64: receiptPhoto.startsWith("data:") ? receiptPhoto : null,
             receiptUrl: receiptPhoto.startsWith("http") ? receiptPhoto : null
           })
@@ -6870,7 +6991,7 @@ function initReceiptSection() {
       const alertText = document.getElementById("continuousSessionAlertText");
       const badgeEl = document.getElementById("continuousSessionCountBadge");
       if (alertEl) alertEl.style.display = "flex";
-      if (alertText) alertText.textContent = `방금 '${store}' (${amount.toLocaleString()}원) 등록 완료! 다음 영수증을 입력하세요.`;
+      if (alertText) alertText.textContent = `방금 '${store}' (${amount.toLocaleString()}원${isPartial ? ` · ${ratioLabel}` : ''}) 등록 완료! 다음 영수증을 입력하세요.`;
       if (badgeEl) badgeEl.textContent = `총 ${continuousSessionCount}건 완료`;
 
       // 모달 상단으로 부드럽게 스크롤
@@ -6878,7 +6999,7 @@ function initReceiptSection() {
       const sheet = modal ? modal.querySelector(".bottom-sheet") : null;
       if (sheet) sheet.scrollTo({ top: 0, behavior: "smooth" });
 
-      showToast(`✅ ${continuousSessionCount}번째 영수증 등록 완료! 다음 영수증을 입력해주세요 📸`, "success");
+      showToast(`✅ ${continuousSessionCount}번째 영수증(${isPartial ? ratioLabel : '전액'}) 등록 완료! 다음 영수증을 입력해주세요 📸`, "success");
     } else {
       // 📄 등록 완료하고 닫기 모드
       const totalCount = continuousSessionCount + 1;
@@ -6968,6 +7089,11 @@ function _prependReceiptToDOM(receipt) {
         <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
           <span>${receipt.title}</span>
           <span class="smart-cat-pill">${receipt.category || "미분류"}</span>
+          ${(receipt.receiptTotalAmount && receipt.receiptTotalAmount > receipt.amount) ? `
+            <span style="font-size:10px; font-weight:800; background:#ffedd5; color:#c2410c; border:1px solid #fed7aa; padding:1px 5px; border-radius:5px;">
+              ${receipt.claimRatio === '50' || receipt.amount === Math.round(receipt.receiptTotalAmount / 2) ? '반액(50%)' : '일부 청구'}
+            </span>
+          ` : ''}
         </div>
         <div class="expense-meta">${receipt.date} 제출 | ${receipt.store || "지정처"} | ${receipt.amount.toLocaleString()}원</div>
         ${receipt.receiptUrl ? `
@@ -7000,6 +7126,11 @@ function _prependReceiptToDOM(receipt) {
           <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
             <span>${receipt.title} (${(receipt.author || "").replace("선생님", "T")})</span>
             <span class="smart-cat-pill">${receipt.category || "미분류"}</span>
+            ${(receipt.receiptTotalAmount && receipt.receiptTotalAmount > receipt.amount) ? `
+              <span style="font-size:10px; font-weight:800; background:#ffedd5; color:#c2410c; border:1px solid #fed7aa; padding:1px 5px; border-radius:5px;">
+                ${receipt.claimRatio === '50' || receipt.amount === Math.round(receipt.receiptTotalAmount / 2) ? '반액(50%)' : '일부 청구'}
+              </span>
+            ` : ''}
           </div>
           <div class="expense-meta">${receipt.date} 지출 | ${receipt.store || "지정처"} 📑</div>
           <div style="display:flex; gap:4px; margin-top:4px; align-items:center; flex-wrap:wrap;">
@@ -7150,6 +7281,11 @@ function _doRenderAccountingSection() {
             <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
               <span>${r.title}</span>
               <span class="smart-cat-pill">${r.category || "미분류"}</span>
+              ${(r.receiptTotalAmount && r.receiptTotalAmount > r.amount) ? `
+                <span style="font-size:10px; font-weight:800; background:#ffedd5; color:#c2410c; border:1px solid #fed7aa; padding:1px 5px; border-radius:5px;">
+                  ${r.claimRatio === '50' || r.amount === Math.round(r.receiptTotalAmount / 2) ? '반액(50%)' : '일부 청구'}
+                </span>
+              ` : ''}
             </div>
             <div class="expense-meta">${r.date} 제출 | ${r.store || "지정처"} | ${r.amount.toLocaleString()}원</div>
             ${r.rejectReason ? `
@@ -7269,6 +7405,11 @@ function _doRenderAccountingSection() {
           <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
             <span>${r.title} (${(r.author || "").replace("선생님", "T")})</span>
             <span class="smart-cat-pill">${r.category || "미분류"}</span>
+            ${(r.receiptTotalAmount && r.receiptTotalAmount > r.amount) ? `
+              <span style="font-size:10px; font-weight:800; background:#ffedd5; color:#c2410c; border:1px solid #fed7aa; padding:1px 5px; border-radius:5px;">
+                ${r.claimRatio === '50' || r.amount === Math.round(r.receiptTotalAmount / 2) ? '반액(50%)' : '일부 청구'}
+              </span>
+            ` : ''}
           </div>
           <div class="expense-meta">${r.date} 지출 | ${r.store || "지정처"} 📑</div>
           ${r.rejectReason ? `
@@ -7574,7 +7715,14 @@ function openReceiptModal(receipt) {
   if (imgEl) imgEl.src = photoSrc;
 
   if (storeEl) storeEl.textContent = receipt.store || "예랑 지정처";
-  if (amountEl) amountEl.textContent = `${amount.toLocaleString()}원`;
+  if (amountEl) {
+    if (receipt.receiptTotalAmount && receipt.receiptTotalAmount > amount) {
+      const ratioText = (receipt.claimRatio === '50' || amount === Math.round(receipt.receiptTotalAmount / 2)) ? '50% 반액 청구' : '일부 청구';
+      amountEl.innerHTML = `${amount.toLocaleString()}원 <span style="font-size:11px; font-weight:800; background:#ffedd5; color:#c2410c; border:1px solid #fed7aa; padding:2px 7px; border-radius:6px; margin-left:6px;">${ratioText} (영수증 총 ${receipt.receiptTotalAmount.toLocaleString()}원)</span>`;
+    } else {
+      amountEl.textContent = `${amount.toLocaleString()}원`;
+    }
+  }
   if (catEl) catEl.textContent = receipt.category || "비품/간식비";
   if (authorEl) authorEl.textContent = author;
   if (purposeEl) purposeEl.textContent = receipt.purpose || receipt.title || "-";

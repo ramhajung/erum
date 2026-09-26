@@ -132,7 +132,7 @@
       }
     };
   </script>
-    <link rel="stylesheet" href="style.css?v=20260926_continuous_v6">
+    <link rel="stylesheet" href="style.css?v=20260926_partial_v7">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
 <body>
@@ -2705,14 +2705,48 @@
               </div>
             </div>
 
-            <div class="price-field-box">
-              <div style="flex:1;">
-                <div class="field-label">💰 지출 금액</div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <input type="number" class="field-input" id="rcptAmountInput" value="45000" min="0" step="100" style="font-size:20px; font-weight:800; color:#d94343; padding:8px 12px; flex:1; max-width:200px;">
-                  <span style="font-size:14px; font-weight:700; color:#555;">원 (지출)</span>
+            <div class="price-field-box" style="flex-direction:column; align-items:stretch; gap:10px; background:#fff; border:1px solid #eadcd0; border-radius:12px; padding:12px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <div class="field-label" style="margin-bottom:0;">🧾 영수증 찍힌 총액</div>
+                  <span style="font-size:11px; color:#8c7d6b;">실물 영수증 결제금액</span>
                 </div>
-                <div class="price-large" id="rcptPriceDisplay" style="font-size:13px; color:#8c7d6b; margin-top:2px;"></div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <input type="number" class="field-input" id="rcptTotalAmountInput" value="45000" min="0" step="100" style="font-size:18px; font-weight:800; color:#2d261e; padding:8px 12px; flex:1;">
+                  <span style="font-size:14px; font-weight:700; color:#555;">원</span>
+                </div>
+              </div>
+
+              <!-- 청구 비율 퀵 칩 (전액 / 1/2 반액 / 일부 직접 입력) -->
+              <div>
+                <div class="field-label" style="margin-bottom:6px; font-size:11.5px; color:#6b7280;">⚖️ 청구 비율 빠른 선택</div>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" class="claim-ratio-chip" data-ratio="100" style="flex:1; padding:7px 4px; border-radius:8px; font-size:12px; font-weight:800; border:1.5px solid #10b981; background:#ecfdf5; color:#065f46; cursor:pointer; text-align:center;">
+                    전액 (100%)
+                  </button>
+                  <button type="button" class="claim-ratio-chip" data-ratio="50" style="flex:1; padding:7px 4px; border-radius:8px; font-size:12px; font-weight:700; border:1px solid #d1d5db; background:#fff; color:#4b5563; cursor:pointer; text-align:center;">
+                    1/2 반액 (50%)
+                  </button>
+                  <button type="button" class="claim-ratio-chip" data-ratio="custom" style="flex:1; padding:7px 4px; border-radius:8px; font-size:12px; font-weight:700; border:1px solid #d1d5db; background:#fff; color:#4b5563; cursor:pointer; text-align:center;">
+                    직접 입력
+                  </button>
+                </div>
+              </div>
+
+              <!-- 실제 부서 청구 금액 (최종 지출 실비) -->
+              <div style="background:#fef7f4; border:1.5px solid #fed7aa; border-radius:10px; padding:10px 12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <div class="field-label" style="color:#c2410c; font-weight:800; margin-bottom:0;">💰 실제 청구 금액 (부서 지출)</div>
+                  <span id="claimRatioBadge" style="font-size:10px; font-weight:800; background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:6px;">전액 청구</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <input type="number" class="field-input" id="rcptAmountInput" value="45000" min="0" step="100" style="font-size:22px; font-weight:900; color:#d94343; padding:6px 10px; flex:1; background:#fff; border:1.5px solid #ea580c; border-radius:8px;">
+                  <span style="font-size:15px; font-weight:800; color:#d94343;">원 (지출)</span>
+                </div>
+                <div id="partialClaimNote" style="display:none; font-size:11.5px; color:#c2410c; margin-top:6px; font-weight:700; background:#fff; padding:6px 8px; border-radius:6px; border:1px dashed #f97316;">
+                  💡 영수증 총액 중 <span id="partialClaimDiffText"></span>은 개인/타부서 부담으로 처리됩니다.
+                </div>
+                <div class="price-large" id="rcptPriceDisplay" style="font-size:12px; color:#8c7d6b; margin-top:3px;"></div>
               </div>
             </div>
 
@@ -3742,7 +3776,7 @@
 
   </div>
 
-  <script src="app.js?v=20260926_continuous_v6"></script>
+  <script src="app.js?v=20260926_partial_v7"></script>
 </body>
 </html>
 
