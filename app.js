@@ -6794,16 +6794,18 @@ function initReceiptSection() {
       }
 
       lastReceiptSubmitTime = Date.now();
-      saveState();
 
       // 바텀시트 모달 닫기 (부드러운 퇴장 애니메이션 우선 실행)
       closeModal("receiptClaimModal");
 
-      // 모달이 완전히 닫힌 후(300ms) 백그라운드 DOM을 부드럽게 갱신하여 화면 깜빡임 0% 달성
+      // 모달이 완전히 닫힌 후(300ms) 새 영수증 1건만 DOM에 직접 삽입 (전체 리렌더링 없음 → 깜빡임 0%)
       setTimeout(() => {
-        renderAccountingSection();
+        _prependReceiptToDOM(newReceipt);
 
-        // 파일 입력값 초기화 및 제출 버튼 복원 (모달이 닫힌 후에 조용히 복원하여 깜빡임 방지)
+        // 상태 저장을 DOM 업데이트 후로 지연하여 메인스레드 블로킹 최소화
+        saveState();
+
+        // 파일 입력값 초기화 및 제출 버튼 복원
         if (fileInput) fileInput.value = "";
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -6819,6 +6821,109 @@ function initReceiptSection() {
 // =============================================================================
 // 8. Screen 5: 역할별 회계 보안 & 권한 분리 시스템 (Open Accountant Engine)
 // =============================================================================
+
+// ---------------------------------------------------------------------------
+// 수술적 DOM 업데이트: 영수증 1건만 목록에 삽입 (전체 리렌더링 없이 깜빡임 0%)
+// ---------------------------------------------------------------------------
+function _prependReceiptToDOM(receipt) {
+  // 1. 잔액 & 수입/지출 텍스트 업데이트 (숫자만 교체, DOM 구조 변경 없음)
+  let totalExpense = 0;
+  appState.accounting.receipts.forEach(r => {
+    if (r.status !== "반려") totalExpense += Number(r.amount) || 0;
+  });
+  const liveBalance = appState.accounting.initialBalance + appState.accounting.income - totalExpense;
+
+  const totalBalanceEl = document.getElementById("totalBalanceAmount");
+  if (totalBalanceEl) {
+    totalBalanceEl.innerHTML = `${liveBalance.toLocaleString()} <span style="font-size:16px; font-weight:700;">원</span>`;
+  }
+  const subStatsEl = document.querySelector("#adminAccountingView .balance-sub-stats");
+  if (subStatsEl) {
+    subStatsEl.innerHTML = `
+      <span class="stat-inc">수입: +${appState.accounting.income.toLocaleString()}원</span>
+      <span style="color:#d8cebe;">|</span>
+      <span class="stat-exp">지출: -${totalExpense.toLocaleString()}원</span>
+    `;
+  }
+
+  // 2. 내 영수증 목록(myReceiptList)에 1건만 prepend
+  const myReceiptList = document.getElementById("myReceiptList");
+  if (myReceiptList) {
+    // 빈 상태 안내("제출한 영수증 내역이 없습니다")가 있으면 제거
+    if (!myReceiptList.querySelector(".expense-row-item")) {
+      myReceiptList.innerHTML = "";
+    }
+    const el = document.createElement("div");
+    el.className = "expense-row-item";
+    el.innerHTML = `
+      <div class="expense-info" style="flex:1; min-width:0;">
+        <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span>${receipt.title}</span>
+          <span class="smart-cat-pill">${receipt.category || "미분류"}</span>
+        </div>
+        <div class="expense-meta">${receipt.date} 제출 | ${receipt.store || "지정처"} | ${receipt.amount.toLocaleString()}원</div>
+        ${receipt.receiptUrl ? `
+          <div style="margin-top:4px;">
+            <button class="receipt-view-pill" onclick="openReceiptModalById(${receipt.id})">📷 영수증 원본 보기</button>
+          </div>
+        ` : ""}
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0;">
+        <div class="expense-status-badge status-wait">승인대기 ⏳</div>
+      </div>
+    `;
+    myReceiptList.prepend(el);
+  }
+
+  // 3. 관리자 영수증 목록(allReceiptList)에 1건만 prepend (PENDING 또는 ALL 필터일 때)
+  const allReceiptList = document.getElementById("allReceiptList");
+  if (allReceiptList) {
+    const currentFilter = window.currentAdminReceiptFilter || "PENDING";
+    if (currentFilter === "PENDING" || currentFilter === "ALL") {
+      // 빈 상태 안내가 있으면 제거
+      if (!allReceiptList.querySelector(".expense-row-item")) {
+        allReceiptList.innerHTML = "";
+      }
+      const anomalies = detectReceiptAnomalies(receipt, appState.accounting.receipts);
+      const adminEl = document.createElement("div");
+      adminEl.className = "expense-row-item";
+      adminEl.innerHTML = `
+        <div class="expense-info" style="flex:1; min-width:0;">
+          <div class="expense-title" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span>${receipt.title} (${(receipt.author || "").replace("선생님", "T")})</span>
+            <span class="smart-cat-pill">${receipt.category || "미분류"}</span>
+          </div>
+          <div class="expense-meta">${receipt.date} 지출 | ${receipt.store || "지정처"} 📑</div>
+          <div style="display:flex; gap:4px; margin-top:4px; align-items:center; flex-wrap:wrap;">
+            ${anomalies.map(a => `<span class="anomaly-tag ${a.tagClass}">${a.label}</span>`).join("")}
+            ${receipt.receiptUrl ? `<button class="receipt-view-pill" onclick="openReceiptModalById(${receipt.id})">📷 영수증 보기</button>` : ""}
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
+          <div class="expense-amount-red">-${receipt.amount.toLocaleString()}원</div>
+          <div class="expense-status-badge status-wait" style="font-size:10px; padding:2px 6px;">승인대기 ⏳</div>
+          <div style="display:flex; gap:4px; margin-top:3px; flex-wrap:wrap; justify-content:flex-end;">
+            <button type="button" onclick="approveReceipt(${receipt.id})" style="background:#f0fdf4; border:1px solid #86efac; color:#15803d; font-size:10.5px; font-weight:800; padding:2.5px 7px; border-radius:6px; cursor:pointer;" title="영수증 내역 승인">승인 👍</button>
+            <button type="button" onclick="rejectReceipt(${receipt.id})" style="background:#fef2f2; border:1px solid #fca5a5; color:#b91c1c; font-size:10.5px; font-weight:800; padding:2.5px 7px; border-radius:6px; cursor:pointer;" title="영수증 반려">반려 ✕</button>
+          </div>
+        </div>
+      `;
+      allReceiptList.prepend(adminEl);
+    }
+
+    // 필터 칩 배지 카운트만 업데이트 (DOM 재생성 없음)
+    const allList = appState.accounting.receipts || [];
+    const pendingBadgeEl = document.getElementById("rcptFilterPendingBadge");
+    const completedBadgeEl = document.getElementById("rcptFilterCompletedBadge");
+    const allBadgeEl = document.getElementById("rcptFilterAllBadge");
+    if (pendingBadgeEl) pendingBadgeEl.textContent = allList.filter(r => r.status === "승인대기" || r.status === "승인완료" || (!r.status && !r.isPaid)).length;
+    if (completedBadgeEl) completedBadgeEl.textContent = allList.filter(r => r.status === "정산완료").length;
+    if (allBadgeEl) allBadgeEl.textContent = allList.length;
+  }
+
+  // 4. 하단 탭 배지 및 홈 알림 배너 갱신 (가벼운 텍스트 업데이트만)
+  updateAccountingNotificationBadges();
+}
 
 // DOM 일괄 교체 헬퍼 (화면 깜빡임 원천 차단)
 function replaceElementChildren(parent, newChild) {
